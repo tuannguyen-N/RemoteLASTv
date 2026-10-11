@@ -1,0 +1,28 @@
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+.kotlin/
+*.apk
+*.aab
+*.log
+
+# Local config
+local.properties
+
+# IDE
+*.iml
+.idea/
+
+# macOS
+.DS_Store
+
+# Ký app & secret (TUYỆT ĐỐI không commit)
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+secrets.properties
+.env
+google-services.json
