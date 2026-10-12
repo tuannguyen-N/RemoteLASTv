@@ -10,4 +10,18 @@
     <string name="home_more_apps">More</string>
     <string name="home_volume">VOL</string>
     <string name="home_channel">CH</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_remote">Remote</string>
+    <string name="settings_remote_layout">Remote layout</string>
+    <string name="settings_remote_behavior">Remote behavior</string>
+    <string name="settings_manage_applications">Manage applications</string>
+    <string name="settings_connected_devices">Connected devices</string>
+    <string name="settings_section_application">Application</string>
+    <string name="settings_faq">FAQ\'s</string>
+    <string name="settings_share">Share with friends</string>
+    <string name="settings_rate_review">Rate and Review</string>
+    <string name="settings_feedback">Feedback</string>
+    <string name="settings_legal">Legal</string>
+    <string name="settings_activate_premium">Activate premium</string>
+
 </resources>

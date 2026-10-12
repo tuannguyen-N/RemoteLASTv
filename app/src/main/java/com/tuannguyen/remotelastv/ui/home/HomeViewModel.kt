@@ -1,6 +1,7 @@
 package com.tuannguyen.remotelastv.ui.home
 
 import androidx.lifecycle.ViewModel
+import com.tuannguyen.remotelastv.domain.model.RemoteKey
 import com.tuannguyen.remotelastv.domain.model.TvApp
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +34,7 @@ class HomeViewModel : ViewModel() {
         _effects.trySend(HomeEffect.ShowMessage("$appName control is not connected yet"))
     }
 
-    fun onRemoteButtonClick(button: String) {
+    fun onRemoteButtonClick(button: RemoteKey) {
         // TODO: Send remote-control command.
         _effects.trySend(HomeEffect.ShowMessage("$button command is not connected yet"))
     }
