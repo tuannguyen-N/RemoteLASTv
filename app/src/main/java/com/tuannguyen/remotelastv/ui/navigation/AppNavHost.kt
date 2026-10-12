@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tuannguyen.remotelastv.ui.home.HomeScreen
 import com.tuannguyen.remotelastv.ui.settings.SettingsScreen
+import com.tuannguyen.remotelastv.ui.settings_remote_layout.RemoteLayoutScreen
 
 @Composable
 fun AppNavHost(
@@ -24,7 +25,16 @@ fun AppNavHost(
             )
         }
         composable<Route.Settings> {
-            SettingsScreen()
+            SettingsScreen(
+                onClose = { navController.popBackStack() },
+                onAction = { action -> navController.navigate(action) },
+            )
+        }
+
+        composable<Route.RemoteLayout> {
+            RemoteLayoutScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
         }
     }
 }

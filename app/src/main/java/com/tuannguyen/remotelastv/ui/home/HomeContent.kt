@@ -2,7 +2,6 @@ package com.tuannguyen.remotelastv.ui.home
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,20 +30,17 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Backspace
 import androidx.compose.material.icons.filled.Keyboard
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -62,7 +58,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -73,9 +68,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tuannguyen.remotelastv.R
+import com.tuannguyen.remotelastv.domain.model.NavigationMode
 import com.tuannguyen.remotelastv.domain.model.NumberPadItem
 import com.tuannguyen.remotelastv.domain.model.RemoteKey
-import com.tuannguyen.remotelastv.domain.model.RemoteLayout
 import com.tuannguyen.remotelastv.domain.model.TvApp
 import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.bounceClick
@@ -140,24 +135,13 @@ fun HomeContent(
                 )
 
                 AppRow(compact = compact, onAppClick = onAppClick)
-
-                when (uiState.layout) {
-                    RemoteLayout.Classic -> ClassicControls(
-                        uiState = uiState,
-                        pagerState = pagerState,
-                        compact = compact,
-                        onRemoteButtonClick = onRemoteButtonClick,
-                        onPageSelected = onPageSelected,
-                    )
-
-                    RemoteLayout.Media -> MediaControls(
-                        uiState = uiState,
-                        pagerState = pagerState,
-                        compact = compact,
-                        onRemoteButtonClick = onRemoteButtonClick,
-                        onPageSelected = onPageSelected,
-                    )
-                }
+                ClassicControls(
+                    uiState = uiState,
+                    pagerState = pagerState,
+                    compact = compact,
+                    onRemoteButtonClick = onRemoteButtonClick,
+                    onPageSelected = onPageSelected,
+                )
             }
         }
     }
@@ -243,6 +227,7 @@ private fun AppRow(
 private fun ColumnScope.PadSection(
     pagerState: PagerState,
     compact: Boolean,
+    navigationMode: NavigationMode,
     onRemoteButtonClick: (RemoteKey) -> Unit,
     dpadOverlay: (@Composable BoxScope.() -> Unit)? = null,
 ) {
@@ -269,17 +254,27 @@ private fun ColumnScope.PadSection(
                 contentAlignment = Alignment.Center,
             ) {
                 when (page) {
-                    0 -> {
-                        DPad(
-                            diameter = dpadDiameter,
-                            onRemoteButtonClick = onRemoteButtonClick,
+                    0 -> when (navigationMode) {
+                        NavigationMode.D_PAD -> {
+                            DPad(
+                                diameter = dpadDiameter,
+                                onRemoteButtonClick = onRemoteButtonClick,
+                            )
+                            dpadOverlay?.invoke(this)
+                        }
+
+                        NavigationMode.TOUCH_PAD -> TouchPad(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(Dimens.Space.md),
                         )
-                        dpadOverlay?.invoke(this)
                     }
 
                     1 -> {
                         NumberPad(
-                            modifier = Modifier.fillMaxSize().padding( Dimens.Space.md),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(Dimens.Space.md),
                             onRemoteKeyClick = onRemoteButtonClick,
                         )
                     }
@@ -287,8 +282,31 @@ private fun ColumnScope.PadSection(
             }
         }
     }
+}
 
-    Spacer(modifier = Modifier.height(if (compact) 6.dp else 12.dp))
+@Composable
+private fun TouchPad(
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(MaterialTheme.shapes.extraLarge)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(
+                width = 2.dp,
+                brush = Brush.sweepGradient(
+                    listOf(
+                        Color(0xFF9B4CCB),
+                        Color(0xFF3E9AEF),
+                        Color(0xFF9B4CCB),
+                    )
+                ),
+                shape = MaterialTheme.shapes.extraLarge,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        // TODO: xử lý cử chỉ vuốt / chạm
+    }
 }
 
 @Composable
@@ -297,7 +315,7 @@ private fun PageDots(
     onPageSelected: (Int) -> Unit,
 ) {
     Row(
-        modifier = Modifier.padding(top = 8.dp),
+        modifier = Modifier.padding(bottom = Dimens.Space.lg),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -334,13 +352,13 @@ private fun BottomControls(
             middle = "VOL",
             iconBottom = Icons.Default.Remove,
             modifier = Modifier
-                .weight(0.88f)
+                .weight(0.9f)
                 .height(if (compact) 170.dp else 200.dp),
             onTop = { onRemoteButtonClick(RemoteKey.VOLUME_UP) },
             onBottom = { onRemoteButtonClick(RemoteKey.VOLUME_DOWN) },
         )
         Column(
-            modifier = Modifier.weight(3.1f),
+            modifier = Modifier.weight(3f),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             content = centerContent,
         )
@@ -349,7 +367,7 @@ private fun BottomControls(
             middle = "CH",
             iconBottom = Icons.Default.KeyboardArrowDown,
             modifier = Modifier
-                .weight(0.88f)
+                .weight(0.9f)
                 .height(if (compact) 170.dp else 200.dp),
             onTop = { onRemoteButtonClick(RemoteKey.CHANNEL_UP) },
             onBottom = { onRemoteButtonClick(RemoteKey.CHANNEL_DOWN) },
@@ -394,6 +412,7 @@ private fun ColumnScope.ClassicControls(
     PadSection(
         pagerState = pagerState,
         compact = compact,
+        navigationMode = uiState.navigationMode,
         onRemoteButtonClick = onRemoteButtonClick,
     )
 
@@ -427,6 +446,30 @@ private fun ColumnScope.ClassicControls(
                 }
             }
         }
+
+        if (uiState.showMediaButtons) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                RoundControl(
+                    icon = IconSource.Resource(R.drawable.ic_previous),
+                    description = "Skip Previous",
+                    modifier = Modifier.weight(1f),
+                ) {
+
+                }
+                RoundControl(
+                    icon = IconSource.Resource(R.drawable.ic_pause_play),
+                    description = "Play/Pause",
+                    modifier = Modifier.weight(1f),
+                ) { onRemoteButtonClick(RemoteKey.HOME) }
+
+                RoundControl(
+                    icon = IconSource.Resource(R.drawable.ic_next),
+                    description = "Skip Next",
+                    modifier = Modifier.weight(1f),
+                ) { onRemoteButtonClick(RemoteKey.HOME) }
+            }
+        }
+
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             MuteControl(
                 isMuted = uiState.isMuted,
@@ -448,195 +491,97 @@ private fun ColumnScope.ClassicControls(
     }
 }
 
-private val CornerButtonSize = 56.dp
-
-@Composable
-private fun ColumnScope.MediaControls(
-    uiState: HomeUiState,
-    pagerState: PagerState,
-    compact: Boolean,
-    onRemoteButtonClick: (RemoteKey) -> Unit,
-    onPageSelected: (Int) -> Unit,
-) {
-    PadSection(
-        pagerState = pagerState,
-        compact = compact,
-        onRemoteButtonClick = onRemoteButtonClick,
-        dpadOverlay = {
-            RoundControl(
-                icon = IconSource.Vector(Icons.Default.Mic),
-                description = "Voice",
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(end = Dimens.Space.md)
-                    .size(CornerButtonSize),
-            ) {
-                // TODO: voice
-            }
-            RoundControl(
-                icon = IconSource.Resource(R.drawable.ic_return),
-                description = "Back",
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = Dimens.Space.md)
-                    .size(CornerButtonSize),
-            ) { onRemoteButtonClick(RemoteKey.BACK) }
-
-            MuteControl(
-                isMuted = uiState.isMuted,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(start = Dimens.Space.md)
-                    .size(CornerButtonSize),
-            ) { onRemoteButtonClick(RemoteKey.MUTE) }
-        },
-    )
-
-    PageDots(selectedPage = uiState.selectedPage, onPageSelected = onPageSelected)
-
-    BottomControls(compact = compact, onRemoteButtonClick = onRemoteButtonClick) {
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            RoundControl(
-                icon = IconSource.Vector(Icons.Default.Keyboard),
-                description = "Keyboard",
-                modifier = Modifier.weight(1f),
-            ) {
-                // TODO: show keyboard
-            }
-            RoundControl(
-                icon = IconSource.Resource(R.drawable.ic_home),
-                description = "Home",
-                modifier = Modifier.weight(1f),
-            ) { onRemoteButtonClick(RemoteKey.HOME) }
-            MuteControl(
-                isMuted = uiState.isMuted,
-                modifier = Modifier.weight(1f),
-            ) { onRemoteButtonClick(RemoteKey.MUTE) }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            RoundControl(
-                icon = IconSource.Vector(Icons.Default.SkipPrevious),
-                description = "Previous",
-                modifier = Modifier.weight(1f),
-            ) { onRemoteButtonClick(RemoteKey.PREVIOUS) }
-            RoundControl(
-                icon = IconSource.Vector(Icons.Default.Pause),
-                description = "Play/Pause",
-                modifier = Modifier.weight(1f),
-            ) { onRemoteButtonClick(RemoteKey.PLAY_PAUSE) }
-            RoundControl(
-                icon = IconSource.Vector(Icons.Default.SkipNext),
-                description = "Next",
-                modifier = Modifier.weight(1f),
-            ) { onRemoteButtonClick(RemoteKey.NEXT) }
-        }
-    }
-}
+private val RingStroke = 2.2.dp
+private val RingColors = listOf(
+    Color(0xFF9B4CCB),
+    Color(0xFF3E9AEF),
+    Color(0xFF9B4CCB),
+)
 
 @Composable
 private fun DPad(
     diameter: Dp,
     onRemoteButtonClick: (RemoteKey) -> Unit,
 ) {
+    val ringPadding = Dimens.Space.sm
+    val disc = diameter - ringPadding * 2
+    val edge = disc * 0.12f
+
     Box(
-        modifier = Modifier.size(diameter),
+        modifier = Modifier
+            .size(diameter)
+            .padding(ringPadding),
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(Dimens.Space.lg),
-        ) {
-            val stroke = 2.2.dp.toPx()
-
-            drawCircle(
-                brush = Brush.sweepGradient(
-                    listOf(
-                        Color(0xFF9B4CCB),
-                        Color(0xFF3E9AEF),
-                        Color(0xFF9B4CCB),
+                .clip(CircleShape)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.78f),
+                            MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.25f),
+                        )
                     )
+                )
+                .border(
+                    width = RingStroke,
+                    brush = Brush.sweepGradient(RingColors),
+                    shape = CircleShape,
                 ),
-                radius = size.minDimension / 2 - stroke / 2,
-                style = Stroke(width = stroke),
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape),
+        ) {
+            DirectionKey(
+                icon = Icons.Default.KeyboardArrowUp,
+                command = RemoteKey.UP,
+                centerAngle = 270f,
+                iconAlignment = Alignment.TopCenter,
+                iconPadding = Modifier.padding(top = edge),
+                onRemoteButtonClick = onRemoteButtonClick,
+            )
+            DirectionKey(
+                icon = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                command = RemoteKey.LEFT,
+                centerAngle = 180f,
+                iconAlignment = Alignment.CenterStart,
+                iconPadding = Modifier.padding(start = edge),
+                onRemoteButtonClick = onRemoteButtonClick,
+            )
+            DirectionKey(
+                icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                command = RemoteKey.RIGHT,
+                centerAngle = 0f,
+                iconAlignment = Alignment.CenterEnd,
+                iconPadding = Modifier.padding(end = edge),
+                onRemoteButtonClick = onRemoteButtonClick,
+            )
+            DirectionKey(
+                icon = Icons.Default.KeyboardArrowDown,
+                command = RemoteKey.DOWN,
+                centerAngle = 90f,
+                iconAlignment = Alignment.BottomCenter,
+                iconPadding = Modifier.padding(bottom = edge),
+                onRemoteButtonClick = onRemoteButtonClick,
             )
         }
 
         Box(
             modifier = Modifier
-                .fillMaxSize(0.99f)
-                .padding(1.dp)
-                .padding(Dimens.Space.lg)
-                .clip(CircleShape)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.surfaceContainerHigh
-                                .copy(alpha = 0.78f),
-                            MaterialTheme.colorScheme.surfaceContainerLow
-                                .copy(alpha = 0.25f),
-                        )
-                    )
-                ),
-        )
-
-        val edge = diameter * 0.12f
-
-        DirectionKey(
-            Icons.Default.KeyboardArrowUp,
-            RemoteKey.UP,
-            270f,
-            Alignment.TopCenter,
-            Modifier.padding(top = edge),
-            onRemoteButtonClick,
-        )
-
-        DirectionKey(
-            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-            RemoteKey.LEFT,
-            180f,
-            Alignment.CenterStart,
-            Modifier.padding(start = edge),
-            onRemoteButtonClick,
-        )
-
-        DirectionKey(
-            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            RemoteKey.RIGHT,
-            0f,
-            Alignment.CenterEnd,
-            Modifier.padding(end = edge),
-            onRemoteButtonClick,
-        )
-
-        DirectionKey(
-            Icons.Default.KeyboardArrowDown,
-            RemoteKey.DOWN,
-            90f,
-            Alignment.BottomCenter,
-            Modifier.padding(bottom = edge),
-            onRemoteButtonClick,
-        )
-
-        Box(
-            modifier = Modifier
-                .size(diameter * 0.28f)
+                .size(disc * 0.28f)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
                 .border(
                     width = 2.dp,
-                    brush = Brush.sweepGradient(
-                        listOf(
-                            Color(0xFF9B4CCB),
-                            Color(0xFF3E9AEF),
-                            Color(0xFF9B4CCB),
-                        )
-                    ),
+                    brush = Brush.sweepGradient(RingColors),
                     shape = CircleShape,
                 )
-                .bounceClick {
-                    onRemoteButtonClick(RemoteKey.OK)
-                },
+                .bounceClick { onRemoteButtonClick(RemoteKey.OK) },
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -760,7 +705,7 @@ private fun NumberPadKey(
     ) {
         if (isDelete) {
             Icon(
-                imageVector = Icons.Default.Backspace,
+                imageVector = Icons.AutoMirrored.Filled.Backspace,
                 contentDescription = "Delete",
                 modifier = Modifier.size(28.dp),
                 tint = MaterialTheme.colorScheme.onSurface,
@@ -939,50 +884,12 @@ private fun VerticalControl(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Previews
-// ---------------------------------------------------------------------------
-
 @Preview(showBackground = true, widthDp = 393, heightDp = 852)
 @Composable
 private fun HomeContentClassicPreview() {
     RemoteLASTvTheme {
         HomeContent(
-            uiState = HomeUiState(layout = RemoteLayout.Classic),
-            onSettingsClick = {},
-            onDeviceClick = {},
-            onPowerClick = {},
-            onAppClick = {},
-            onRemoteButtonClick = {},
-            onPageSelected = {},
-            onRetry = {},
-        )
-    }
-}
-
-@Preview(showBackground = true, widthDp = 393, heightDp = 852)
-@Composable
-private fun HomeContentMediaPreview() {
-    RemoteLASTvTheme {
-        HomeContent(
-            uiState = HomeUiState(layout = RemoteLayout.Media),
-            onSettingsClick = {},
-            onDeviceClick = {},
-            onPowerClick = {},
-            onAppClick = {},
-            onRemoteButtonClick = {},
-            onPageSelected = {},
-            onRetry = {},
-        )
-    }
-}
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-private fun HomeContentMediaCompactPreview() {
-    RemoteLASTvTheme {
-        HomeContent(
-            uiState = HomeUiState(layout = RemoteLayout.Media),
+            uiState = HomeUiState(),
             onSettingsClick = {},
             onDeviceClick = {},
             onPowerClick = {},

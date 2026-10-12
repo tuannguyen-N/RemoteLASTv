@@ -3,26 +3,44 @@ package com.tuannguyen.remotelastv.ui.settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tuannguyen.remotelastv.ui.navigation.Route
+import com.tuannguyen.remotelastv.ui.settings.components.SettingsContent
 
-@Preview
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsViewModel = viewModel(),
-    onAction: (SettingsAction) -> Unit = {},
+    viewModel: SettingsViewModel = hiltViewModel(),
+    onClose: () -> Unit,
+    onAction: (Route) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     LaunchedEffect(viewModel) {
-        viewModel.uiEvent.collect { action ->
-            onAction(action)
-        }
+
     }
 
     SettingsContent(
         uiState = uiState,
-        onAction = viewModel::onAction,
+        onAction = { action ->
+            when (action) {
+                is SettingsAction.Navigate -> onAction(action.route)
+                SettingsAction.Close -> onClose()
+                SettingsAction.Share -> {
+                    // TODO: Share
+                }
+
+                SettingsAction.RateAndReview -> {
+                    // TODO: Rate
+                }
+
+                SettingsAction.Feedback -> {
+                    // TODO: Feedback
+                }
+
+                SettingsAction.ActivatePremium -> {
+                    // TODO: Premium
+                }
+            }
+        },
     )
 }

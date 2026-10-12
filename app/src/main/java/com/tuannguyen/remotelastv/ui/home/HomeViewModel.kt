@@ -1,17 +1,40 @@
 package com.tuannguyen.remotelastv.ui.home
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.tuannguyen.remotelastv.domain.model.RemoteKey
 import com.tuannguyen.remotelastv.domain.model.TvApp
+import com.tuannguyen.remotelastv.domain.repository.SettingsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import jakarta.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-class HomeViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState = _uiState.asStateFlow()
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    settingsRepository: SettingsRepository
+) : ViewModel() {
+
+    private val _localState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = combine(
+        _localState,
+        settingsRepository.remoteSettings
+    ) { local, settings ->
+        local.copy(
+            showMediaButtons = settings.showMediaButtons,
+            navigationMode = settings.navigationMode,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = HomeUiState()
+    )
 
     private val _effects = Channel<HomeEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
@@ -40,10 +63,14 @@ class HomeViewModel : ViewModel() {
     }
 
     fun onPageSelected(page: Int) {
-        _uiState.update { it.copy(selectedPage = page.coerceIn(0, 1)) }
+        _localState.update { it.copy(selectedPage = page) }
+    }
+
+    fun onMuteToggled() {
+//        _localState.update { it.copy(isMuted = !it.isMuted) }
     }
 
     fun onRetry() {
-        _uiState.update { it.copy(isLoading = false, errorMessage = null, isEmpty = false) }
+        _localState.update { it.copy(isLoading = false, errorMessage = null, isEmpty = false) }
     }
 }

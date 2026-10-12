@@ -10,4 +10,19 @@ sealed interface Route {
 
     @Serializable
     data object Settings: Route
+
+    @Serializable
+    data object RemoteLayout: Route
+
+    @Serializable
+    data object ManageApplications: Route
+
+    @Serializable
+    data object ConnectedDevices: Route
+
+    @Serializable
+    data object Faq: Route
+
+    @Serializable
+    data object Legal: Route
 }

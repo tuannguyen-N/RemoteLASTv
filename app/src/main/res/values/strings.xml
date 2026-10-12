@@ -23,5 +23,29 @@
     <string name="settings_feedback">Feedback</string>
     <string name="settings_legal">Legal</string>
     <string name="settings_activate_premium">Activate premium</string>
+    <string name="remote_layout_back">Back</string>
+    <string name="remote_layout_device_name">My TV</string>
+    <string name="remote_layout_connected">Connected</string>
+    <string name="remote_layout_disconnected">Not connected</string>
+    <string name="remote_layout_navigation">Navigation</string>
+    <string name="remote_layout_dpad_description">D-pad navigation</string>
+    <string name="remote_layout_touchpad_description">Touchpad navigation</string>
+    <string name="remote_layout_dpad_hint">Tap to navigate</string>
+    <string name="remote_layout_touchpad_hint">Swipe to navigate</string>
+    <string name="remote_layout_home_action">Home</string>
+    <string name="remote_layout_menu_action">Menu</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_navigation">Navigation</string>
+    <string name="settings_quick_access">Quick access</string>
+    <string name="settings_touchpad">Touchpad</string>
+    <string name="settings_touchpad_description">Swipe based touchpad, quick and convenient.</string>
+    <string name="settings_dpad">D-pad</string>
+    <string name="settings_dpad_description">Tap based control, as found on physical remote.</string>
+    <string name="settings_applications">Applications</string>
+    <string name="settings_applications_description">Easily open applications installed on your television</string>
+    <string name="settings_colored_buttons">Colored Buttons</string>
+    <string name="settings_colored_buttons_description">Red, Green, Yellow and Blue buttons</string>
+    <string name="settings_media_buttons">Media Buttons</string>
+    <string name="settings_media_buttons_description">Media previous, rewind, play/pause, fast forward and next buttons</string>
 
 </resources>

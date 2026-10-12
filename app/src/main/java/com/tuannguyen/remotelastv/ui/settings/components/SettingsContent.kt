@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.ui.settings
+package com.tuannguyen.remotelastv.ui.settings.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,7 +29,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.bounceClick
-import com.tuannguyen.remotelastv.ui.settings.components.SettingsItem
+import com.tuannguyen.remotelastv.ui.navigation.Route
+import com.tuannguyen.remotelastv.ui.settings.SettingsAction
+import com.tuannguyen.remotelastv.ui.settings.SettingsUiState
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 
@@ -48,7 +50,6 @@ fun SettingsContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -68,9 +69,11 @@ fun SettingsContent(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "close",
-                    modifier = Modifier.size(Dimens.Size.iconLarge).bounceClick {
-                        onAction(SettingsAction.Close)
-                    },
+                    modifier = Modifier
+                        .size(Dimens.Size.iconLarge)
+                        .bounceClick {
+                            onAction(SettingsAction.Close)
+                        },
                 )
             }
 
@@ -94,19 +97,15 @@ fun SettingsContent(
             ) {
                 SettingsItem(
                     title = stringResource(R.string.settings_remote_layout),
-                    onClick = { onAction(SettingsAction.RemoteLayout) },
-                )
-                SettingsItem(
-                    title = stringResource(R.string.settings_remote_behavior),
-                    onClick = { onAction(SettingsAction.RemoteBehavior) },
+                    onClick = { onAction(SettingsAction.Navigate(Route.RemoteLayout)) },
                 )
                 SettingsItem(
                     title = stringResource(R.string.settings_manage_applications),
-                    onClick = { onAction(SettingsAction.ManageApplications) },
+                    onClick = { onAction(SettingsAction.Navigate(Route.ManageApplications)) },
                 )
                 SettingsItem(
                     title = stringResource(R.string.settings_connected_devices),
-                    onClick = { onAction(SettingsAction.ConnectedDevices) },
+                    onClick = { onAction(SettingsAction.Navigate(Route.ConnectedDevices)) },
                 )
             }
 
@@ -133,7 +132,7 @@ fun SettingsContent(
             ) {
                 SettingsItem(
                     title = stringResource(R.string.settings_faq),
-                    onClick = { onAction(SettingsAction.Faq) },
+                    onClick = { onAction(SettingsAction.Navigate(Route.Faq)) },
                 )
                 SettingsItem(
                     title = stringResource(R.string.settings_share),
@@ -152,7 +151,7 @@ fun SettingsContent(
                 )
                 SettingsItem(
                     title = stringResource(R.string.settings_legal),
-                    onClick = { onAction(SettingsAction.Legal) },
+                    onClick = { onAction(SettingsAction.Navigate(Route.Legal)) },
                 )
                 SettingsItem(
                     title = stringResource(R.string.settings_activate_premium),
