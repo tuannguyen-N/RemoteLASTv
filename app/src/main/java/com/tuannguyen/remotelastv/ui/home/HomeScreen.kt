@@ -14,6 +14,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToDeviceDiscovery: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -33,12 +34,11 @@ fun HomeScreen(
             viewModel.onSettingsClick()
             onNavigateToSettings()
         },
-        onDeviceClick = viewModel::onDeviceClick,
+        onChangeTelevision = onNavigateToDeviceDiscovery,
         onPowerClick = viewModel::onPowerClick,
         onAppClick = viewModel::onAppClick,
         onRemoteButtonClick = viewModel::onRemoteButtonClick,
         onPageSelected = viewModel::onPageSelected,
-        onRetry = viewModel::onRetry,
         modifier = modifier,
     )
 }

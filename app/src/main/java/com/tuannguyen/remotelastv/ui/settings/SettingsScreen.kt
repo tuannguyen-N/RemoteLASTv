@@ -11,7 +11,7 @@ import com.tuannguyen.remotelastv.ui.settings.components.SettingsContent
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
-    onClose: () -> Unit,
+    onNavigateBack: () -> Unit,
     onAction: (Route) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -24,7 +24,7 @@ fun SettingsScreen(
         onAction = { action ->
             when (action) {
                 is SettingsAction.Navigate -> onAction(action.route)
-                SettingsAction.Close -> onClose()
+                SettingsAction.Close -> onNavigateBack()
                 SettingsAction.Share -> {
                     // TODO: Share
                 }

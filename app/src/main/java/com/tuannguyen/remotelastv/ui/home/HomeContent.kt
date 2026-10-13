@@ -89,12 +89,11 @@ import kotlinx.coroutines.launch
 fun HomeContent(
     uiState: HomeUiState,
     onSettingsClick: () -> Unit,
-    onDeviceClick: () -> Unit,
+    onChangeTelevision: () -> Unit,
     onPowerClick: () -> Unit,
     onAppClick: (TvApp) -> Unit,
     onRemoteButtonClick: (RemoteKey) -> Unit,
     onPageSelected: (Int) -> Unit,
-    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
@@ -132,7 +131,7 @@ fun HomeContent(
                     uiState = uiState,
                     compact = compact,
                     onSettingsClick = onSettingsClick,
-                    onDeviceClick = onDeviceClick,
+                    onChangeTelevision = onChangeTelevision,
                     onPowerClick = onPowerClick,
                 )
 
@@ -154,7 +153,7 @@ private fun HomeHeader(
     uiState: HomeUiState,
     compact: Boolean,
     onSettingsClick: () -> Unit,
-    onDeviceClick: () -> Unit,
+    onChangeTelevision: () -> Unit,
     onPowerClick: () -> Unit,
 ) {
     Row(
@@ -172,7 +171,7 @@ private fun HomeHeader(
         )
         Row(
             modifier = Modifier
-                .clickableNoEffect(onDeviceClick)
+                .clickableNoEffect(onChangeTelevision)
                 .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
@@ -930,12 +929,11 @@ private fun HomeContentClassicPreview() {
         HomeContent(
             uiState = HomeUiState(),
             onSettingsClick = {},
-            onDeviceClick = {},
+            onChangeTelevision = {},
             onPowerClick = {},
             onAppClick = {},
             onRemoteButtonClick = {},
             onPageSelected = {},
-            onRetry = {},
         )
     }
 }

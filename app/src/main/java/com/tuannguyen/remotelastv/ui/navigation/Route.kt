@@ -9,6 +9,9 @@ sealed interface Route {
     data object Home: Route
 
     @Serializable
+    data object DeviceDiscovery: Route
+
+    @Serializable
     data object Settings: Route
 
     @Serializable

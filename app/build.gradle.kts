@@ -85,4 +85,6 @@ dependencies {
 
     //Lottie animation
     implementation(libs.lottie.compose)
+
+    implementation(project(":connectsdk"))
 }

@@ -73,4 +73,5 @@
     <string name="televisions_connect_action">Connect</string>
     <string name="televisions_retry">Try again</string>
     <string name="tv_brand_logo">TV brand logo</string>
+    <string name="scan_televisions">Scan Televisions</string>
 </resources>

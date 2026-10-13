@@ -1,0 +1,68 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 36
+    namespace "com.connectsdk"
+
+    defaultConfig {
+        minSdkVersion 24
+        targetSdkVersion 36
+    }
+
+    packagingOptions {
+        exclude 'LICENSE.txt'
+        exclude 'META-aINF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE'
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = [
+                    'src',
+                    'core/src',
+                    'modules/google_cast/src'
+            ]
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard-rules.txt'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    ndkVersion "24.0.8215888"
+
+    useLibrary 'org.apache.http.legacy'
+}
+
+dependencies {
+    implementation files('libs/lgcast-android-lib.jar')
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation "androidx.viewpager2:viewpager2:1.1.0"
+    implementation 'com.squareup.okhttp3:okhttp:5.3.2'
+    implementation 'org.jmdns:jmdns:3.6.3'
+    implementation 'org.java-websocket:Java-WebSocket:1.6.0'
+    implementation 'com.nimbusds:srp6a:2.1.0'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+    implementation 'com.googlecode.plist:dd-plist:1.28'
+    implementation 'net.i2p.crypto:eddsa:0.3.0'
+}

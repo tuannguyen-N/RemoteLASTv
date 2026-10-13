@@ -1,23 +1,28 @@
 package com.tuannguyen.remotelastv.ui.device_discovery
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tuannguyen.remotelastv.domain.model.Television
 
 @Composable
 fun DeviceDiscoveryScreen(
-    onClose: () -> Unit,
-    onTelevisionClick: (Television) -> Unit,
-    viewModel: DeviceDiscoveryViewModel = viewModel(),
+    onNavigateBack: () -> Unit,
+    viewModel: DeviceDiscoveryViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(viewModel){
+        viewModel.startScan()
+    }
+
     DeviceDiscoveryContent(
         uiState = uiState,
-        onClose = onClose,
+        onClose = onNavigateBack,
         onRetry = viewModel::onRetry,
-        onTelevisionClick = onTelevisionClick,
+        onTelevisionClick = {
+            // TODO: connect
+        },
     )
 }

@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "RemoteLASTv-Dev"
 include(":app")
+include(":connectsdk")

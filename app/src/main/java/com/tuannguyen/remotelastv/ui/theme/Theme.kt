@@ -50,14 +50,18 @@ val MaterialTheme.extendedColors: ExtendedColors
 
 @Composable
 fun RemoteLASTvTheme(
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
-    CompositionLocalProvider(LocalExtendedColors provides AppExtendedColors) {
+    CompositionLocalProvider(
+        LocalExtendedColors provides AppExtendedColors,
+    ) {
         MaterialTheme(
             colorScheme = AppColorScheme,
             typography = Typography,
             shapes = AppShapes,
-            content = content
-        )
+        ) {
+            ConfigureSystemBars()
+            content()
+        }
     }
 }

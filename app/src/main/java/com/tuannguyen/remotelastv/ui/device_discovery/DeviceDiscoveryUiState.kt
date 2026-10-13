@@ -1,20 +1,12 @@
 package com.tuannguyen.remotelastv.ui.device_discovery
 
+import com.tuannguyen.remotelastv.domain.model.DiscoveryStatus
 import com.tuannguyen.remotelastv.domain.model.Television
 
-sealed interface DeviceDiscoveryUiState {
-
-    data class Scanning(
-        val televisions: List<Television> = emptyList(),
-    ) : DeviceDiscoveryUiState
-
-    data object Empty : DeviceDiscoveryUiState
-
-    data class Error(
-        val message: String,
-    ) : DeviceDiscoveryUiState
-
-    data class Success(
-        val televisions: List<Television>,
-    ) : DeviceDiscoveryUiState
+data class DeviceDiscoveryUiState(
+    val status: DiscoveryStatus = DiscoveryStatus.Scanning,
+    val televisions: List<Television> = emptyList(),
+) {
+    val isEmpty: Boolean
+        get() = status is DiscoveryStatus.Completed && televisions.isEmpty()
 }

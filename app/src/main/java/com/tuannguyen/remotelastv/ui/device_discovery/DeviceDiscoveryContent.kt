@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,6 +49,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.tuannguyen.remotelastv.R
+import com.tuannguyen.remotelastv.domain.model.DiscoveryStatus
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
 import com.tuannguyen.remotelastv.ui.theme.Dimens
@@ -66,11 +66,10 @@ fun DeviceDiscoveryContent(
 ) {
     Scaffold(
         modifier = modifier,
-        contentWindowInsets = WindowInsets(0),
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(title = {
-                Text("Scan Televisions")
+                Text(stringResource(R.string.scan_televisions))
             }, navigationIcon = {
                 IconButton(
                     onClick = onClose
@@ -90,8 +89,8 @@ fun DeviceDiscoveryContent(
                 .padding(innerPadding)
                 .padding(horizontal = Dimens.screenPadding),
         ) {
-            when (uiState) {
-                is DeviceDiscoveryUiState.Scanning -> {
+            when (val status = uiState.status) {
+                is DiscoveryStatus.Scanning -> {
                     DiscoveryContent(
                         message = stringResource(
                             R.string.televisions_discovery_message,
@@ -103,16 +102,9 @@ fun DeviceDiscoveryContent(
                     )
                 }
 
-                DeviceDiscoveryUiState.Empty -> {
-                    DiscoveryEmptyContent(
-                        onRetry = onRetry,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                is DeviceDiscoveryUiState.Error -> {
+                is DiscoveryStatus.Error -> {
                     DiscoveryContent(
-                        message = uiState.message,
+                        message = status.message,
                         modifier = Modifier.weight(1f),
                         showLoading = false,
                         action = {
@@ -127,35 +119,45 @@ fun DeviceDiscoveryContent(
                     )
                 }
 
-                is DeviceDiscoveryUiState.Success -> {
-                    Spacer(modifier = Modifier.height(Dimens.Space.md))
-
-                    Column(
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        TelevisionList(
-                            televisions = uiState.televisions,
-                            onTelevisionClick = onTelevisionClick,
+                is DiscoveryStatus.Completed -> {
+                    if (uiState.isEmpty) {
+                        DiscoveryEmptyContent(
+                            onRetry = onRetry,
                             modifier = Modifier.weight(1f),
                         )
+                    } else {
+                        Spacer(modifier = Modifier.height(Dimens.Space.md))
 
-                        Button(
-                            onClick = onRetry,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = Dimens.Space.md, horizontal = Dimens.Space.xxl),
+                        Column(
+                            modifier = Modifier.weight(1f),
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = stringResource(
-                                    R.string.settings_back
-                                ),
-                                modifier = Modifier.padding(end = Dimens.Space.xs),
+                            TelevisionList(
+                                televisions = uiState.televisions,
+                                onTelevisionClick = onTelevisionClick,
+                                modifier = Modifier.weight(1f),
                             )
 
-                            Text(
-                                text = "Rescan",
-                            )
+                            Button(
+                                onClick = onRetry,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        vertical = Dimens.Space.md,
+                                        horizontal = Dimens.Space.xxl
+                                    ),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = stringResource(
+                                        R.string.settings_back
+                                    ),
+                                    modifier = Modifier.padding(end = Dimens.Space.xs),
+                                )
+
+                                Text(
+                                    text = "Rescan",
+                                )
+                            }
                         }
                     }
                 }
@@ -189,6 +191,7 @@ private fun DiscoveryContent(
             Text(
                 text = message,
                 style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
@@ -293,7 +296,7 @@ private fun TelevisionList(
     ) {
         items(
             items = televisions,
-            key = { television -> television.id },
+            key = { television -> television.ipAddress },
         ) { television ->
             TelevisionItem(
                 television = television,
@@ -409,7 +412,7 @@ private fun TelevisionBrandLogo(
 private fun DeviceDiscoveryScanningPreview() {
     RemoteLASTvTheme {
         DeviceDiscoveryContent(
-            uiState = DeviceDiscoveryUiState.Empty,
+            uiState = DeviceDiscoveryUiState(DiscoveryStatus.Scanning),
             onClose = {},
             onRetry = {},
             onTelevisionClick = {},
@@ -422,32 +425,49 @@ private fun DeviceDiscoveryScanningPreview() {
 private fun DeviceDiscoveryScanningWithDevicesPreview() {
     RemoteLASTvTheme {
         DeviceDiscoveryContent(
-            uiState = DeviceDiscoveryUiState.Scanning(
+            uiState = DeviceDiscoveryUiState(
+                DiscoveryStatus.Scanning,
                 televisions = listOf(
                     Television(
-                        id = "tv-1",
+                        ipAddress = "tv-1",
                         name = "Living Room TV",
                     ), Television(
-                        id = "tv-2",
+                        ipAddress = "tv-2",
                         name = "Bedroom TV",
                     ), Television(
-                        id = "tv-3",
+                        ipAddress = "tv-3",
                         name = "Living Room TV",
                         brand = TelevisionBrand.SAMSUNG,
                     ), Television(
-                        id = "tv-4",
+                        ipAddress = "tv-4",
                         name = "Bedroom TV",
                         brand = TelevisionBrand.ANDROID_TV,
                     ), Television(
-                        id = "tv-5",
+                        ipAddress = "tv-5",
+                        name = "Living Room TV",
+                        brand = TelevisionBrand.LG,
+                    ), Television(
+                        ipAddress = "tv-61",
+                        name = "Bedroom TV",
+                        brand = TelevisionBrand.ANDROID_TV,
+                    ), Television(
+                        ipAddress = "tv-6",
                         name = "Living Room TV",
                         brand = TelevisionBrand.SAMSUNG,
                     ), Television(
-                        id = "tv-6",
+                        ipAddress = "tv-7",
+                        name = "Bedroom TV",
+                        brand = TelevisionBrand.ANDROID_TV,
+                    ), Television(
+                        ipAddress = "tv-8",
+                        name = "Living Room TV",
+                        brand = TelevisionBrand.SAMSUNG,
+                    ), Television(
+                        ipAddress = "tv-9",
                         name = "Bedroom TV",
                         brand = TelevisionBrand.ANDROID_TV,
                     )
-                ),
+                )
             ),
             onClose = {},
             onRetry = {},
@@ -461,44 +481,45 @@ private fun DeviceDiscoveryScanningWithDevicesPreview() {
 private fun DeviceDiscoverySuccessWithDevicesPreview() {
     RemoteLASTvTheme {
         DeviceDiscoveryContent(
-            uiState = DeviceDiscoveryUiState.Success(
+            uiState = DeviceDiscoveryUiState(
+                status = DiscoveryStatus.Completed,
                 televisions = listOf(
                     Television(
-                        id = "tv-1",
+                        ipAddress = "tv-1",
                         name = "Living Room TV",
                     ), Television(
-                        id = "tv-2",
+                        ipAddress = "tv-2",
                         name = "Bedroom TV",
                     ), Television(
-                        id = "tv-3",
+                        ipAddress = "tv-3",
                         name = "Living Room TV",
                         brand = TelevisionBrand.SAMSUNG,
                     ), Television(
-                        id = "tv-4",
-                        name = "Bedroom TV",
-                        brand = TelevisionBrand.ANDROID_TV,
-                    ), Television(
-                        id = "tv-5",
-                        name = "Living Room TV",
-                        brand = TelevisionBrand.SAMSUNG,
-                    ), Television(
-                        id = "tv-61",
+                        ipAddress = "tv-4",
                         name = "Bedroom TV",
                         brand = TelevisionBrand.ANDROID_TV,
                     ), Television(
-                        id = "tv-6",
+                        ipAddress = "tv-5",
                         name = "Living Room TV",
                         brand = TelevisionBrand.SAMSUNG,
                     ), Television(
-                        id = "tv-7",
+                        ipAddress = "tv-61",
                         name = "Bedroom TV",
                         brand = TelevisionBrand.ANDROID_TV,
                     ), Television(
-                        id = "tv-8",
+                        ipAddress = "tv-6",
                         name = "Living Room TV",
                         brand = TelevisionBrand.SAMSUNG,
                     ), Television(
-                        id = "tv-9",
+                        ipAddress = "tv-7",
+                        name = "Bedroom TV",
+                        brand = TelevisionBrand.ANDROID_TV,
+                    ), Television(
+                        ipAddress = "tv-8",
+                        name = "Living Room TV",
+                        brand = TelevisionBrand.SAMSUNG,
+                    ), Television(
+                        ipAddress = "tv-9",
                         name = "Bedroom TV",
                         brand = TelevisionBrand.ANDROID_TV,
                     )

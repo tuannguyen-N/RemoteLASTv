@@ -1,10 +1,18 @@
 package com.tuannguyen.remotelastv.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.tuannguyen.remotelastv.ui.device_discovery.DeviceDiscoveryScreen
 import com.tuannguyen.remotelastv.ui.home.HomeScreen
 import com.tuannguyen.remotelastv.ui.settings.SettingsScreen
 import com.tuannguyen.remotelastv.ui.settings_connection_display.ConnectionDisplayScreen
@@ -18,17 +26,42 @@ fun AppNavHost(
     NavHost(
         navController = navController,
         startDestination = Route.Home,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        enterTransition = {
+            fadeIn(tween(250))
+        },
+        exitTransition = {
+            fadeOut(tween(200))
+        },
+        popEnterTransition = {
+            fadeIn(tween(250))
+        },
+        popExitTransition = {
+            fadeOut(tween(200))
+        },
     ) {
         composable<Route.Home> {
             HomeScreen(
                 onNavigateToSettings = {
                     navController.navigate(Route.Settings)
-                }
+                },
+                onNavigateToDeviceDiscovery = {
+                    navController.navigate(Route.DeviceDiscovery)
+                },
             )
         }
+
+        composable<Route.DeviceDiscovery> {
+            DeviceDiscoveryScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
         composable<Route.Settings> {
             SettingsScreen(
-                onClose = { navController.popBackStack() },
+                onNavigateBack = { navController.popBackStack() },
                 onAction = { action -> navController.navigate(action) },
             )
         }

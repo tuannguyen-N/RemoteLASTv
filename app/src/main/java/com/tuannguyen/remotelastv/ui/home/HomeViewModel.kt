@@ -48,10 +48,6 @@ class HomeViewModel @Inject constructor(
         _effects.trySend(HomeEffect.ShowMessage("Settings screen is not implemented yet"))
     }
 
-    fun onDeviceClick() {
-        _effects.trySend(HomeEffect.ShowMessage("Device selector is not implemented yet"))
-    }
-
     fun onAppClick(appName: TvApp) {
         // TODO: Implement launching the selected TV app.
         _effects.trySend(HomeEffect.ShowMessage("$appName control is not connected yet"))
