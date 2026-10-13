@@ -88,7 +88,7 @@ fun SettingsContent(
                 modifier = Modifier.padding(
                     start = Dimens.screenPadding,
                     end = Dimens.screenPadding,
-                    top = Dimens.Space.xl,
+                    top = Dimens.Space.md,
                     bottom = Dimens.Space.sm,
                 ),
             )
@@ -100,9 +100,15 @@ fun SettingsContent(
                     onClick = { onAction(SettingsAction.Navigate(Route.RemoteLayout)) },
                 )
                 SettingsItem(
-                    title = stringResource(R.string.settings_manage_applications),
-                    onClick = { onAction(SettingsAction.Navigate(Route.ManageApplications)) },
+                    title = stringResource(R.string.remote_behavior),
+                    onClick = { onAction(SettingsAction.Navigate(Route.RemoteBehavior)) },
                 )
+
+                SettingsItem(
+                    title = "Connection & display",
+                    onClick = { onAction(SettingsAction.Navigate(Route.ConnectionDisplay)) },
+                )
+
                 SettingsItem(
                     title = stringResource(R.string.settings_connected_devices),
                     onClick = { onAction(SettingsAction.Navigate(Route.ConnectedDevices)) },
@@ -116,13 +122,12 @@ fun SettingsContent(
                 color = MaterialTheme.colorScheme.outlineVariant,
             )
 
-            // Application section
             SettingsSectionTitle(
                 title = stringResource(R.string.settings_section_application),
                 modifier = Modifier.padding(
                     start = Dimens.screenPadding,
                     end = Dimens.screenPadding,
-                    top = Dimens.Space.xl,
+                    top = Dimens.Space.md,
                     bottom = Dimens.Space.sm,
                 ),
             )

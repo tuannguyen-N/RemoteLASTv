@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -59,6 +60,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -284,9 +286,11 @@ private fun ColumnScope.PadSection(
     }
 }
 
+
 @Composable
 private fun TouchPad(
     modifier: Modifier = Modifier,
+    onRemoteButtonClick: (RemoteKey) -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -302,11 +306,46 @@ private fun TouchPad(
                     )
                 ),
                 shape = MaterialTheme.shapes.extraLarge,
-            ),
+            )
+            .pointerInput(Unit) {
+                var totalX = 0f
+                var totalY = 0f
+
+                detectDragGestures(
+                    onDragStart = {
+                        totalX = 0f
+                        totalY = 0f
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        totalX += dragAmount.x
+                        totalY += dragAmount.y
+                    },
+                    onDragEnd = {
+                        val threshold = 50.dp.toPx()
+
+                        if (maxOf(
+                                kotlin.math.abs(totalX),
+                                kotlin.math.abs(totalY)
+                            ) < threshold
+                        ) {
+                            return@detectDragGestures
+                        }
+
+                        if (kotlin.math.abs(totalX) >
+                            kotlin.math.abs(totalY)
+                        ) {
+                            if (totalX > 0) onRemoteButtonClick(RemoteKey.RIGHT)
+                            else onRemoteButtonClick(RemoteKey.LEFT)
+                        } else {
+                            if (totalY > 0) onRemoteButtonClick(RemoteKey.DOWN)
+                            else onRemoteButtonClick(RemoteKey.UP)
+                        }
+                    }
+                )
+            },
         contentAlignment = Alignment.Center,
-    ) {
-        // TODO: xử lý cử chỉ vuốt / chạm
-    }
+    ) {}
 }
 
 @Composable

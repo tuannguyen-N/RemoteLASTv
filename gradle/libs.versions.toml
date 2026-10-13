@@ -18,6 +18,7 @@ composeBom = "2024.09.00"
 lifecycleRuntimeKtxVersion = "2.8.7"
 lifecycleViewmodelCompose = "2.8.7"
 lifecycleViewmodelKtx = "2.8.7"
+lottieCompose = "6.7.1"
 navigationCompose = "2.9.8"
 room3Compiler = "3.0.3"
 room3Runtime = "3.0.3"
@@ -51,6 +52,7 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

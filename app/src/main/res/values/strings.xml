@@ -36,7 +36,6 @@
     <string name="remote_layout_menu_action">Menu</string>
     <string name="settings_back">Back</string>
     <string name="settings_navigation">Navigation</string>
-    <string name="settings_quick_access">Quick access</string>
     <string name="settings_touchpad">Touchpad</string>
     <string name="settings_touchpad_description">Swipe based touchpad, quick and convenient.</string>
     <string name="settings_dpad">D-pad</string>
@@ -47,5 +46,31 @@
     <string name="settings_colored_buttons_description">Red, Green, Yellow and Blue buttons</string>
     <string name="settings_media_buttons">Media Buttons</string>
     <string name="settings_media_buttons_description">Media previous, rewind, play/pause, fast forward and next buttons</string>
-
+    <string name="media_controls">Media Controls</string>
+    <string name="show_or_hide_the_play_pause_next_and_previous_controls_on_your_remote">Show or hide the play/pause, next, and previous controls on your remote.</string>
+    <string name="haptic_feedback">Haptic Feedback</string>
+    <string name="vibrate_when_buttons_are_pressed">Vibrate when buttons are pressed.</string>
+    <string name="smooth_press">Smooth Press</string>
+    <string name="repeat_commands_while_holding_buttons">Repeat commands while holding buttons.</string>
+    <string name="remote_behavior">Remote behavior</string>
+    <string name="connection_display">Connection &amp; display</string>
+    <string name="auto_reconnect">Auto Reconnect</string>
+    <string name="auto_reconnect_description">Reconnect to your last TV automatically.</string>
+    <string name="keep_screen_awake">Keep Screen Awake</string>
+    <string name="keep_screen_awake_description">Prevent the screen from turning off while in use.</string>
+    <string name="theater_mode">Theater Mode</string>
+    <string name="theater_mode_description">Dim the screen when idle.</string>
+    <string name="televisions_title">Televisions</string>
+    <string name="televisions_close_symbol">×</string>
+    <string name="televisions_device_symbol">TV</string>
+    <string name="televisions_discovery_message">
+    Please ensure your television is switched on and connect to the same Wi-Fi network.
+</string>
+    <string name="televisions_empty_message">
+    No televisions found. Please ensure your television is switched on and connect to the same Wi-Fi network.
+</string>
+    <string name="televisions_available_label">Available on your network</string>
+    <string name="televisions_connect_action">Connect</string>
+    <string name="televisions_retry">Try again</string>
+    <string name="tv_brand_logo">TV brand logo</string>
 </resources>

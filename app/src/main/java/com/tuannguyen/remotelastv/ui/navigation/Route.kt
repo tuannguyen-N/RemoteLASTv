@@ -15,7 +15,10 @@ sealed interface Route {
     data object RemoteLayout: Route
 
     @Serializable
-    data object ManageApplications: Route
+    data object RemoteBehavior: Route
+
+    @Serializable
+    data object ConnectionDisplay: Route
 
     @Serializable
     data object ConnectedDevices: Route

@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.ui.settings
+package com.tuannguyen.remotelastv.ui.settings_remote_layout
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -6,18 +6,23 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -32,15 +37,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
-import com.tuannguyen.remotelastv.ui.settings_remote_layout.RemoteLayoutUiState
+import com.tuannguyen.remotelastv.ui.common.CustomSwitch
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 
 private val NavigationPreviewSize = Dimens.Size.iconLarge * 3
 private val NavigationImageSize = Dimens.Size.iconLarge * 3
-private val RadioIndicatorSize = Dimens.Size.iconMedium
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,9 +53,7 @@ fun RemoteLayoutContent(
     uiState: RemoteLayoutUiState,
     onNavigateBack: () -> Unit,
     onNavigationModeChanged: (NavigationMode) -> Unit,
-    onApplicationsChanged: (Boolean) -> Unit,
-    onColoredButtonsChanged: (Boolean) -> Unit,
-    onMediaButtonsChanged: (Boolean) -> Unit,
+    onMediaControlsChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -61,7 +64,7 @@ fun RemoteLayoutContent(
                     Text(stringResource(R.string.settings_remote_layout))
                 },
                 navigationIcon = {
-                    androidx.compose.material3.IconButton(
+                    IconButton(
                         onClick = onNavigateBack
                     ) {
                         Icon(
@@ -84,9 +87,18 @@ fun RemoteLayoutContent(
                 .padding(bottom = Dimens.Space.xl),
             verticalArrangement = Arrangement.spacedBy(Dimens.Space.md)
         ) {
+            Spacer(Modifier.height(0.dp))
 
-            SettingsSectionTitle(
-                text = stringResource(R.string.settings_navigation),
+            NavigationOptionCard(
+                title = stringResource(R.string.settings_dpad),
+                description = stringResource(
+                    R.string.settings_dpad_description
+                ),
+                iconRes = R.drawable.ic_d_navigation,
+                selected = uiState.navigationMode == NavigationMode.D_PAD,
+                onClick = {
+                    onNavigationModeChanged(NavigationMode.D_PAD)
+                }
             )
 
             NavigationOptionCard(
@@ -101,54 +113,11 @@ fun RemoteLayoutContent(
                 }
             )
 
-            NavigationOptionCard(
-                title = stringResource(R.string.settings_dpad),
-                description = stringResource(
-                    R.string.settings_dpad_description
-                ),
-                iconRes = R.drawable.ic_d_navigation,
-                selected = uiState.navigationMode == NavigationMode.D_PAD,
-                onClick = {
-                    onNavigationModeChanged(NavigationMode.D_PAD)
-                }
-            )
-
-
-            SettingsSectionTitle(
-                text = stringResource(R.string.settings_quick_access),
-            )
-
-            QuickAccessOptionCard(
-                title = stringResource(R.string.settings_applications),
-                description = stringResource(
-                    R.string.settings_applications_description
-                ),
-                selected = uiState.showApplications,
-                onClick = {
-                    onApplicationsChanged(!uiState.showApplications)
-                }
-            )
-
-            QuickAccessOptionCard(
-                title = stringResource(R.string.settings_colored_buttons),
-                description = stringResource(
-                    R.string.settings_colored_buttons_description
-                ),
-                selected = uiState.showColoredButtons,
-                onClick = {
-                    onColoredButtonsChanged(!uiState.showColoredButtons)
-                }
-            )
-
-            QuickAccessOptionCard(
-                title = stringResource(R.string.settings_media_buttons),
-                description = stringResource(
-                    R.string.settings_media_buttons_description
-                ),
-                selected = uiState.showMediaButtons,
-                onClick = {
-                    onMediaButtonsChanged(!uiState.showMediaButtons)
-                }
+            PreferenceRow(
+                title = stringResource(R.string.media_controls),
+                description = stringResource(R.string.show_or_hide_the_play_pause_next_and_previous_controls_on_your_remote),
+                checked = uiState.showMediaButtons,
+                onCheckedChange = onMediaControlsChanged
             )
         }
     }
@@ -180,6 +149,13 @@ private fun NavigationOptionCard(
         selected = selected,
         onClick = onClick
     ) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(Dimens.Space.sm)
+        ) {
+            SelectionIndicator(selected = selected)
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -213,61 +189,44 @@ private fun NavigationOptionCard(
                     contentDescription = null,
                     modifier = Modifier.size(NavigationImageSize)
                 )
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                ) {
-                    SelectionIndicator(selected = selected)
-                }
             }
         }
     }
 }
 
 @Composable
-private fun QuickAccessOptionCard(
+private fun PreferenceRow(
     title: String,
     description: String,
-    selected: Boolean,
-    onClick: () -> Unit
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
 ) {
-    SettingsOptionCard(
-        selected = selected,
-        onClick = onClick
+    Row(
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimens.Space.lg)
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(Dimens.Space.xs)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(end = Dimens.Space.xxl),
-                verticalArrangement = Arrangement.spacedBy(Dimens.Space.xs)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
 
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = Dimens.Space.xxs)
-            ) {
-                SelectionIndicator(selected = selected)
-            }
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
+
+        Spacer(Modifier.width(Dimens.Space.md))
+
+        CustomSwitch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
     }
 }
 
@@ -275,7 +234,7 @@ private fun QuickAccessOptionCard(
 private fun SettingsOptionCard(
     selected: Boolean,
     onClick: () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable BoxScope.() -> Unit
 ) {
     val borderColor = if (selected) {
         MaterialTheme.colorScheme.primary
@@ -302,7 +261,9 @@ private fun SettingsOptionCard(
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        content()
+        Box {
+            content()
+        }
     }
 }
 
@@ -313,7 +274,7 @@ private fun SelectionIndicator(
     RadioButton(
         selected = selected,
         onClick = null,
-        modifier = Modifier.size(RadioIndicatorSize)
+        modifier = Modifier.size(Dimens.Size.iconMedium)
     )
 }
 
@@ -325,9 +286,7 @@ private fun SettingsContentPreview() {
             uiState = RemoteLayoutUiState(),
             onNavigateBack = {},
             onNavigationModeChanged = {},
-            onApplicationsChanged = {},
-            onColoredButtonsChanged = {},
-            onMediaButtonsChanged = {}
+            onMediaControlsChanged = {}
         )
     }
 }

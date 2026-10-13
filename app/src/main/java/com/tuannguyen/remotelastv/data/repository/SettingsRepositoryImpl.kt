@@ -27,6 +27,11 @@ class SettingsRepositoryImpl @Inject constructor(
     private object Keys {
         val SHOW_MEDIA_BUTTONS = booleanPreferencesKey("show_media_buttons")
         val NAVIGATION_MODE = stringPreferencesKey("navigation_mode")
+        val HAPTIC_FEEDBACK_ENABLED = booleanPreferencesKey("haptic_feedback_enabled")
+        val SMOOTH_PRESS_ENABLED = booleanPreferencesKey("smooth_press_enabled")
+        val AUTO_RECONNECT_ENABLED = booleanPreferencesKey("auto_reconnect_enabled")
+        val KEEP_SCREEN_AWAKE_ENABLED = booleanPreferencesKey("keep_screen_awake_enabled")
+        val THEATER_MODE_ENABLED = booleanPreferencesKey("theater_mode_enabled")
     }
 
     override val remoteSettings: Flow<RemoteSettings> = context.settingsDataStore.data
@@ -40,6 +45,11 @@ class SettingsRepositoryImpl @Inject constructor(
                 navigationMode = NavigationMode.entries
                     .firstOrNull { it.name == prefs[Keys.NAVIGATION_MODE] }
                     ?: default.navigationMode,
+                isHapticFeedbackEnabled = prefs[Keys.HAPTIC_FEEDBACK_ENABLED] ?: default.isHapticFeedbackEnabled,
+                isSmoothPressEnabled = prefs[Keys.SMOOTH_PRESS_ENABLED] ?: default.isSmoothPressEnabled,
+                isAutoReconnectEnabled = prefs[Keys.AUTO_RECONNECT_ENABLED] ?: default.isAutoReconnectEnabled,
+                isKeepScreenAwakeEnabled = prefs[Keys.KEEP_SCREEN_AWAKE_ENABLED] ?: default.isKeepScreenAwakeEnabled,
+                isTheaterModeEnabled = prefs[Keys.THEATER_MODE_ENABLED] ?: default.isTheaterModeEnabled,
             )
         }
 
@@ -49,5 +59,25 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setNavigationMode(mode: NavigationMode) {
         context.settingsDataStore.edit { it[Keys.NAVIGATION_MODE] = mode.name }
+    }
+
+    override suspend fun setHapticFeedbackEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.HAPTIC_FEEDBACK_ENABLED] = enabled }
+    }
+
+    override suspend fun setSmoothPressEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.SMOOTH_PRESS_ENABLED] = enabled }
+    }
+
+    override suspend fun setAutoReconnectEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.AUTO_RECONNECT_ENABLED] = enabled }
+    }
+
+    override suspend fun setKeepScreenAwakeEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.KEEP_SCREEN_AWAKE_ENABLED] = enabled }
+    }
+
+    override suspend fun setTheaterModeEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.THEATER_MODE_ENABLED] = enabled }
     }
 }

@@ -22,5 +22,5 @@ object Dimens {
         val borderThin = 1.dp
     }
 
-    val screenPadding = Space.md
+    val screenPadding = 20.dp
 }
