@@ -1,6 +1,6 @@
 package com.tuannguyen.remotelastv.domain.model
 
-enum class RemoteKey {
+enum class TvKey {
     UP, DOWN, LEFT, RIGHT, OK,
     BACK,
     HOME,

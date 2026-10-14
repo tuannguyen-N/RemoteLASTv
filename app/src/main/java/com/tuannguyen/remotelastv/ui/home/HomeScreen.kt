@@ -19,10 +19,12 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(viewModel) {
-        viewModel.effects.collect { effect ->
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
             when (effect) {
-                is HomeEffect.ShowMessage -> snackbarHostState.showSnackbar(effect.message)
+                is HomeEffect.ShowMessage -> {
+                    snackbarHostState.showSnackbar(effect.message)
+                }
             }
         }
     }
@@ -31,7 +33,6 @@ fun HomeScreen(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onSettingsClick = {
-            viewModel.onSettingsClick()
             onNavigateToSettings()
         },
         onChangeTelevision = onNavigateToDeviceDiscovery,

@@ -9,6 +9,7 @@ class RemoteLASTvApp : Application(){
     override fun onCreate() {
         super.onCreate()
         DiscoveryManager.init(this)
+        DiscoveryManager.getInstance().pairingLevel = DiscoveryManager.PairingLevel.ON
         DiscoveryManager.getInstance().registerDefaultDeviceTypes()
     }
 }

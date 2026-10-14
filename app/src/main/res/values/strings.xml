@@ -63,15 +63,18 @@
     <string name="televisions_title">Televisions</string>
     <string name="televisions_close_symbol">×</string>
     <string name="televisions_device_symbol">TV</string>
-    <string name="televisions_discovery_message">
-    Please ensure your television is switched on and connect to the same Wi-Fi network.
-</string>
-    <string name="televisions_empty_message">
-    No televisions found. Please ensure your television is switched on and connect to the same Wi-Fi network.
-</string>
+    <string name="televisions_discovery_message">Please ensure your television is switched on and connect to the same Wi-Fi network.</string>
+    <string name="televisions_empty_message">No televisions found. Please ensure your television is switched on and connect to the same Wi-Fi network.</string>
     <string name="televisions_available_label">Available on your network</string>
     <string name="televisions_connect_action">Connect</string>
     <string name="televisions_retry">Try again</string>
     <string name="tv_brand_logo">TV brand logo</string>
     <string name="scan_televisions">Scan Televisions</string>
+    <string name="no_tvs_found">No TVs found</string>
+    <string name="make_sure_your_tv_is_turned_on_and_connected_to_the_same_wi_fi_network_as_your_phone">Make sure your TV is turned on and connected to the same Wi-Fi network as your phone.</string>
+    <string name="connection_success_title">Connected!</string>
+    <string name="connection_success_message">Successfully connected to %1$s. Your TV remote is ready to use.</string>
+    <string name="connection_success_continue">Start Remote</string>
+    <string name="televisions_disconnect_action">Disconnect</string>
+    <string name="choose_a_tv">Choose a TV</string>
 </resources>

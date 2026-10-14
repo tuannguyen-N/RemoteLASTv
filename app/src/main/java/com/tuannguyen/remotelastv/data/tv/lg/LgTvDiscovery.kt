@@ -13,12 +13,13 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import java.util.Locale
 import java.util.Locale.getDefault
 
 class LgTvDiscovery @Inject constructor(
     private val registry: LgDeviceRegistry
 ) : TvDiscoveryRepository {
+
+    override val brand = TelevisionBrand.LG
 
     override fun startScan(): Flow<Television> = callbackFlow {
         val manager = DiscoveryManager.getInstance()
@@ -43,7 +44,7 @@ class LgTvDiscovery @Inject constructor(
 
             override fun onDeviceRemoved(m: DiscoveryManager, d: ConnectableDevice) {
                 Log.d("LgScan", "REMOVED ${d.friendlyName}")
-                registry.remove(d.ipAddress)
+                registry.remove(d.stableId())
             }
 
             override fun onDiscoveryFailed(m: DiscoveryManager, e: ServiceCommandError) {
@@ -54,7 +55,14 @@ class LgTvDiscovery @Inject constructor(
             private fun handle(d: ConnectableDevice) {
                 if (d.getServiceByName(WebOSTVService.ID) == null) return
                 registry.put(d)
-                trySend(Television(d.id, formatName(d.friendlyName), TelevisionBrand.LG))
+                trySend(
+                    Television(
+                        id = d.stableId(),
+                        ipAddress = d.ipAddress,
+                        name = formatName(d.friendlyName),
+                        brand = TelevisionBrand.LG,
+                    )
+                )
             }
         }
 

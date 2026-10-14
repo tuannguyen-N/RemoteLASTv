@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.ui.common
+package com.tuannguyen.remotelastv.ui.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween

@@ -63,17 +63,20 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tuannguyen.remotelastv.R
+import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
 import com.tuannguyen.remotelastv.domain.model.NumberPadItem
-import com.tuannguyen.remotelastv.domain.model.RemoteKey
 import com.tuannguyen.remotelastv.domain.model.TvApp
+import com.tuannguyen.remotelastv.domain.model.TvKey
 import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.bounceClick
 import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
@@ -83,6 +86,7 @@ import com.tuannguyen.remotelastv.ui.common.safeClickable
 import com.tuannguyen.remotelastv.ui.common.wedgeShape
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
+import com.tuannguyen.remotelastv.ui.theme.extendedColors
 import kotlinx.coroutines.launch
 
 @Composable
@@ -92,7 +96,7 @@ fun HomeContent(
     onChangeTelevision: () -> Unit,
     onPowerClick: () -> Unit,
     onAppClick: (TvApp) -> Unit,
-    onRemoteButtonClick: (RemoteKey) -> Unit,
+    onRemoteButtonClick: (TvKey) -> Unit,
     onPageSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
@@ -171,31 +175,49 @@ private fun HomeHeader(
         )
         Row(
             modifier = Modifier
+                .weight(1f)
                 .clickableNoEffect(onChangeTelevision)
-                .padding(horizontal = 10.dp),
+                .padding(horizontal = Dimens.Space.sm),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
-            Box(
-                Modifier
-                    .size(9.dp)
-                    .clip(CircleShape)
-                    .background(if (uiState.isConnected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error)
-            )
-            Spacer(Modifier.width(8.dp))
+            val connectionState = uiState.connectionState
+            val isConnected = connectionState is ConnectionState.Connected
+
+            if (isConnected) {
+                Box(
+                    modifier = Modifier
+                        .size(9.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.extendedColors.success),
+                )
+
+                Spacer(Modifier.width(Dimens.Space.xs))
+            }
+
             Text(
-                text = uiState.connectedDeviceName,
+                text = if (connectionState is ConnectionState.Connected) {
+                    connectionState.tv.name
+                } else {
+                    stringResource(R.string.choose_a_tv)
+                },
+                modifier = Modifier
+                    .weight(1f, fill = false),
                 color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 23.sp,
+                fontSize = if (compact) 16.sp else 20.sp,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
+
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = "DropDown",
-                modifier = Modifier.size(Dimens.Size.iconLarge)
+                contentDescription = stringResource(R.string.choose_a_tv),
+                modifier = Modifier.size(Dimens.Size.iconLarge),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+
         HeaderIcon(
             iconRes = R.drawable.ic_on_off,
             description = "Power",
@@ -229,7 +251,7 @@ private fun ColumnScope.PadSection(
     pagerState: PagerState,
     compact: Boolean,
     navigationMode: NavigationMode,
-    onRemoteButtonClick: (RemoteKey) -> Unit,
+    onRemoteButtonClick: (TvKey) -> Unit,
     dpadOverlay: (@Composable BoxScope.() -> Unit)? = null,
 ) {
     Spacer(Modifier.height(if (compact) 12.dp else 16.dp))
@@ -289,7 +311,7 @@ private fun ColumnScope.PadSection(
 @Composable
 private fun TouchPad(
     modifier: Modifier = Modifier,
-    onRemoteButtonClick: (RemoteKey) -> Unit = {},
+    onRemoteButtonClick: (TvKey) -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -334,11 +356,11 @@ private fun TouchPad(
                         if (kotlin.math.abs(totalX) >
                             kotlin.math.abs(totalY)
                         ) {
-                            if (totalX > 0) onRemoteButtonClick(RemoteKey.RIGHT)
-                            else onRemoteButtonClick(RemoteKey.LEFT)
+                            if (totalX > 0) onRemoteButtonClick(TvKey.RIGHT)
+                            else onRemoteButtonClick(TvKey.LEFT)
                         } else {
-                            if (totalY > 0) onRemoteButtonClick(RemoteKey.DOWN)
-                            else onRemoteButtonClick(RemoteKey.UP)
+                            if (totalY > 0) onRemoteButtonClick(TvKey.DOWN)
+                            else onRemoteButtonClick(TvKey.UP)
                         }
                     }
                 )
@@ -374,7 +396,7 @@ private fun PageDots(
 @Composable
 private fun BottomControls(
     compact: Boolean,
-    onRemoteButtonClick: (RemoteKey) -> Unit,
+    onRemoteButtonClick: (TvKey) -> Unit,
     centerContent: @Composable ColumnScope.() -> Unit,
 ) {
     Row(
@@ -392,8 +414,8 @@ private fun BottomControls(
             modifier = Modifier
                 .weight(0.9f)
                 .height(if (compact) 170.dp else 200.dp),
-            onTop = { onRemoteButtonClick(RemoteKey.VOLUME_UP) },
-            onBottom = { onRemoteButtonClick(RemoteKey.VOLUME_DOWN) },
+            onTop = { onRemoteButtonClick(TvKey.VOLUME_UP) },
+            onBottom = { onRemoteButtonClick(TvKey.VOLUME_DOWN) },
         )
         Column(
             modifier = Modifier.weight(3f),
@@ -407,8 +429,8 @@ private fun BottomControls(
             modifier = Modifier
                 .weight(0.9f)
                 .height(if (compact) 170.dp else 200.dp),
-            onTop = { onRemoteButtonClick(RemoteKey.CHANNEL_UP) },
-            onBottom = { onRemoteButtonClick(RemoteKey.CHANNEL_DOWN) },
+            onTop = { onRemoteButtonClick(TvKey.CHANNEL_UP) },
+            onBottom = { onRemoteButtonClick(TvKey.CHANNEL_DOWN) },
         )
     }
 }
@@ -442,7 +464,7 @@ private fun ColumnScope.ClassicControls(
     uiState: HomeUiState,
     pagerState: PagerState,
     compact: Boolean,
-    onRemoteButtonClick: (RemoteKey) -> Unit,
+    onRemoteButtonClick: (TvKey) -> Unit,
     onPageSelected: (Int) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -469,7 +491,7 @@ private fun ColumnScope.ClassicControls(
                 icon = IconSource.Resource(R.drawable.ic_home),
                 description = "Home",
                 modifier = Modifier.weight(1f),
-            ) { onRemoteButtonClick(RemoteKey.HOME) }
+            ) { onRemoteButtonClick(TvKey.HOME) }
 
             val isDPadPage = pagerState.currentPage == 0
 
@@ -498,13 +520,13 @@ private fun ColumnScope.ClassicControls(
                     icon = IconSource.Resource(R.drawable.ic_pause_play),
                     description = "Play/Pause",
                     modifier = Modifier.weight(1f),
-                ) { onRemoteButtonClick(RemoteKey.HOME) }
+                ) { onRemoteButtonClick(TvKey.HOME) }
 
                 RoundControl(
                     icon = IconSource.Resource(R.drawable.ic_next),
                     description = "Skip Next",
                     modifier = Modifier.weight(1f),
-                ) { onRemoteButtonClick(RemoteKey.HOME) }
+                ) { onRemoteButtonClick(TvKey.HOME) }
             }
         }
 
@@ -512,7 +534,7 @@ private fun ColumnScope.ClassicControls(
             MuteControl(
                 isMuted = uiState.isMuted,
                 modifier = Modifier.weight(1f),
-            ) { onRemoteButtonClick(RemoteKey.MUTE) }
+            ) { onRemoteButtonClick(TvKey.MUTE) }
             RoundControl(
                 icon = IconSource.Vector(Icons.Default.Mic),
                 description = "Voice",
@@ -524,7 +546,7 @@ private fun ColumnScope.ClassicControls(
                 icon = IconSource.Resource(R.drawable.ic_return),
                 description = "Back",
                 modifier = Modifier.weight(1f),
-            ) { onRemoteButtonClick(RemoteKey.BACK) }
+            ) { onRemoteButtonClick(TvKey.BACK) }
         }
     }
 }
@@ -539,7 +561,7 @@ private val RingColors = listOf(
 @Composable
 private fun DPad(
     diameter: Dp,
-    onRemoteButtonClick: (RemoteKey) -> Unit,
+    onRemoteButtonClick: (TvKey) -> Unit,
 ) {
     val ringPadding = Dimens.Space.sm
     val disc = diameter - ringPadding * 2
@@ -577,7 +599,7 @@ private fun DPad(
         ) {
             DirectionKey(
                 icon = Icons.Default.KeyboardArrowUp,
-                command = RemoteKey.UP,
+                command = TvKey.UP,
                 centerAngle = 270f,
                 iconAlignment = Alignment.TopCenter,
                 iconPadding = Modifier.padding(top = edge),
@@ -585,7 +607,7 @@ private fun DPad(
             )
             DirectionKey(
                 icon = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                command = RemoteKey.LEFT,
+                command = TvKey.LEFT,
                 centerAngle = 180f,
                 iconAlignment = Alignment.CenterStart,
                 iconPadding = Modifier.padding(start = edge),
@@ -593,7 +615,7 @@ private fun DPad(
             )
             DirectionKey(
                 icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                command = RemoteKey.RIGHT,
+                command = TvKey.RIGHT,
                 centerAngle = 0f,
                 iconAlignment = Alignment.CenterEnd,
                 iconPadding = Modifier.padding(end = edge),
@@ -601,7 +623,7 @@ private fun DPad(
             )
             DirectionKey(
                 icon = Icons.Default.KeyboardArrowDown,
-                command = RemoteKey.DOWN,
+                command = TvKey.DOWN,
                 centerAngle = 90f,
                 iconAlignment = Alignment.BottomCenter,
                 iconPadding = Modifier.padding(bottom = edge),
@@ -619,7 +641,7 @@ private fun DPad(
                     brush = Brush.sweepGradient(RingColors),
                     shape = CircleShape,
                 )
-                .bounceClick { onRemoteButtonClick(RemoteKey.OK) },
+                .bounceClick { onRemoteButtonClick(TvKey.OK) },
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -655,7 +677,7 @@ private val numberPadRows = listOf(
 
 @Composable
 private fun NumberPad(
-    onRemoteKeyClick: (RemoteKey) -> Unit,
+    onRemoteKeyClick: (TvKey) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -679,7 +701,7 @@ private fun NumberPad(
                                     .fillMaxHeight(),
                                 onClick = {
                                     onRemoteKeyClick(
-                                        RemoteKey.valueOf("NUMBER_${item.value}")
+                                        TvKey.valueOf("NUMBER_${item.value}")
                                     )
                                 },
                             )
@@ -692,7 +714,7 @@ private fun NumberPad(
                                     .weight(1f)
                                     .fillMaxHeight(),
                                 onClick = {
-                                    onRemoteKeyClick(RemoteKey.DELETE)
+                                    onRemoteKeyClick(TvKey.DELETE)
                                 },
                             )
                         }
@@ -801,11 +823,11 @@ private fun HeaderIcon(
 @Composable
 private fun DirectionKey(
     icon: ImageVector,
-    command: RemoteKey,
+    command: TvKey,
     centerAngle: Float,
     iconAlignment: Alignment,
     iconPadding: Modifier,
-    onRemoteButtonClick: (RemoteKey) -> Unit,
+    onRemoteButtonClick: (TvKey) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val shape = remember(centerAngle) { wedgeShape(centerAngle) }

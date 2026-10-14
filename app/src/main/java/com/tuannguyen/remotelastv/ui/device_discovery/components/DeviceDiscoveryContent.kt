@@ -1,8 +1,7 @@
-package com.tuannguyen.remotelastv.ui.device_discovery
+package com.tuannguyen.remotelastv.ui.device_discovery.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +22,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.outlined.TvOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,119 +50,150 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.tuannguyen.remotelastv.R
+import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.DiscoveryStatus
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
+import com.tuannguyen.remotelastv.ui.components.DialogLoading
+import com.tuannguyen.remotelastv.ui.device_discovery.DeviceDiscoveryUiState
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
+import com.tuannguyen.remotelastv.ui.theme.extendedColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceDiscoveryContent(
     uiState: DeviceDiscoveryUiState,
+    successTvName: String?,
     onClose: () -> Unit,
     onRetry: () -> Unit,
     onTelevisionClick: (Television) -> Unit,
+    onDisconnectClick: (Television) -> Unit,
+    onReturnHome: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Scaffold(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(title = {
-                Text(stringResource(R.string.scan_televisions))
-            }, navigationIcon = {
-                IconButton(
-                    onClick = onClose
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(
-                            R.string.settings_back
-                        )
-                    )
-                }
-            })
-        }) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = Dimens.screenPadding),
-        ) {
-            when (val status = uiState.status) {
-                is DiscoveryStatus.Scanning -> {
-                    DiscoveryContent(
-                        message = stringResource(
-                            R.string.televisions_discovery_message,
-                        ),
-                        modifier = Modifier.weight(1f),
-                        showLoading = true,
-                        televisions = uiState.televisions,
-                        onTelevisionClick = onTelevisionClick,
-                    )
-                }
+    val connectedTv = (uiState.connectionState as? ConnectionState.Connected)?.tv
 
-                is DiscoveryStatus.Error -> {
-                    DiscoveryContent(
-                        message = status.message,
-                        modifier = Modifier.weight(1f),
-                        showLoading = false,
-                        action = {
-                            Button(onClick = onRetry) {
-                                Text(
-                                    text = stringResource(
-                                        R.string.televisions_retry
+    Box(modifier = modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = modifier.fillMaxSize(),
+            containerColor = MaterialTheme.colorScheme.background,
+            topBar = {
+                TopAppBar(title = {
+                    Text(stringResource(R.string.scan_televisions))
+                }, navigationIcon = {
+                    IconButton(
+                        onClick = onClose
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(
+                                R.string.settings_back
+                            )
+                        )
+                    }
+                })
+            }) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = Dimens.screenPadding),
+            ) {
+                when (val status = uiState.discoveryStatus) {
+                    is DiscoveryStatus.Scanning -> {
+                        DiscoveryContent(
+                            message = stringResource(
+                                R.string.televisions_discovery_message,
+                            ),
+                            modifier = Modifier.weight(1f),
+                            showLoading = true,
+                            televisions = uiState.televisions,
+                            onTelevisionClick = onTelevisionClick,
+                            onDisconnectClick = onDisconnectClick,
+                            connectedTv = connectedTv,
+                        )
+                    }
+
+                    is DiscoveryStatus.Error -> {
+                        DiscoveryContent(
+                            message = status.message,
+                            modifier = Modifier.weight(1f),
+                            showLoading = false,
+                            action = {
+                                Button(onClick = onRetry) {
+                                    Text(
+                                        text = stringResource(
+                                            R.string.televisions_retry
+                                        )
                                     )
-                                )
-                            }
-                        },
-                    )
-                }
-
-                is DiscoveryStatus.Completed -> {
-                    if (uiState.isEmpty) {
-                        DiscoveryEmptyContent(
-                            onRetry = onRetry,
-                            modifier = Modifier.weight(1f),
+                                }
+                            },
+                            connectedTv = connectedTv
                         )
-                    } else {
-                        Spacer(modifier = Modifier.height(Dimens.Space.md))
+                    }
 
-                        Column(
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            TelevisionList(
-                                televisions = uiState.televisions,
-                                onTelevisionClick = onTelevisionClick,
+                    is DiscoveryStatus.Completed -> {
+                        if (uiState.isEmpty) {
+                            DiscoveryEmptyContent(
+                                onRetry = onRetry,
                                 modifier = Modifier.weight(1f),
                             )
+                        } else {
+                            Spacer(modifier = Modifier.height(Dimens.Space.md))
 
-                            Button(
-                                onClick = onRetry,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        vertical = Dimens.Space.md,
-                                        horizontal = Dimens.Space.xxl
-                                    ),
+                            Column(
+                                modifier = Modifier.weight(1f),
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = stringResource(
-                                        R.string.settings_back
-                                    ),
-                                    modifier = Modifier.padding(end = Dimens.Space.xs),
+                                TelevisionList(
+                                    televisions = uiState.televisions,
+                                    connectedTv = connectedTv,
+                                    onTelevisionClick = onTelevisionClick,
+                                    onDisconnectClick = onDisconnectClick,
+                                    modifier = Modifier.weight(1f),
                                 )
 
-                                Text(
-                                    text = "Rescan",
-                                )
+                                Button(
+                                    onClick = onRetry,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            vertical = Dimens.Space.md,
+                                            horizontal = Dimens.Space.xxl
+                                        ),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = stringResource(
+                                            R.string.settings_back
+                                        ),
+                                        modifier = Modifier.padding(end = Dimens.Space.xs),
+                                    )
+
+                                    Text(
+                                        text = "Rescan",
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
+        }
+
+        when (uiState.connectionState) {
+            is ConnectionState.Connecting -> {
+                DialogLoading()
+            }
+
+            else -> Unit
+        }
+
+        successTvName?.let { tvName ->
+            DialogConnectionSuccess(
+                televisionName = tvName,
+                onContinue = onReturnHome
+            )
         }
     }
 }
@@ -173,6 +205,8 @@ private fun DiscoveryContent(
     showLoading: Boolean,
     televisions: List<Television> = emptyList(),
     onTelevisionClick: (Television) -> Unit = {},
+    onDisconnectClick: (Television) -> Unit = {},
+    connectedTv: Television? = null,
     action: @Composable (() -> Unit)? = null,
 ) {
     Column(
@@ -199,6 +233,8 @@ private fun DiscoveryContent(
                 televisions = televisions,
                 onTelevisionClick = onTelevisionClick,
                 modifier = Modifier.weight(1f),
+                onDisconnectClick = onDisconnectClick,
+                connectedTv = connectedTv
             )
         }
 
@@ -210,7 +246,6 @@ private fun DiscoveryContent(
         }
     }
 }
-
 
 @Composable
 private fun DiscoveryEmptyContent(
@@ -241,7 +276,7 @@ private fun DiscoveryEmptyContent(
             Spacer(Modifier.height(Dimens.Space.lg))
 
             Text(
-                text = "No TVs found",
+                text = stringResource(R.string.no_tvs_found),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
@@ -251,7 +286,7 @@ private fun DiscoveryEmptyContent(
             Spacer(Modifier.height(Dimens.Space.sm))
 
             Text(
-                text = "Make sure your TV is turned on and connected to the same Wi-Fi network as your phone.",
+                text = stringResource(R.string.make_sure_your_tv_is_turned_on_and_connected_to_the_same_wi_fi_network_as_your_phone),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -286,21 +321,31 @@ private fun DiscoveryLoadingIndicator(
 @Composable
 private fun TelevisionList(
     televisions: List<Television>,
+    connectedTv: Television?,
     onTelevisionClick: (Television) -> Unit,
+    onDisconnectClick: (Television) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Dimens.Space.md),
-        contentPadding = PaddingValues(bottom = Dimens.Space.md)
+        contentPadding = PaddingValues(bottom = Dimens.Space.md),
     ) {
         items(
             items = televisions,
             key = { television -> television.ipAddress },
         ) { television ->
+            val isConnected = television.ipAddress == connectedTv?.ipAddress
+
             TelevisionItem(
                 television = television,
-                onClick = { onTelevisionClick(television) },
+                isConnected = isConnected,
+                onConnectClick = {
+                    onTelevisionClick(television)
+                },
+                onDisconnectClick = {
+                    onDisconnectClick(television)
+                },
             )
         }
     }
@@ -309,13 +354,25 @@ private fun TelevisionList(
 @Composable
 private fun TelevisionItem(
     television: Television,
-    onClick: () -> Unit,
+    isConnected: Boolean,
+    onConnectClick: () -> Unit,
+    onDisconnectClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val buttonColor = if (isConnected) {
+        MaterialTheme.colorScheme.error
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
+    val buttonText = if (isConnected) {
+        stringResource(R.string.televisions_disconnect_action)
+    } else {
+        stringResource(R.string.televisions_connect_action)
+    }
+
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -324,7 +381,7 @@ private fun TelevisionItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Dimens.Space.lg),
+                .padding(Dimens.Space.md),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TelevisionBrandLogo(
@@ -336,40 +393,63 @@ private fun TelevisionItem(
 
             Column(
                 modifier = Modifier.weight(1f),
-            ) {
+
+                ) {
+                if (isConnected) {
+                    ConnectedBanner()
+                }
+
                 Text(
                     text = television.name,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
-                Spacer(modifier = Modifier.height(Dimens.Space.xs))
-
-                Text(
-                    text = stringResource(
-                        R.string.televisions_available_label
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                if (!isConnected) {
+                    Spacer(modifier = Modifier.height(Dimens.Space.xxs))
+                    Text(
+                        text = stringResource(
+                            R.string.televisions_available_label,
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
 
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .height(40.dp),
-                contentAlignment = Alignment.Center,
+            TextButton(
+                onClick = {
+                    if (isConnected) {
+                        onDisconnectClick()
+                    } else {
+                        onConnectClick()
+                    }
+                },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = buttonColor,
+                ),
             ) {
                 Text(
-                    text = stringResource(
-                        R.string.televisions_connect_action
-                    ),
+                    text = buttonText,
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
     }
+}
+
+@Composable
+private fun ConnectedBanner(
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = $$"Connecting",
+        modifier = Modifier.padding(
+            vertical = Dimens.Space.xxs,
+        ),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.extendedColors.success,
+    )
 }
 
 @Composable
@@ -416,6 +496,9 @@ private fun DeviceDiscoveryScanningPreview() {
             onClose = {},
             onRetry = {},
             onTelevisionClick = {},
+            onReturnHome = {},
+            successTvName = null,
+            onDisconnectClick = {},
         )
     }
 }
@@ -429,49 +512,35 @@ private fun DeviceDiscoveryScanningWithDevicesPreview() {
                 DiscoveryStatus.Scanning,
                 televisions = listOf(
                     Television(
+                        id = "tv-1",
                         ipAddress = "tv-1",
                         name = "Living Room TV",
                     ), Television(
+                        id = "tv-2",
                         ipAddress = "tv-2",
                         name = "Bedroom TV",
                     ), Television(
+                        id = "tv-3",
                         ipAddress = "tv-3",
                         name = "Living Room TV",
                         brand = TelevisionBrand.SAMSUNG,
-                    ), Television(
-                        ipAddress = "tv-4",
-                        name = "Bedroom TV",
-                        brand = TelevisionBrand.ANDROID_TV,
-                    ), Television(
-                        ipAddress = "tv-5",
+                    )
+                ),
+                connectionState = ConnectionState.Connected(
+                    Television(
+                        id = "tv-1",
+                        ipAddress = "tv-1",
                         name = "Living Room TV",
-                        brand = TelevisionBrand.LG,
-                    ), Television(
-                        ipAddress = "tv-61",
-                        name = "Bedroom TV",
-                        brand = TelevisionBrand.ANDROID_TV,
-                    ), Television(
-                        ipAddress = "tv-6",
-                        name = "Living Room TV",
-                        brand = TelevisionBrand.SAMSUNG,
-                    ), Television(
-                        ipAddress = "tv-7",
-                        name = "Bedroom TV",
-                        brand = TelevisionBrand.ANDROID_TV,
-                    ), Television(
-                        ipAddress = "tv-8",
-                        name = "Living Room TV",
-                        brand = TelevisionBrand.SAMSUNG,
-                    ), Television(
-                        ipAddress = "tv-9",
-                        name = "Bedroom TV",
                         brand = TelevisionBrand.ANDROID_TV,
                     )
-                )
+                ),
             ),
             onClose = {},
             onRetry = {},
             onTelevisionClick = {},
+            onReturnHome = {},
+            onDisconnectClick = {},
+            successTvName = null,
         )
     }
 }
@@ -482,52 +551,30 @@ private fun DeviceDiscoverySuccessWithDevicesPreview() {
     RemoteLASTvTheme {
         DeviceDiscoveryContent(
             uiState = DeviceDiscoveryUiState(
-                status = DiscoveryStatus.Completed,
+                discoveryStatus = DiscoveryStatus.Completed,
                 televisions = listOf(
                     Television(
+                        id = "tv-1",
                         ipAddress = "tv-1",
                         name = "Living Room TV",
                     ), Television(
+                        id = "tv-2",
                         ipAddress = "tv-2",
                         name = "Bedroom TV",
                     ), Television(
+                        id = "tv-3",
                         ipAddress = "tv-3",
                         name = "Living Room TV",
                         brand = TelevisionBrand.SAMSUNG,
-                    ), Television(
-                        ipAddress = "tv-4",
-                        name = "Bedroom TV",
-                        brand = TelevisionBrand.ANDROID_TV,
-                    ), Television(
-                        ipAddress = "tv-5",
-                        name = "Living Room TV",
-                        brand = TelevisionBrand.SAMSUNG,
-                    ), Television(
-                        ipAddress = "tv-61",
-                        name = "Bedroom TV",
-                        brand = TelevisionBrand.ANDROID_TV,
-                    ), Television(
-                        ipAddress = "tv-6",
-                        name = "Living Room TV",
-                        brand = TelevisionBrand.SAMSUNG,
-                    ), Television(
-                        ipAddress = "tv-7",
-                        name = "Bedroom TV",
-                        brand = TelevisionBrand.ANDROID_TV,
-                    ), Television(
-                        ipAddress = "tv-8",
-                        name = "Living Room TV",
-                        brand = TelevisionBrand.SAMSUNG,
-                    ), Television(
-                        ipAddress = "tv-9",
-                        name = "Bedroom TV",
-                        brand = TelevisionBrand.ANDROID_TV,
                     )
                 ),
             ),
             onClose = {},
             onRetry = {},
             onTelevisionClick = {},
+            onReturnHome = {},
+            onDisconnectClick = {},
+            successTvName = "",
         )
     }
 }

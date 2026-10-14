@@ -1,0 +1,252 @@
+package com.tuannguyen.remotelastv.domain.connection
+
+import android.util.Log
+import com.tuannguyen.remotelastv.di.ApplicationScope
+import com.tuannguyen.remotelastv.domain.model.ConnectionState
+import com.tuannguyen.remotelastv.domain.model.ConnectionStatus
+import com.tuannguyen.remotelastv.domain.model.FailReason
+import com.tuannguyen.remotelastv.domain.model.Television
+import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
+import com.tuannguyen.remotelastv.domain.model.TvCredentials
+import com.tuannguyen.remotelastv.domain.repository.PinPairable
+import com.tuannguyen.remotelastv.domain.repository.SavedTvRepository
+import com.tuannguyen.remotelastv.domain.repository.TvConnectionRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.net.ConnectException
+import kotlin.coroutines.cancellation.CancellationException
+
+@Singleton
+class TvConnectionManager @Inject constructor(
+    private val repositories: Map<TelevisionBrand, @JvmSuppressWildcards TvConnectionRepository>,
+    private val savedTvRepository: SavedTvRepository,
+    private val lifecycleTracker: AppLifecycleTracker,
+    @ApplicationScope private val scope: CoroutineScope,
+) {
+    private val _state = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
+    val state: StateFlow<ConnectionState> = _state.asStateFlow()
+
+    private val _errors = Channel<FailReason>(Channel.BUFFERED)
+    val errors: Flow<FailReason> = _errors.receiveAsFlow()
+
+    val connectedTelevision: StateFlow<Television?> = state
+        .map { (it as? ConnectionState.Connected)?.tv }
+        .stateIn(scope, SharingStarted.Eagerly, null)
+
+    private var pending: CompletableDeferred<Result<Television>>? = null
+
+    private val lock = Mutex()
+    private var job: Job? = null
+    private var activeRepo: TvConnectionRepository? = null
+
+    private var currentTargetTv: Television? = null
+    private var userDisconnected: Boolean = false
+
+    init {
+        scope.launch {
+            lifecycleTracker.isForeground.collect { isFg ->
+                if (isFg) {
+                    onAppForegrounded()
+                }
+            }
+        }
+    }
+
+    private suspend fun onAppForegrounded() {
+        val targetTv = currentTargetTv ?: return
+        if (userDisconnected) return
+
+        lock.withLock {
+            val current = _state.value
+            if (current is ConnectionState.Connected ||
+                current is ConnectionState.Connecting ||
+                current is ConnectionState.Reconnecting
+            ) {
+                return
+            }
+
+            Log.d("TvConnection", "App foregrounded: auto-reconnecting to ${targetTv.name}")
+            val repo = repositories[targetTv.brand] ?: return
+            stopCurrent()
+            val deferred = CompletableDeferred<Result<Television>>()
+            pending = deferred
+            activeRepo = repo
+            job = scope.launch { runConnection(repo, targetTv) }
+        }
+    }
+
+    suspend fun connect(tv: Television): Result<Television> {
+        val deferredToAwait: CompletableDeferred<Result<Television>>
+        lock.withLock {
+            userDisconnected = false
+            currentTargetTv = tv
+
+            val current = _state.value
+            if (current is ConnectionState.Connected && current.tv.id == tv.id) {
+                return Result.success(current.tv)
+            }
+
+            val existingPending = pending
+            if ((current is ConnectionState.Connecting || current is ConnectionState.Reconnecting) && existingPending != null) {
+                val connectingTv = when (current) {
+                    is ConnectionState.Connecting -> current.tv
+                    is ConnectionState.Reconnecting -> current.tv
+                    else -> null
+                }
+                if (connectingTv != null && connectingTv.id == tv.id && connectingTv.ipAddress == tv.ipAddress) {
+                    deferredToAwait = existingPending
+                } else {
+                    stopCurrent()
+                    val repo = repositories[tv.brand]
+                    if (repo == null) {
+                        _errors.trySend(FailReason.UNSUPPORTED_BRAND)
+                        return Result.failure(IllegalStateException("Unsupported brand"))
+                    }
+                    val deferred = CompletableDeferred<Result<Television>>()
+                    pending = deferred
+                    activeRepo = repo
+                    job = scope.launch { runConnection(repo, tv) }
+                    deferredToAwait = deferred
+                }
+            } else {
+                stopCurrent()
+                val repo = repositories[tv.brand]
+                if (repo == null) {
+                    _errors.trySend(FailReason.UNSUPPORTED_BRAND)
+                    return Result.failure(IllegalStateException("Unsupported brand"))
+                }
+                val deferred = CompletableDeferred<Result<Television>>()
+                pending = deferred
+                activeRepo = repo
+                job = scope.launch { runConnection(repo, tv) }
+                deferredToAwait = deferred
+            }
+        }
+        return deferredToAwait.await()
+    }
+
+    fun disconnect() {
+        scope.launch {
+            lock.withLock {
+                userDisconnected = true
+                currentTargetTv = null
+                stopCurrent()
+                _state.value = ConnectionState.Disconnected
+            }
+        }
+    }
+
+    suspend fun submitPin(pin: String) {
+        (activeRepo as? PinPairable)?.submitPin(pin)
+    }
+
+    private suspend fun stopCurrent() {
+        pending?.cancel()
+        pending = null
+        job?.cancelAndJoin()
+        job = null
+        activeRepo?.disconnect()
+        activeRepo = null
+    }
+
+    private suspend fun runConnection(repo: TvConnectionRepository, tv: Television) {
+        val credentials = savedTvRepository.getCredentials(tv.id)
+        var attempt = 0
+        while (true) {
+            var last: ConnectionStatus? = null
+            repo.connect(tv, credentials).collect { status ->
+                last = status
+                when (status) {
+                    ConnectionStatus.Connecting ->
+                        _state.value = if (attempt == 0) ConnectionState.Connecting(tv)
+                        else ConnectionState.Reconnecting(tv, attempt)
+
+                    ConnectionStatus.WaitingForPin -> _state.value = ConnectionState.Connecting(tv)
+
+                    ConnectionStatus.WaitingForAuth -> _state.value = ConnectionState.Connecting(tv)
+
+                    is ConnectionStatus.Connected -> {
+                        attempt = 0
+                        val savedTv = saveConnected(tv, status.credentials)
+                        currentTargetTv = savedTv
+                        _state.value = ConnectionState.Connected(savedTv)
+                        pending?.complete(Result.success(savedTv))
+                        pending = null
+                    }
+
+                    else -> Unit
+                }
+            }
+
+            when (val end = last) {
+                is ConnectionStatus.Disconnected -> {
+                    if (!lifecycleTracker.isForeground.value) {
+                        Log.d("TvConnection", "Disconnected while app in background, suspending retries until foreground.")
+                        _state.value = ConnectionState.Disconnected
+                        pending?.complete(Result.failure(ConnectException("Disconnected in background")))
+                        pending = null
+                        return
+                    }
+
+                    if (end.recoverable && attempt < BACKOFF_MS.size) {
+                        attempt++
+                        _state.value = ConnectionState.Reconnecting(tv, attempt)
+                        delay(BACKOFF_MS[attempt - 1])
+                        continue
+                    }
+                    _state.value = ConnectionState.Disconnected
+                    pending?.complete(Result.failure(ConnectException("Disconnected")))
+                    pending = null
+                    return
+                }
+
+                is ConnectionStatus.Failed -> {
+                    _state.value = ConnectionState.Disconnected
+                    _errors.trySend(end.reason)
+                    pending?.complete(Result.failure(ConnectException(end.reason.name)))
+                    pending = null
+                    return
+                }
+
+                else -> {
+                    _state.value = ConnectionState.Disconnected
+                    pending?.complete(Result.failure(ConnectException("Connection ended")))
+                    pending = null
+                    return
+                }
+            }
+        }
+    }
+
+    private suspend fun saveConnected(tv: Television, credentials: TvCredentials): Television {
+        try {
+            savedTvRepository.save(tv, credentials)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("TvConnection", "save failed", e)
+        }
+        return savedTvRepository.get(tv.id) ?: tv
+    }
+
+    private companion object {
+        val BACKOFF_MS = longArrayOf(1_000, 2_000, 4_000)
+    }
+}

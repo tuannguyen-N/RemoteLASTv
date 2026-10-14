@@ -1,10 +1,10 @@
 package com.tuannguyen.remotelastv.ui.home
 
+import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
 
 data class HomeUiState(
-    val connectedDeviceName: String = "SWTV-22AE",
-    val isConnected: Boolean = false,
+    val connectionState: ConnectionState = ConnectionState.Idle,
     val selectedPage: Int = 0,
     val volume: Int = 20,
     val isMuted: Boolean = false,
