@@ -36,17 +36,21 @@ class LgTvConnection @Inject constructor(
 
         send(ConnectionStatus.Connecting)
 
-        val device = registry.findById(television.id)
-            ?: registry.find(television.ipAddress)
-            ?: run {
-                val scanJob = launch { discovery.startScan().collect { } }
-                try {
-                    registry.awaitById(television.id, DISCOVERY_WAIT_MS)
-                } finally {
-                    scanJob.cancel()
-                }
-            }
+        val cached = (registry.findById(television.id) ?: registry.find(television.ipAddress))
+            ?.takeIf { it.services.isNotEmpty() }
 
+        if (cached == null) {
+            registry.remove(television.id)
+        }
+
+        val device = cached ?: run {
+            val scanJob = launch { discovery.startScan().collect { } }
+            try {
+                registry.awaitById(television.id, DISCOVERY_WAIT_MS)
+            } finally {
+                scanJob.cancel()
+            }
+        }
         if (device == null) {
             send(ConnectionStatus.Failed(FailReason.DEVICE_NOT_FOUND))
             close()
@@ -115,7 +119,10 @@ class LgTvConnection @Inject constructor(
         armTimeout(CONNECT_TIMEOUT_MS)
         device.addListener(listener)
 
-        if (device.isConnected) listener.onDeviceReady(device) else device.connect()
+        if (device.isConnected)
+            listener.onDeviceReady(device)
+        else
+            device.connect()
 
         awaitClose {
             Log.d("LgConn", "awaitClose ${television.id} reached=${reachedConnected.get()}")

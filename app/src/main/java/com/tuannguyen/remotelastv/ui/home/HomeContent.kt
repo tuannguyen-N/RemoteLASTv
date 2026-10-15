@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -81,8 +82,9 @@ import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.bounceClick
 import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
 import com.tuannguyen.remotelastv.ui.common.clickableNoEffect
-import com.tuannguyen.remotelastv.ui.common.logoRes
 import com.tuannguyen.remotelastv.ui.common.safeClickableNoEffect
+import com.tuannguyen.remotelastv.ui.common.logoRes
+import com.tuannguyen.remotelastv.ui.common.safeClickable
 import com.tuannguyen.remotelastv.ui.common.wedgeShape
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
@@ -760,7 +762,7 @@ private fun NumberPadKey(
                     )
                 }
             )
-            .clickableNoEffect(onClick = onClick),
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         if (isDelete) {
@@ -848,7 +850,7 @@ private fun DirectionKey(
             .drawBehind {
                 drawRect(highlightColor.copy(alpha = highlightAlpha))
             }
-            .clickableNoEffect(
+            .clickable(
                 onClick = { onRemoteButtonClick(command) }),
         contentAlignment = iconAlignment,
     ) {
