@@ -71,10 +71,6 @@ class LgTvDiscovery @Inject constructor(
         awaitClose { manager.removeListener(listener) }
     }
 
-    override fun stopScan() {
-        TODO("Not yet implemented")
-    }
-
     private fun formatName(name: String): String = name.replace(Regex("\\[.*?]"), "").trim()
         .replaceFirstChar { if (it.isLowerCase()) it.titlecase(getDefault()) else it.toString() }
 }

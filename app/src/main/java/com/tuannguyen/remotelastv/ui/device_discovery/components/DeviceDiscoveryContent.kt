@@ -63,14 +63,16 @@ import com.tuannguyen.remotelastv.ui.theme.extendedColors
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceDiscoveryContent(
+    modifier: Modifier = Modifier,
     uiState: DeviceDiscoveryUiState,
     successTvName: String?,
+    failureMessage: String? = null,
+    onDismissFailure: () -> Unit = {},
     onClose: () -> Unit,
     onRetry: () -> Unit,
     onTelevisionClick: (Television) -> Unit,
     onDisconnectClick: (Television) -> Unit,
     onReturnHome: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val connectedTv = (uiState.connectionState as? ConnectionState.Connected)?.tv
 
@@ -193,6 +195,13 @@ fun DeviceDiscoveryContent(
             DialogConnectionSuccess(
                 televisionName = tvName,
                 onContinue = onReturnHome
+            )
+        }
+
+        failureMessage?.let { message->
+            DialogConnectionFailure(
+                errorMessage = message,
+                onRetry = onDismissFailure
             )
         }
     }

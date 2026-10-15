@@ -17,6 +17,7 @@ fun DeviceDiscoveryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var successTvName by remember { mutableStateOf<String?>(null) }
+    var failureMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(viewModel) {
         viewModel.startScan()
@@ -27,6 +28,10 @@ fun DeviceDiscoveryScreen(
             when (event) {
                 is DiscoveryEvent.ConnectionSuccess -> {
                     successTvName = event.tvName
+                }
+
+                is DiscoveryEvent.ConnectionFailure -> {
+                    failureMessage = event.message
                 }
             }
         }
@@ -40,5 +45,7 @@ fun DeviceDiscoveryScreen(
         onTelevisionClick = viewModel::connect,
         onReturnHome = onNavigateBack,
         onDisconnectClick = viewModel::disconnect,
+        failureMessage = failureMessage,
+        onDismissFailure = { failureMessage = null }
     )
 }

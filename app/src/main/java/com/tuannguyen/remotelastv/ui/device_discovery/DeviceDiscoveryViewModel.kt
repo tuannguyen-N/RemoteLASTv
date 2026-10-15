@@ -68,6 +68,7 @@ class DeviceDiscoveryViewModel @Inject constructor(
         viewModelScope.launch {
             connectionManager.connect(tv)
                 .onSuccess { sendEvent(DiscoveryEvent.ConnectionSuccess(tv.name)) }
+                .onFailure { sendEvent(DiscoveryEvent.ConnectionFailure("Reason: ${it.message}")) }
         }
     }
 

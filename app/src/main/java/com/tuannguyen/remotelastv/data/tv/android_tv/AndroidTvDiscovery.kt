@@ -5,7 +5,6 @@ import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
-import com.tuannguyen.remotelastv.domain.model.TvCredentials
 import com.tuannguyen.remotelastv.domain.repository.TvDiscoveryRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
@@ -80,8 +79,4 @@ class AndroidTvDiscovery @Inject constructor(
                 }
             })
         }
-
-    override fun stopScan() {
-        TODO("Not yet implemented")
-    }
 }

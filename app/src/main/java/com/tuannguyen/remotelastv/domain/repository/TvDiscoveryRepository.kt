@@ -7,5 +7,4 @@ import kotlinx.coroutines.flow.Flow
 interface TvDiscoveryRepository {
     val brand: TelevisionBrand
     fun startScan(): Flow<Television>
-    fun stopScan()
 }

@@ -9,7 +9,7 @@ data class RemoteSettings(
     val isSmoothPressEnabled: Boolean = false,
 
     //Connection & Display
-    val isAutoReconnectEnabled: Boolean = false,
-    val isKeepScreenAwakeEnabled: Boolean = false,
+    val isAutoReconnectEnabled: Boolean = true,
+    val isKeepScreenAwakeEnabled: Boolean = true,
     val isTheaterModeEnabled: Boolean = false,
 )
