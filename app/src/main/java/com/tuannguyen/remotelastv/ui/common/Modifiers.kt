@@ -76,7 +76,7 @@ fun Modifier.bounceClickNoEffect(
         )
 }
 
-fun Modifier.clickableNoEffect(
+fun Modifier.safeClickableNoEffect(
     onClick: () -> Unit,
     debounceMs: Long = 500L,
 ): Modifier = composed {
@@ -95,6 +95,16 @@ fun Modifier.safeClickable(
     val safeClick = rememberDebouncedClick(debounceMs, onClick)
     clickable(
         onClick = safeClick
+    )
+}
+
+fun Modifier.clickableNoEffect(
+    onClick: () -> Unit
+): Modifier = composed {
+    clickable(
+        interactionSource = remember { MutableInteractionSource() },
+        indication = null,
+        onClick = onClick
     )
 }
 

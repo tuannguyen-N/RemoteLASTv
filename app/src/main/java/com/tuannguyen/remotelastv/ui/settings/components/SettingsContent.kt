@@ -132,9 +132,7 @@ fun SettingsContent(
                 ),
             )
 
-            Column(
-                modifier = Modifier.padding(horizontal = Dimens.screenPadding),
-            ) {
+            Column {
                 SettingsItem(
                     title = stringResource(R.string.settings_faq),
                     onClick = { onAction(SettingsAction.Navigate(Route.Faq)) },

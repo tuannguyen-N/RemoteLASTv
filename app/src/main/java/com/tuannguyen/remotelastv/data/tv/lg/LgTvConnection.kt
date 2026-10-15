@@ -95,7 +95,15 @@ class LgTvConnection @Inject constructor(
 
             override fun onDeviceDisconnected(d: ConnectableDevice, e: ServiceCommandError?) {
                 timeout.getAndSet(null)?.cancel()
-                trySend(ConnectionStatus.Disconnected(reason = e?.message, recoverable = true))
+                Log.e("LgTv", "onDeviceDisconnected: code=${e?.code} msg=${e?.message}")
+
+                val status =
+                    if (reachedConnected.get() && e.isConnectionAborted()) {
+                        ConnectionStatus.TempDisconnected
+                    } else {
+                        ConnectionStatus.Disconnected(reason = e?.message, recoverable = true)
+                    }
+                trySend(status)
                 close()
             }
 
@@ -132,6 +140,9 @@ class LgTvConnection @Inject constructor(
 
     private fun ServiceCommandError.toFailReason() =
         if (code == 401) FailReason.PAIRING_REJECTED else FailReason.UNKNOWN
+
+    private fun ServiceCommandError?.isConnectionAborted() =
+        this?.message?.contains("connection aborted", ignoreCase = true) == true
 
     private companion object {
         const val CONNECT_TIMEOUT_MS = 15_000L

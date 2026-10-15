@@ -82,7 +82,7 @@ import com.tuannguyen.remotelastv.ui.common.bounceClick
 import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
 import com.tuannguyen.remotelastv.ui.common.clickableNoEffect
 import com.tuannguyen.remotelastv.ui.common.logoRes
-import com.tuannguyen.remotelastv.ui.common.safeClickable
+import com.tuannguyen.remotelastv.ui.common.safeClickableNoEffect
 import com.tuannguyen.remotelastv.ui.common.wedgeShape
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
@@ -176,7 +176,7 @@ private fun HomeHeader(
         Row(
             modifier = Modifier
                 .weight(1f)
-                .clickableNoEffect(onChangeTelevision)
+                .safeClickableNoEffect(onChangeTelevision)
                 .padding(horizontal = Dimens.Space.sm),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
@@ -760,7 +760,7 @@ private fun NumberPadKey(
                     )
                 }
             )
-            .safeClickable(onClick = onClick),
+            .clickableNoEffect(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         if (isDelete) {
@@ -848,7 +848,7 @@ private fun DirectionKey(
             .drawBehind {
                 drawRect(highlightColor.copy(alpha = highlightAlpha))
             }
-            .safeClickable(
+            .clickableNoEffect(
                 onClick = { onRemoteButtonClick(command) }),
         contentAlignment = iconAlignment,
     ) {

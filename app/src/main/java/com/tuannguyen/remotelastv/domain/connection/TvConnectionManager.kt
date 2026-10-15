@@ -70,31 +70,19 @@ class TvConnectionManager @Inject constructor(
     }
 
     private suspend fun onAppForegrounded() {
-        val targetTv = currentTargetTv ?: return
         if (userDisconnected) return
 
         lock.withLock {
-            val current = _state.value
-            if (current is ConnectionState.Connected ||
-                current is ConnectionState.Connecting ||
-                current is ConnectionState.Reconnecting
-            ) {
-                return
-            }
+            val targetTv = currentTargetTv ?: return
+            if (_state.value !is ConnectionState.TempDisconnected) return
 
-            Log.d("TvConnection", "App foregrounded: auto-reconnecting to ${targetTv.name}")
-            val repo = repositories[targetTv.brand] ?: return
-            stopCurrent()
-            val deferred = CompletableDeferred<Result<Television>>()
-            pending = deferred
-            activeRepo = repo
-            job = scope.launch { runConnection(repo, targetTv) }
+            Log.d("TvConnection", "App foregrounded: resuming ${targetTv.name}")
+            startConnection(targetTv)
         }
     }
 
     suspend fun connect(tv: Television): Result<Television> {
-        val deferredToAwait: CompletableDeferred<Result<Television>>
-        lock.withLock {
+        val deferredToAwait = lock.withLock {
             userDisconnected = false
             currentTargetTv = tv
 
@@ -103,40 +91,20 @@ class TvConnectionManager @Inject constructor(
                 return Result.success(current.tv)
             }
 
+            val inFlightTv = when (current) {
+                is ConnectionState.Connecting -> current.tv
+                is ConnectionState.Reconnecting -> current.tv
+                else -> null
+            }
             val existingPending = pending
-            if ((current is ConnectionState.Connecting || current is ConnectionState.Reconnecting) && existingPending != null) {
-                val connectingTv = when (current) {
-                    is ConnectionState.Connecting -> current.tv
-                    is ConnectionState.Reconnecting -> current.tv
-                    else -> null
-                }
-                if (connectingTv != null && connectingTv.id == tv.id && connectingTv.ipAddress == tv.ipAddress) {
-                    deferredToAwait = existingPending
-                } else {
-                    stopCurrent()
-                    val repo = repositories[tv.brand]
-                    if (repo == null) {
-                        _errors.trySend(FailReason.UNSUPPORTED_BRAND)
-                        return Result.failure(IllegalStateException("Unsupported brand"))
-                    }
-                    val deferred = CompletableDeferred<Result<Television>>()
-                    pending = deferred
-                    activeRepo = repo
-                    job = scope.launch { runConnection(repo, tv) }
-                    deferredToAwait = deferred
-                }
+
+            if (existingPending != null && inFlightTv != null &&
+                inFlightTv.id == tv.id && inFlightTv.ipAddress == tv.ipAddress
+            ) {
+                existingPending
             } else {
-                stopCurrent()
-                val repo = repositories[tv.brand]
-                if (repo == null) {
-                    _errors.trySend(FailReason.UNSUPPORTED_BRAND)
-                    return Result.failure(IllegalStateException("Unsupported brand"))
-                }
-                val deferred = CompletableDeferred<Result<Television>>()
-                pending = deferred
-                activeRepo = repo
-                job = scope.launch { runConnection(repo, tv) }
-                deferredToAwait = deferred
+                startConnection(tv)
+                    ?: return Result.failure(IllegalStateException("Unsupported brand"))
             }
         }
         return deferredToAwait.await()
@@ -197,14 +165,6 @@ class TvConnectionManager @Inject constructor(
 
             when (val end = last) {
                 is ConnectionStatus.Disconnected -> {
-                    if (!lifecycleTracker.isForeground.value) {
-                        Log.d("TvConnection", "Disconnected while app in background, suspending retries until foreground.")
-                        _state.value = ConnectionState.Disconnected
-                        pending?.complete(Result.failure(ConnectException("Disconnected in background")))
-                        pending = null
-                        return
-                    }
-
                     if (end.recoverable && attempt < BACKOFF_MS.size) {
                         attempt++
                         _state.value = ConnectionState.Reconnecting(tv, attempt)
@@ -225,6 +185,28 @@ class TvConnectionManager @Inject constructor(
                     return
                 }
 
+                is ConnectionStatus.TempDisconnected -> {
+                    _state.value = ConnectionState.TempDisconnected(tv)
+
+                    if (!lifecycleTracker.isForeground.value) {
+                        pending?.complete(Result.failure(ConnectException("Temporarily disconnected")))
+                        pending = null
+                        if (!lifecycleTracker.isForeground.value) return
+                        attempt = 0
+                        continue
+                    }
+
+                    if (attempt < BACKOFF_MS.size) {
+                        attempt++
+                        delay(BACKOFF_MS[attempt - 1])
+                        continue
+                    }
+                    pending?.complete(Result.failure(ConnectException("Disconnected")))
+                    pending = null
+                    _state.value = ConnectionState.Disconnected
+                    return
+                }
+
                 else -> {
                     _state.value = ConnectionState.Disconnected
                     pending?.complete(Result.failure(ConnectException("Connection ended")))
@@ -233,6 +215,20 @@ class TvConnectionManager @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun startConnection(tv: Television): CompletableDeferred<Result<Television>>? {
+        stopCurrent()
+        val repo = repositories[tv.brand]
+        if (repo == null) {
+            _errors.trySend(FailReason.UNSUPPORTED_BRAND)
+            return null
+        }
+        val deferred = CompletableDeferred<Result<Television>>()
+        pending = deferred
+        activeRepo = repo
+        job = scope.launch { runConnection(repo, tv) }
+        return deferred
     }
 
     private suspend fun saveConnected(tv: Television, credentials: TvCredentials): Television {
