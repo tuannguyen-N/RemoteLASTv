@@ -75,6 +75,7 @@ class LgTvConnection @Inject constructor(
             override fun onDeviceReady(d: ConnectableDevice) {
                 timeout.getAndSet(null)?.cancel()
                 reachedConnected.set(true)
+                registry.startKeyboardTracking(d)
                 trySend(ConnectionStatus.Connected(TvCredentials.None))
             }
 

@@ -61,8 +61,10 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -81,10 +83,8 @@ import com.tuannguyen.remotelastv.domain.model.TvKey
 import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.bounceClick
 import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
-import com.tuannguyen.remotelastv.ui.common.clickableNoEffect
-import com.tuannguyen.remotelastv.ui.common.safeClickableNoEffect
 import com.tuannguyen.remotelastv.ui.common.logoRes
-import com.tuannguyen.remotelastv.ui.common.safeClickable
+import com.tuannguyen.remotelastv.ui.common.safeClickableNoEffect
 import com.tuannguyen.remotelastv.ui.common.wedgeShape
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
@@ -141,7 +141,7 @@ fun HomeContent(
                     onPowerClick = onPowerClick,
                 )
 
-                AppRow(compact = compact, onAppClick = onAppClick)
+                AppRow(onAppClick = onAppClick)
                 ClassicControls(
                     uiState = uiState,
                     pagerState = pagerState,
@@ -231,13 +231,11 @@ private fun HomeHeader(
 
 @Composable
 private fun AppRow(
-    compact: Boolean,
     onAppClick: (TvApp) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = if (compact) 10.dp else 28.dp)
             .horizontalScroll(rememberScrollState())
     ) {
         AppLauncher(app = TvApp.NETFLIX, onClick = onAppClick)
@@ -516,19 +514,19 @@ private fun ColumnScope.ClassicControls(
                     description = "Skip Previous",
                     modifier = Modifier.weight(1f),
                 ) {
-
+                    onRemoteButtonClick(TvKey.PREVIOUS)
                 }
                 RoundControl(
                     icon = IconSource.Resource(R.drawable.ic_pause_play),
                     description = "Play/Pause",
                     modifier = Modifier.weight(1f),
-                ) { onRemoteButtonClick(TvKey.HOME) }
+                ) { onRemoteButtonClick(TvKey.PLAY_PAUSE) }
 
                 RoundControl(
                     icon = IconSource.Resource(R.drawable.ic_next),
                     description = "Skip Next",
                     modifier = Modifier.weight(1f),
-                ) { onRemoteButtonClick(TvKey.HOME) }
+                ) { onRemoteButtonClick(TvKey.NEXT) }
             }
         }
 
@@ -832,6 +830,7 @@ private fun DirectionKey(
     onRemoteButtonClick: (TvKey) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptic = LocalHapticFeedback.current
     val shape = remember(centerAngle) { wedgeShape(centerAngle) }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -851,7 +850,12 @@ private fun DirectionKey(
                 drawRect(highlightColor.copy(alpha = highlightAlpha))
             }
             .clickable(
-                onClick = { onRemoteButtonClick(command) }),
+                onClick = {
+                    haptic.performHapticFeedback(
+                        HapticFeedbackType.LongPress
+                    )
+                    onRemoteButtonClick(command)
+                }),
         contentAlignment = iconAlignment,
     ) {
         Icon(
@@ -915,7 +919,7 @@ private fun VerticalControl(
     ) {
         Box(
             Modifier
-                .bounceClick(onClick = onTop, shape = CircleShape)
+                .bounceClick(onClick = onTop, shape = CircleShape, debounceMs = 0)
                 .aspectRatio(1f),
             contentAlignment = Alignment.Center,
         ) {
@@ -933,7 +937,7 @@ private fun VerticalControl(
         )
         Box(
             Modifier
-                .bounceClick(shape = CircleShape, onClick = onBottom)
+                .bounceClick(shape = CircleShape, onClick = onBottom, debounceMs = 0)
                 .aspectRatio(1f),
             contentAlignment = Alignment.Center,
         ) {

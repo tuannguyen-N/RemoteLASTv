@@ -14,6 +14,9 @@ data class HomeUiState(
     val isEmpty: Boolean = false,
     val showMediaButtons: Boolean = false,
     val navigationMode: NavigationMode = NavigationMode.D_PAD,
+    val isKeepScreenAwakeEnabled: Boolean = true,
+    val isTheaterModeEnabled: Boolean = false,
+    val isHapticFeedbackEnabled: Boolean = true
 )
 
 sealed interface HomeEffect {

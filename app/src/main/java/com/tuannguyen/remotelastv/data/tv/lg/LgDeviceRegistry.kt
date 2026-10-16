@@ -1,7 +1,13 @@
 package com.tuannguyen.remotelastv.data.tv.lg
 
+import android.util.Log
+import com.connectsdk.core.TextInputStatusInfo
 import com.connectsdk.device.ConnectableDevice
 import com.connectsdk.discovery.DiscoveryManager
+import com.connectsdk.service.WebOSTVService
+import com.connectsdk.service.capability.TextInputControl
+import com.connectsdk.service.command.ServiceCommandError
+import com.connectsdk.service.command.ServiceSubscription
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.delay
@@ -15,6 +21,12 @@ class LgDeviceRegistry @Inject constructor() {
     @Volatile
     var activeDevice: ConnectableDevice? = null
         private set
+
+    @Volatile
+    var keyboardFocused: Boolean = false
+        private set
+
+    private var textSub: ServiceSubscription<TextInputControl.TextInputStatusListener>? = null
 
     fun put(device: ConnectableDevice) {
         devices[device.stableId()] = device
@@ -33,7 +45,6 @@ class LgDeviceRegistry @Inject constructor() {
                 .firstOrNull { it.ipAddress == ip }
                 ?.also(::put)
 
-    // Chờ discovery tìm thấy device có id này, dùng khi reconnect từ danh sách đã lưu
     suspend fun awaitById(id: String, timeoutMs: Long): ConnectableDevice? =
         withTimeoutOrNull(timeoutMs) {
             while (true) {
@@ -54,5 +65,27 @@ class LgDeviceRegistry @Inject constructor() {
 
     fun deselect(device: ConnectableDevice) {
         if (activeDevice === device) activeDevice = null
+    }
+
+    @Synchronized
+    fun startKeyboardTracking(device: ConnectableDevice) {
+        stopKeyboardTracking()
+        val webOs = device.getServiceByName(WebOSTVService.ID) as? WebOSTVService ?: return
+        textSub = webOs.subscribeTextInputStatus(object : TextInputControl.TextInputStatusListener {
+            override fun onSuccess(status: TextInputStatusInfo) {
+                keyboardFocused = status.isFocused
+            }
+
+            override fun onError(error: ServiceCommandError) {
+                Log.e("LgTv", "text input sub failed: ${error.message}")
+            }
+        })
+    }
+
+    @Synchronized
+    fun stopKeyboardTracking() {
+        runCatching { textSub?.unsubscribe() }
+        textSub = null
+        keyboardFocused = false
     }
 }

@@ -41,7 +41,7 @@ class LgTvController @Inject constructor(
                 TvKey.LEFT -> keys.left(null)
                 TvKey.RIGHT -> keys.right(null)
 //                TvKey.OK -> keys.ok(null)
-                TvKey.OK ->webOs.keyControl.sendKeyCode(KeyControl.KeyCode.ENTER, null)
+                TvKey.OK -> webOs.keyControl.sendKeyCode(KeyControl.KeyCode.ENTER, null)
                 TvKey.BACK -> keys.back(null)
                 TvKey.HOME -> keys.home(null)
                 TvKey.MENU -> sendSpecialKeyMethod.invoke(webOs, "MENU", null)
@@ -62,25 +62,28 @@ class LgTvController @Inject constructor(
 
                 TvKey.PREVIOUS -> webOs.rewind(null)
                 TvKey.NEXT -> webOs.fastForward(null)
-                TvKey.NUMBER_0 -> sendDigit(keys, 0)
-                TvKey.NUMBER_1 -> sendDigit(keys, 1)
-                TvKey.NUMBER_2 -> sendDigit(keys, 2)
-                TvKey.NUMBER_3 -> sendDigit(keys, 3)
-                TvKey.NUMBER_4 -> sendDigit(keys, 4)
-                TvKey.NUMBER_5 -> sendDigit(keys, 5)
-                TvKey.NUMBER_6 -> sendDigit(keys, 6)
-                TvKey.NUMBER_7 -> sendDigit(keys, 7)
-                TvKey.NUMBER_8 -> sendDigit(keys, 8)
-                TvKey.NUMBER_9 -> sendDigit(keys, 9)
+                TvKey.NUMBER_0 -> sendDigit(webOs, 0)
+                TvKey.NUMBER_1 -> sendDigit(webOs, 1)
+                TvKey.NUMBER_2 -> sendDigit(webOs, 2)
+                TvKey.NUMBER_3 -> sendDigit(webOs, 3)
+                TvKey.NUMBER_4 -> sendDigit(webOs, 4)
+                TvKey.NUMBER_5 -> sendDigit(webOs, 5)
+                TvKey.NUMBER_6 -> sendDigit(webOs, 6)
+                TvKey.NUMBER_7 -> sendDigit(webOs, 7)
+                TvKey.NUMBER_8 -> sendDigit(webOs, 8)
+                TvKey.NUMBER_9 -> sendDigit(webOs, 9)
                 TvKey.DELETE -> webOs.sendDelete()
             }
         }
     }
 
-    private fun sendDigit(keys: KeyControl, digit: Int) {
-        val code = KeyControl.KeyCode.createFromInteger(digit)
-            ?: throw TvException.Unsupported("number $digit")
-        keys.sendKeyCode(code, null)
+    private fun sendDigit(webOs: WebOSTVService, digit: Int) {
+        require(digit in 0..9)
+        if (registry.keyboardFocused) {
+            webOs.sendText(digit.toString())
+        } else {
+            sendSpecialKeyMethod.invoke(webOs, digit.toString(), logListener("NUM_$digit"))
+        }
     }
 
     override suspend fun launchApp(channel: TvApp): Result<Unit> {
@@ -91,7 +94,7 @@ class LgTvController @Inject constructor(
         try {
             Result.success(block())
         } catch (e: CancellationException) {
-            throw e                                   // không nuốt việc hủy coroutine
+            throw e
         } catch (e: TvException) {
             Result.failure(e)
         } catch (e: Exception) {
@@ -99,7 +102,10 @@ class LgTvController @Inject constructor(
         }
 
     private fun logListener(tag: String) = object : ResponseListener<Any?> {
-        override fun onSuccess(response: Any?) { Log.d("LgTv", "$tag ok") }
+        override fun onSuccess(response: Any?) {
+            Log.d("LgTv", "$tag ok")
+        }
+
         override fun onError(error: ServiceCommandError) {
             Log.e("LgTv", "$tag failed: code=${error.code} msg=${error.message}")
         }

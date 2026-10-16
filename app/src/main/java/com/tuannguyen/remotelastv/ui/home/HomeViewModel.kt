@@ -46,7 +46,10 @@ class HomeViewModel @Inject constructor(
         local.copy(
             showMediaButtons = settings.showMediaButtons,
             navigationMode = settings.navigationMode,
-            connectionState = connectionState
+            connectionState = connectionState,
+            isKeepScreenAwakeEnabled = settings.isKeepScreenAwakeEnabled,
+            isTheaterModeEnabled = settings.isTheaterModeEnabled,
+            isHapticFeedbackEnabled = settings.isHapticFeedbackEnabled
         )
     }.stateIn(
         scope = viewModelScope,

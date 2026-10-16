@@ -20,6 +20,8 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 
 fun Modifier.bounceClick(
     scaleDown: Float = 0.8f,
@@ -27,6 +29,7 @@ fun Modifier.bounceClick(
     debounceMs: Long = 500L,
     onClick: () -> Unit
 ): Modifier = composed {
+    val haptic = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -45,7 +48,12 @@ fun Modifier.bounceClick(
         .clickable(
             interactionSource = interactionSource,
             indication = ripple(),
-            onClick = safeClick
+            onClick = {
+                haptic.performHapticFeedback(
+                    HapticFeedbackType.LongPress
+                )
+                safeClick()
+            }
         )
 }
 

@@ -8,6 +8,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.tuannguyen.remotelastv.ui.effects.KeepScreenOnEffect
+import com.tuannguyen.remotelastv.ui.effects.TheaterModeContainer
 
 @Composable
 fun HomeScreen(
@@ -18,6 +20,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val isTheaterModeActive = uiState.isTheaterModeEnabled && !uiState.isKeepScreenAwakeEnabled
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -29,17 +32,23 @@ fun HomeScreen(
         }
     }
 
-    HomeContent(
-        uiState = uiState,
-        snackbarHostState = snackbarHostState,
-        onSettingsClick = {
-            onNavigateToSettings()
-        },
-        onChangeTelevision = onNavigateToDeviceDiscovery,
-        onPowerClick = viewModel::onPowerClick,
-        onAppClick = viewModel::onAppClick,
-        onRemoteButtonClick = viewModel::onRemoteButtonClick,
-        onPageSelected = viewModel::onPageSelected,
-        modifier = modifier,
+    KeepScreenOnEffect(
+        enabled = uiState.isKeepScreenAwakeEnabled
     )
+
+    TheaterModeContainer(enabled = isTheaterModeActive) {
+        HomeContent(
+            uiState = uiState,
+            snackbarHostState = snackbarHostState,
+            onSettingsClick = {
+                onNavigateToSettings()
+            },
+            onChangeTelevision = onNavigateToDeviceDiscovery,
+            onPowerClick = viewModel::onPowerClick,
+            onAppClick = viewModel::onAppClick,
+            onRemoteButtonClick = viewModel::onRemoteButtonClick,
+            onPageSelected = viewModel::onPageSelected,
+            modifier = modifier,
+        )
+    }
 }
