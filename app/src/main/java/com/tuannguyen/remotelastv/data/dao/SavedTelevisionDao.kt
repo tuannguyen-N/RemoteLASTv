@@ -12,6 +12,9 @@ interface SavedTvDao {
     @Query("SELECT * FROM saved_tv ORDER BY lastConnectedAt DESC")
     fun observeAll(): Flow<List<SavedTvEntity>>
 
+    @Query("SELECT * FROM saved_tv ORDER BY lastConnectedAt DESC")
+    suspend fun getAll(): List<SavedTvEntity>
+
     @Query("SELECT * FROM saved_tv WHERE id = :id")
     suspend fun get(id: String): SavedTvEntity?
 
@@ -48,4 +51,7 @@ interface SavedTvDao {
 
     @Query("SELECT * FROM saved_tv ORDER BY lastConnectedAt DESC LIMIT 1")
     suspend fun getLastConnected(): SavedTvEntity?
+
+    @Query("SELECT * FROM saved_tv WHERE id = :id")
+    fun observe(id: String): Flow<SavedTvEntity?>
 }

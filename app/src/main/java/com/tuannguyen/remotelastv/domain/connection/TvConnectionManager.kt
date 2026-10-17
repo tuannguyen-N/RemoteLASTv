@@ -24,9 +24,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -66,6 +71,28 @@ class TvConnectionManager @Inject constructor(
                     onAppForegrounded()
                 }
             }
+        }
+
+        scope.launch {
+            state
+                .map { (it as? ConnectionState.Connected)?.tv?.id }
+                .distinctUntilChanged()
+                .flatMapLatest { id ->
+                    if (id == null) emptyFlow() else savedTvRepository.observe(id)
+                }
+                .filterNotNull()
+                .collect { saved ->
+                    _state.update { cur ->
+                        if (cur is ConnectionState.Connected &&
+                            cur.tv.id == saved.id &&
+                            cur.tv.name != saved.name
+                        ) cur.copy(tv = cur.tv.copy(name = saved.name))
+                        else cur
+                    }
+                    currentTargetTv?.let { target ->
+                        if (target.id == saved.id) currentTargetTv = target.copy(name = saved.name)
+                    }
+                }
         }
     }
 

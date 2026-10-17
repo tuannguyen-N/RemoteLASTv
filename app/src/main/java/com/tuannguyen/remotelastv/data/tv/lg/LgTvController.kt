@@ -1,12 +1,19 @@
 package com.tuannguyen.remotelastv.data.tv.lg
 
 import android.util.Log
+import com.connectsdk.core.AppInfo
 import com.connectsdk.service.WebOSTVService
 import com.connectsdk.service.capability.KeyControl
+import com.connectsdk.service.capability.Launcher
+import com.connectsdk.service.capability.MouseControl
 import com.connectsdk.service.capability.VolumeControl
 import com.connectsdk.service.capability.listeners.ResponseListener
 import com.connectsdk.service.command.ServiceCommandError
-import com.tuannguyen.remotelastv.domain.model.TvApp
+import com.tuannguyen.remotelastv.data.tv.AppCatalog
+import com.tuannguyen.remotelastv.domain.model.KnownApp
+import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
+import com.tuannguyen.remotelastv.domain.model.TouchpadEvent
+import com.tuannguyen.remotelastv.domain.model.TouchpadMode
 import com.tuannguyen.remotelastv.domain.model.TvCapability
 import com.tuannguyen.remotelastv.domain.model.TvKey
 import com.tuannguyen.remotelastv.domain.repository.TvControllerRepository
@@ -23,9 +30,17 @@ class LgTvController @Inject constructor(
     private val registry: LgDeviceRegistry
 ) : TvControllerRepository {
     override val capabilities: Set<TvCapability> = emptySet()
+    override val touchpadMode: TouchpadMode
+        get() = if (registry.supportsMouse()) TouchpadMode.POINTER else TouchpadMode.DIRECTIONAL
+
 
     @Volatile
     private var isPlaying = true
+
+    @Volatile
+    private var resolvedIds: Map<KnownApp, String> = emptyMap()
+
+    ///--------------KEY----------------------
 
     override suspend fun sendKey(key: TvKey): Result<Unit> {
         val webOs = registry.activeDevice
@@ -86,9 +101,69 @@ class LgTvController @Inject constructor(
         }
     }
 
-    override suspend fun launchApp(channel: TvApp): Result<Unit> {
-        TODO("Not yet implemented")
+    ///--------------------APP----------------------
+
+    override suspend fun launchApp(app: KnownApp): Result<Unit> {
+        val webOs = registry.activeDevice?.getServiceByName(WebOSTVService.ID) as? WebOSTVService
+
+        val id = resolvedIds[app]
+            ?: AppCatalog.targetsOf(app, TelevisionBrand.LG).firstOrNull()
+            ?: return Result.failure(TvException.AppNotAvailable(app))
+        return runCatching {
+            webOs?.launcher?.launchApp(id, null)
+        }
     }
+
+    override suspend fun getApps(): Result<List<KnownApp>> {
+        resolvedIds = emptyMap()
+        val device = registry.activeDevice?.takeIf { it.isConnected }
+            ?: return Result.failure(TvException.NotConnected())
+        val launcher = device.getCapability(Launcher::class.java)
+            ?: return Result.failure(UnsupportedOperationException("getApps"))
+
+        return fetchRawApps(launcher).map { raw ->
+            resolvedIds = raw.mapNotNull { info ->
+                AppCatalog.identify(info.id, TelevisionBrand.LG)?.let { it to info.id }
+            }.toMap()
+            resolvedIds.keys.toList()
+        }
+    }
+
+    private suspend fun fetchRawApps(launcher: Launcher): Result<List<AppInfo>> =
+        withTimeoutOrNull(GET_APPS_TIMEOUT_MS) {
+            suspendCancellableCoroutine<Result<List<AppInfo>>> { cont ->
+                launcher.getAppList(object : Launcher.AppListListener {
+                    override fun onSuccess(apps: List<AppInfo>) {
+                        if (cont.isActive) cont.resume(Result.success(apps))
+                    }
+
+                    override fun onError(error: ServiceCommandError) {
+                        if (cont.isActive) cont.resume(
+                            Result.failure(
+                                Exception(
+                                    error.message,
+                                    error
+                                )
+                            )
+                        )
+                    }
+                })
+            }
+        } ?: Result.failure(TimeoutException("getApps timed out"))
+
+
+    ///--------------------TOUCHPAD----------------------
+    override suspend fun sendTouchpad(event: TouchpadEvent): Result<Unit> = runCatching {
+        val mouse = registry.ensureMouse() ?: error("Mouse not supported")
+        when (event) {
+            is TouchpadEvent.Move -> mouse.move(event.dx.toDouble(), event.dy.toDouble())
+            is TouchpadEvent.Scroll -> mouse.scroll(event.dx.toDouble(), event.dy.toDouble())
+            TouchpadEvent.Tap -> mouse.click()
+        }
+    }
+
+    ///--------------------HELPER----------------------
+
 
     private inline fun <T> safeCall(block: () -> T): Result<T> =
         try {
@@ -132,7 +207,7 @@ class LgTvController @Inject constructor(
         timeoutMs: Long = 3_000,
         command: (ResponseListener<Any?>) -> Unit,
     ) {
-        awaitResult<Any?>(timeoutMs, command)
+        awaitResult(timeoutMs, command)
     }
 
     private suspend fun awaitMute(webOs: WebOSTVService, timeoutMs: Long = 3_000): Boolean =
@@ -154,5 +229,9 @@ class LgTvController @Inject constructor(
         WebOSTVService::class.java.getDeclaredMethod(
             "sendSpecialKey", String::class.java, ResponseListener::class.java
         ).apply { isAccessible = true }
+    }
+
+    private companion object {
+        const val GET_APPS_TIMEOUT_MS = 5_000L
     }
 }

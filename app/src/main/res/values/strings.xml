@@ -77,4 +77,26 @@
     <string name="connection_success_continue">Start Remote</string>
     <string name="televisions_disconnect_action">Disconnect</string>
     <string name="choose_a_tv">Choose a TV</string>
+    <string name="connected_device_title">Connected Device</string>
+    <string name="connected_device_back">Go back</string>
+    <string name="connected_device_loading">Loading device...</string>
+    <string name="connected_device_empty">No connected device found</string>
+    <string name="connected_device_retry">Retry</string>
+    <string name="connected_device_description">Manage your saved TV and its connection details.</string>
+    <string name="connected_device_management">Device Management</string>
+    <string name="connected_device_ip_address">IP ADDRESS</string>
+    <string name="connected_device_edit">Edit device name</string>
+    <string name="connected_device_edit_description">Change how this TV appears in your device list.</string>
+    <string name="connected_device_edit_action">Edit</string>
+    <string name="connected_device_remove">Remove device</string>
+    <string name="connected_device_remove_description">Remove this TV from your saved devices.</string>
+    <string name="connected_device_remove_action">Remove</string>
+    <string name="connected_device_edit_dialog_title">Rename device</string>
+    <string name="connected_device_edit_dialog_description">Enter a new name for your TV.</string>
+    <string name="connected_device_name_label">Device name</string>
+    <string name="connected_device_name_error">Device name cannot be empty.</string>
+    <string name="connected_device_save">Save</string>
+    <string name="connected_device_cancel">Cancel</string>
+    <string name="connected_device_delete_dialog_title">Remove this device?</string>
+    <string name="connected_device_delete_dialog_message">Are you sure you want to remove %1$s? You may need to connect to it again later.</string>
 </resources>

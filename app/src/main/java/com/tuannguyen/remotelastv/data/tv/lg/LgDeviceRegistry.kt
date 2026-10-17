@@ -5,6 +5,7 @@ import com.connectsdk.core.TextInputStatusInfo
 import com.connectsdk.device.ConnectableDevice
 import com.connectsdk.discovery.DiscoveryManager
 import com.connectsdk.service.WebOSTVService
+import com.connectsdk.service.capability.MouseControl
 import com.connectsdk.service.capability.TextInputControl
 import com.connectsdk.service.command.ServiceCommandError
 import com.connectsdk.service.command.ServiceSubscription
@@ -27,6 +28,10 @@ class LgDeviceRegistry @Inject constructor() {
         private set
 
     private var textSub: ServiceSubscription<TextInputControl.TextInputStatusListener>? = null
+
+    @Volatile
+    private var mouse: MouseControl? = null
+    private var mouseDevice: ConnectableDevice? = null
 
     fun put(device: ConnectableDevice) {
         devices[device.stableId()] = device
@@ -56,15 +61,27 @@ class LgDeviceRegistry @Inject constructor() {
 
     fun remove(id: String) {
         devices.remove(id)
-        if (activeDevice?.stableId() == id) activeDevice = null
+        if (activeDevice?.stableId() == id) {
+            activeDevice = null
+            releaseMouse()
+        }
     }
 
-    fun select(device: ConnectableDevice) { activeDevice = device }
+    fun select(device: ConnectableDevice) {
+        if (activeDevice !== device) releaseMouse()
+        activeDevice = device
+    }
 
-    fun clearSelection() { activeDevice = null }
+    fun clearSelection() {
+        activeDevice = null
+        releaseMouse()
+    }
 
     fun deselect(device: ConnectableDevice) {
-        if (activeDevice === device) activeDevice = null
+        if (activeDevice === device) {
+            activeDevice = null
+            releaseMouse()
+        }
     }
 
     @Synchronized
@@ -88,4 +105,26 @@ class LgDeviceRegistry @Inject constructor() {
         textSub = null
         keyboardFocused = false
     }
+
+    @Synchronized
+    fun ensureMouse(): MouseControl? {
+        val device = activeDevice ?: return null
+        if (mouseDevice === device) mouse?.let { return it }
+        releaseMouse()
+        val m = device.getCapability(MouseControl::class.java) ?: return null
+        m.connectMouse()
+        mouse = m
+        mouseDevice = device
+        return m
+    }
+
+    @Synchronized
+    fun releaseMouse() {
+        runCatching { mouse?.disconnectMouse() }
+        mouse = null
+        mouseDevice = null
+    }
+
+    fun supportsMouse(): Boolean = activeDevice?.hasCapability(MouseControl.Any) == true
+
 }

@@ -1,7 +1,10 @@
 package com.tuannguyen.remotelastv.ui.home
 
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
+import com.tuannguyen.remotelastv.domain.model.KnownApp
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
+import com.tuannguyen.remotelastv.domain.model.TouchpadMode
+
 
 data class HomeUiState(
     val connectionState: ConnectionState = ConnectionState.Idle,
@@ -16,9 +19,11 @@ data class HomeUiState(
     val navigationMode: NavigationMode = NavigationMode.D_PAD,
     val isKeepScreenAwakeEnabled: Boolean = true,
     val isTheaterModeEnabled: Boolean = false,
-    val isHapticFeedbackEnabled: Boolean = true
+    val isHapticFeedbackEnabled: Boolean = true,
+    val shortcutApps: List<KnownApp> = emptyList(),
+    val touchpadMode: TouchpadMode = TouchpadMode.DIRECTIONAL,
 )
 
-sealed interface HomeEffect {
-    data class ShowMessage(val message: String) : HomeEffect
+sealed interface HomeEvent {
+    data class ShowMessage(val message: String) : HomeEvent
 }

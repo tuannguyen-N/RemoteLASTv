@@ -6,8 +6,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -26,10 +28,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
@@ -54,6 +57,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,14 +75,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
+import com.tuannguyen.remotelastv.domain.model.KnownApp
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
 import com.tuannguyen.remotelastv.domain.model.NumberPadItem
-import com.tuannguyen.remotelastv.domain.model.TvApp
+import com.tuannguyen.remotelastv.domain.model.TouchpadEvent
+import com.tuannguyen.remotelastv.domain.model.TouchpadMode
 import com.tuannguyen.remotelastv.domain.model.TvKey
 import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.bounceClick
@@ -90,6 +97,7 @@ import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 import com.tuannguyen.remotelastv.ui.theme.extendedColors
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @Composable
 fun HomeContent(
@@ -97,9 +105,11 @@ fun HomeContent(
     onSettingsClick: () -> Unit,
     onChangeTelevision: () -> Unit,
     onPowerClick: () -> Unit,
-    onAppClick: (TvApp) -> Unit,
+    onAppClick: (KnownApp) -> Unit,
     onRemoteButtonClick: (TvKey) -> Unit,
     onPageSelected: (Int) -> Unit,
+    touchpadMode: TouchpadMode = TouchpadMode.POINTER,
+    touchpadEvent: (TouchpadEvent) -> Unit = {},
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
@@ -141,13 +151,15 @@ fun HomeContent(
                     onPowerClick = onPowerClick,
                 )
 
-                AppRow(onAppClick = onAppClick)
+                AppRow(apps = uiState.shortcutApps, onAppClick = onAppClick)
                 ClassicControls(
                     uiState = uiState,
                     pagerState = pagerState,
                     compact = compact,
                     onRemoteButtonClick = onRemoteButtonClick,
                     onPageSelected = onPageSelected,
+                    touchpadMode = touchpadMode,
+                    touchpadEvent = touchpadEvent,
                 )
             }
         }
@@ -231,18 +243,18 @@ private fun HomeHeader(
 
 @Composable
 private fun AppRow(
-    onAppClick: (TvApp) -> Unit,
+    apps: List<KnownApp>,
+    onAppClick: (KnownApp) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
     ) {
-        AppLauncher(app = TvApp.NETFLIX, onClick = onAppClick)
-        AppLauncher(app = TvApp.YOUTUBE, onClick = onAppClick)
-        AppLauncher(app = TvApp.PRIME_VIDEO, onClick = onAppClick)
-        AppLauncher(app = TvApp.DISNEY_PLUS, onClick = onAppClick)
-        AppLauncher(app = TvApp.DISNEY_PLUS, onClick = onAppClick)
+        items(items = apps, key = { it }) { app ->
+            AppLauncher(app = app, onClick = onAppClick)
+        }
     }
 }
 
@@ -250,6 +262,8 @@ private fun AppRow(
 private fun ColumnScope.PadSection(
     pagerState: PagerState,
     compact: Boolean,
+    mode: TouchpadMode,
+    touchpadEvent: (TouchpadEvent) -> Unit = {},
     navigationMode: NavigationMode,
     onRemoteButtonClick: (TvKey) -> Unit,
     dpadOverlay: (@Composable BoxScope.() -> Unit)? = null,
@@ -287,6 +301,9 @@ private fun ColumnScope.PadSection(
                         }
 
                         NavigationMode.TOUCH_PAD -> TouchPad(
+                            onRemoteButtonClick = onRemoteButtonClick,
+                            mode = mode,
+                            onEvent = touchpadEvent,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(Dimens.Space.md),
@@ -307,12 +324,34 @@ private fun ColumnScope.PadSection(
     }
 }
 
+private const val POINTER_SENSITIVITY = 1.5f
 
 @Composable
 private fun TouchPad(
+    mode: TouchpadMode,
+    onEvent: (TouchpadEvent) -> Unit,
+    onRemoteButtonClick: (TvKey) -> Unit,
     modifier: Modifier = Modifier,
-    onRemoteButtonClick: (TvKey) -> Unit = {},
 ) {
+    val currentOnEvent by rememberUpdatedState(onEvent)
+    val currentOnKey by rememberUpdatedState(onRemoteButtonClick)
+
+    fun Density.positionToKey(
+        totalX: Float,
+        totalY: Float,
+        threshold: Float
+    ) {
+        if (maxOf(abs(totalX), abs(totalY)) < threshold) return
+
+        val key = if (abs(totalX) > abs(totalY)) {
+            if (totalX > 0) TvKey.RIGHT else TvKey.LEFT
+        } else {
+            if (totalY < 0) TvKey.UP else TvKey.DOWN
+        }
+
+        currentOnKey(key)
+    }
+
     Box(
         modifier = modifier
             .clip(MaterialTheme.shapes.extraLarge)
@@ -320,50 +359,100 @@ private fun TouchPad(
             .border(
                 width = 2.dp,
                 brush = Brush.sweepGradient(
-                    listOf(
-                        Color(0xFF9B4CCB),
-                        Color(0xFF3E9AEF),
-                        Color(0xFF9B4CCB),
-                    )
+                    listOf(Color(0xFF9B4CCB), Color(0xFF3E9AEF), Color(0xFF9B4CCB))
                 ),
                 shape = MaterialTheme.shapes.extraLarge,
             )
-            .pointerInput(Unit) {
-                var totalX = 0f
-                var totalY = 0f
 
-                detectDragGestures(
-                    onDragStart = {
-                        totalX = 0f
-                        totalY = 0f
-                    },
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        totalX += dragAmount.x
-                        totalY += dragAmount.y
-                    },
-                    onDragEnd = {
-                        val threshold = 50.dp.toPx()
-
-                        if (maxOf(
-                                kotlin.math.abs(totalX),
-                                kotlin.math.abs(totalY)
-                            ) < threshold
-                        ) {
-                            return@detectDragGestures
-                        }
-
-                        if (kotlin.math.abs(totalX) >
-                            kotlin.math.abs(totalY)
-                        ) {
-                            if (totalX > 0) onRemoteButtonClick(TvKey.RIGHT)
-                            else onRemoteButtonClick(TvKey.LEFT)
-                        } else {
-                            if (totalY > 0) onRemoteButtonClick(TvKey.DOWN)
-                            else onRemoteButtonClick(TvKey.UP)
+            .pointerInput(mode) {
+                detectTapGestures(
+                    onTap = {
+                        when (mode) {
+                            TouchpadMode.POINTER -> currentOnEvent(TouchpadEvent.Tap)
+                            TouchpadMode.DIRECTIONAL -> currentOnKey(TvKey.OK)
                         }
                     }
                 )
+            }
+
+            .pointerInput(mode) {
+                when (mode) {
+                    TouchpadMode.POINTER -> awaitEachGesture {
+                        var totalX = 0f
+                        var totalY = 0f
+                        var isTwoFingerGesture = false
+                        var previousPointerCount = 0
+                        do {
+                            val event = awaitPointerEvent()
+                            val pressedChanges = event.changes.filter { it.pressed }
+                            val pointerCount = pressedChanges.size
+                            when (pointerCount) {
+                                1 if !isTwoFingerGesture -> {
+                                    val change = pressedChanges.first()
+
+                                    if (change.position != change.previousPosition) {
+                                        val delta = change.position - change.previousPosition
+
+                                        change.consume()
+
+                                        currentOnEvent(
+                                            TouchpadEvent.Move(
+                                                delta.x * POINTER_SENSITIVITY,
+                                                delta.y * POINTER_SENSITIVITY,
+                                            )
+                                        )
+                                    }
+                                }
+
+                                2 -> {
+                                    if (previousPointerCount < 2) {
+                                        isTwoFingerGesture = true
+                                        totalX = 0f
+                                        totalY = 0f
+                                    } else {
+                                        val first = pressedChanges[0]
+                                        val second = pressedChanges[1]
+
+                                        val delta1 = first.position - first.previousPosition
+                                        val delta2 = second.position - second.previousPosition
+
+                                        totalX += (delta1.x + delta2.x) / 2f
+                                        totalY += (delta1.y + delta2.y) / 2f
+
+                                        first.consume()
+                                        second.consume()
+                                    }
+                                }
+                            }
+
+                            previousPointerCount = pointerCount
+                        } while (event.changes.any { it.pressed })
+
+                        if (isTwoFingerGesture) {
+                            val threshold = 40.dp.toPx()
+                            positionToKey(totalX, totalY, threshold)
+                        }
+                    }
+
+                    TouchpadMode.DIRECTIONAL -> {
+                        var totalX = 0f
+                        var totalY = 0f
+
+                        detectDragGestures(
+                            onDragStart = { totalX = 0f; totalY = 0f },
+                            onDragCancel = { totalX = 0f; totalY = 0f },
+                            onDrag = { change, drag ->
+                                change.consume()
+                                totalX += drag.x
+                                totalY += drag.y
+                            },
+                            onDragEnd = {
+                                val threshold = 50.dp.toPx()
+                                positionToKey(totalX, totalY, threshold)
+                            },
+                        )
+                    }
+                }
             },
         contentAlignment = Alignment.Center,
     ) {}
@@ -413,7 +502,7 @@ private fun BottomControls(
             iconBottom = Icons.Default.Remove,
             modifier = Modifier
                 .weight(0.9f)
-                .height(if (compact) 170.dp else 200.dp),
+                .height(if (compact) 160.dp else 180.dp),
             onTop = { onRemoteButtonClick(TvKey.VOLUME_UP) },
             onBottom = { onRemoteButtonClick(TvKey.VOLUME_DOWN) },
         )
@@ -428,7 +517,7 @@ private fun BottomControls(
             iconBottom = Icons.Default.KeyboardArrowDown,
             modifier = Modifier
                 .weight(0.9f)
-                .height(if (compact) 170.dp else 200.dp),
+                .height(if (compact) 160.dp else 180.dp),
             onTop = { onRemoteButtonClick(TvKey.CHANNEL_UP) },
             onBottom = { onRemoteButtonClick(TvKey.CHANNEL_DOWN) },
         )
@@ -465,6 +554,8 @@ private fun ColumnScope.ClassicControls(
     pagerState: PagerState,
     compact: Boolean,
     onRemoteButtonClick: (TvKey) -> Unit,
+    touchpadMode: TouchpadMode,
+    touchpadEvent: (TouchpadEvent) -> Unit = {},
     onPageSelected: (Int) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -473,6 +564,8 @@ private fun ColumnScope.ClassicControls(
         pagerState = pagerState,
         compact = compact,
         navigationMode = uiState.navigationMode,
+        mode = touchpadMode,
+        touchpadEvent = touchpadEvent,
         onRemoteButtonClick = onRemoteButtonClick,
     )
 
@@ -782,7 +875,7 @@ private fun NumberPadKey(
 
 @Composable
 private fun AppLauncher(
-    app: TvApp, onClick: (TvApp) -> Unit, modifier: Modifier = Modifier
+    app: KnownApp, onClick: (KnownApp) -> Unit, modifier: Modifier = Modifier
 ) {
     Image(
         painter = painterResource(app.logoRes()),

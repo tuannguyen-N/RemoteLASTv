@@ -25,7 +25,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is HomeEffect.ShowMessage -> {
+                is HomeEvent.ShowMessage -> {
                     snackbarHostState.showSnackbar(effect.message)
                 }
             }
@@ -48,6 +48,8 @@ fun HomeScreen(
             onAppClick = viewModel::onAppClick,
             onRemoteButtonClick = viewModel::onRemoteButtonClick,
             onPageSelected = viewModel::onPageSelected,
+            touchpadMode = uiState.touchpadMode,
+            touchpadEvent = viewModel::onTouchpad,
             modifier = modifier,
         )
     }

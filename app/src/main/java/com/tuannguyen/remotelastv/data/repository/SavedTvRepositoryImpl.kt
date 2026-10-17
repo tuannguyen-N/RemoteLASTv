@@ -21,6 +21,9 @@ class SavedTvRepositoryImpl @Inject constructor(
     override val savedTvs: Flow<List<Television>> =
         dao.observeAll().map { list -> list.map { it.toDomain() } }
 
+    override suspend fun getTelevisions(): List<Television> =
+        dao.getAll().map { it.toDomain() }
+
     override suspend fun get(id: String) = dao.get(id)?.toDomain()
 
     override suspend fun getCredentials(id: String): TvCredentials =
@@ -42,7 +45,9 @@ class SavedTvRepositoryImpl @Inject constructor(
 
     override suspend fun rename(id: String, name: String) = dao.rename(id, name)
 
-    override suspend fun delete(id: String) = dao.delete(id)
+    override suspend fun delete(id: String) = dao.deleteAndFixDefault(id)
 
     override suspend fun getLastConnected(): Television? = dao.getLastConnected()?.toDomain()
+    override suspend fun observe(id: String): Flow<Television?> = dao.observe(id).map { it?.toDomain()
+    }
 }

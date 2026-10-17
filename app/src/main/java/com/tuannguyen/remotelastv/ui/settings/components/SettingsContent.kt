@@ -105,7 +105,7 @@ fun SettingsContent(
                 )
 
                 SettingsItem(
-                    title = "Connection & display",
+                    title =stringResource(R.string.connection_display),
                     onClick = { onAction(SettingsAction.Navigate(Route.ConnectionDisplay)) },
                 )
 
@@ -117,51 +117,51 @@ fun SettingsContent(
 
             Spacer(Modifier.height(Dimens.Space.xl))
 
-            HorizontalDivider(
-                thickness = Dimens.Size.borderThin,
-                color = MaterialTheme.colorScheme.outlineVariant,
-            )
+//            HorizontalDivider(
+//                thickness = Dimens.Size.borderThin,
+//                color = MaterialTheme.colorScheme.outlineVariant,
+//            )
 
-            SettingsSectionTitle(
-                title = stringResource(R.string.settings_section_application),
-                modifier = Modifier.padding(
-                    start = Dimens.screenPadding,
-                    end = Dimens.screenPadding,
-                    top = Dimens.Space.md,
-                    bottom = Dimens.Space.sm,
-                ),
-            )
-
-            Column {
-                SettingsItem(
-                    title = stringResource(R.string.settings_faq),
-                    onClick = { onAction(SettingsAction.Navigate(Route.Faq)) },
-                )
-                SettingsItem(
-                    title = stringResource(R.string.settings_share),
-                    onClick = { onAction(SettingsAction.Share) },
-                    trailing = IconSource.Vector(Icons.Default.Share),
-                )
-                SettingsItem(
-                    title = stringResource(R.string.settings_rate_review),
-                    onClick = { onAction(SettingsAction.RateAndReview) },
-                    trailing = IconSource.Vector(Icons.Default.Star),
-                )
-                SettingsItem(
-                    title = stringResource(R.string.settings_feedback),
-                    onClick = { onAction(SettingsAction.Feedback) },
-                    trailing = IconSource.Vector(Icons.Default.Feedback),
-                )
-                SettingsItem(
-                    title = stringResource(R.string.settings_legal),
-                    onClick = { onAction(SettingsAction.Navigate(Route.Legal)) },
-                )
-                SettingsItem(
-                    title = stringResource(R.string.settings_activate_premium),
-                    onClick = { onAction(SettingsAction.ActivatePremium) },
-                    trailing = IconSource.Vector(Icons.Default.LockOpen),
-                )
-            }
+//            SettingsSectionTitle(
+//                title = stringResource(R.string.settings_section_application),
+//                modifier = Modifier.padding(
+//                    start = Dimens.screenPadding,
+//                    end = Dimens.screenPadding,
+//                    top = Dimens.Space.md,
+//                    bottom = Dimens.Space.sm,
+//                ),
+//            )
+//
+//            Column {
+//                SettingsItem(
+//                    title = stringResource(R.string.settings_faq),
+//                    onClick = { onAction(SettingsAction.Navigate(Route.Faq)) },
+//                )
+//                SettingsItem(
+//                    title = stringResource(R.string.settings_share),
+//                    onClick = { onAction(SettingsAction.Share) },
+//                    trailing = IconSource.Vector(Icons.Default.Share),
+//                )
+//                SettingsItem(
+//                    title = stringResource(R.string.settings_rate_review),
+//                    onClick = { onAction(SettingsAction.RateAndReview) },
+//                    trailing = IconSource.Vector(Icons.Default.Star),
+//                )
+//                SettingsItem(
+//                    title = stringResource(R.string.settings_feedback),
+//                    onClick = { onAction(SettingsAction.Feedback) },
+//                    trailing = IconSource.Vector(Icons.Default.Feedback),
+//                )
+//                SettingsItem(
+//                    title = stringResource(R.string.settings_legal),
+//                    onClick = { onAction(SettingsAction.Navigate(Route.Legal)) },
+//                )
+//                SettingsItem(
+//                    title = stringResource(R.string.settings_activate_premium),
+//                    onClick = { onAction(SettingsAction.ActivatePremium) },
+//                    trailing = IconSource.Vector(Icons.Default.LockOpen),
+//                )
+//            }
         }
     }
 }
