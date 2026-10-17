@@ -4,7 +4,7 @@ An Android app for discovering TVs on your local network and using your phone as
 
 ## Try the app
 
-[**Download the latest APK**](https://github.com/tuannguyen-N/RemoteLASTv/releases/latest/download/RemoteLASTv.apk) · [Browse all releases](https://github.com/tuannguyen-N/RemoteLASTv/releases)
+[**Download the latest APK**](https://drive.google.com/file/d/1zl1gzPEcqETvqn57NQHm-y6S3pR2iIqd/view)
 
 > The download link will work after an APK named `RemoteLASTv.apk` is uploaded to a GitHub Release. Android may ask you to allow installation from your browser or file manager.
 
