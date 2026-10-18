@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.domain.controller
+package com.tuannguyen.remotelastv.domain.manager
 
 import com.tuannguyen.remotelastv.domain.connection.TvConnectionManager
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand

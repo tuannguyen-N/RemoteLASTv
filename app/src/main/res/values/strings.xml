@@ -99,4 +99,7 @@
     <string name="connected_device_cancel">Cancel</string>
     <string name="connected_device_delete_dialog_title">Remove this device?</string>
     <string name="connected_device_delete_dialog_message">Are you sure you want to remove %1$s? You may need to connect to it again later.</string>
+    <string name="keyboard_input_hint">Netflixa Original</string>
+    <string name="keyboard_input_tv_hint">Please make sure your TV keyboard is open before typing</string>
+    <string name="keyboard_input_search">Tìm</string>
 </resources>

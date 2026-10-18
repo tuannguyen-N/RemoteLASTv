@@ -7,6 +7,7 @@ data class RemoteSettings(
     //Remote Behavior
     val isHapticFeedbackEnabled: Boolean = false,
     val isSmoothPressEnabled: Boolean = false,
+    val isAutoShowKeyboardEnabled: Boolean = true,
 
     //Connection & Display
     val isAutoReconnectEnabled: Boolean = true,

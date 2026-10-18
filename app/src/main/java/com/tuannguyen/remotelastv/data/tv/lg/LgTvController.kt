@@ -5,7 +5,6 @@ import com.connectsdk.core.AppInfo
 import com.connectsdk.service.WebOSTVService
 import com.connectsdk.service.capability.KeyControl
 import com.connectsdk.service.capability.Launcher
-import com.connectsdk.service.capability.MouseControl
 import com.connectsdk.service.capability.VolumeControl
 import com.connectsdk.service.capability.listeners.ResponseListener
 import com.connectsdk.service.command.ServiceCommandError

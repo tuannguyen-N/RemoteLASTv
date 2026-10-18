@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.ui.home
+package com.tuannguyen.remotelastv.ui.home.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -93,6 +93,8 @@ import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
 import com.tuannguyen.remotelastv.ui.common.logoRes
 import com.tuannguyen.remotelastv.ui.common.safeClickableNoEffect
 import com.tuannguyen.remotelastv.ui.common.wedgeShape
+import com.tuannguyen.remotelastv.ui.home.HomeUiState
+import com.tuannguyen.remotelastv.ui.home.KeyboardUiState
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 import com.tuannguyen.remotelastv.ui.theme.extendedColors
@@ -101,20 +103,25 @@ import kotlin.math.abs
 
 @Composable
 fun HomeContent(
-    uiState: HomeUiState,
+    modifier: Modifier = Modifier,
+    homeUiState: HomeUiState,
+    keyboardUiState: KeyboardUiState,
     onSettingsClick: () -> Unit,
     onChangeTelevision: () -> Unit,
     onPowerClick: () -> Unit,
     onAppClick: (KnownApp) -> Unit,
     onRemoteButtonClick: (TvKey) -> Unit,
     onPageSelected: (Int) -> Unit,
-    touchpadMode: TouchpadMode = TouchpadMode.POINTER,
+    touchpadMode: TouchpadMode,
     touchpadEvent: (TouchpadEvent) -> Unit = {},
-    modifier: Modifier = Modifier,
+    onShowKeyboardSheet: () -> Unit = {},
+    onDismissKeyboardSheet: () -> Unit = {},
+    onQueryChange: (String) -> Unit = {},
+    onKeyboardSubmit: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val pagerState = rememberPagerState(
-        initialPage = uiState.selectedPage,
+        initialPage = homeUiState.selectedPage,
         pageCount = { 2 },
     )
 
@@ -122,9 +129,9 @@ fun HomeContent(
         onPageSelected(pagerState.currentPage)
     }
 
-    LaunchedEffect(uiState.selectedPage) {
-        if (pagerState.currentPage != uiState.selectedPage) {
-            pagerState.animateScrollToPage(uiState.selectedPage)
+    LaunchedEffect(homeUiState.selectedPage) {
+        if (pagerState.currentPage != homeUiState.selectedPage) {
+            pagerState.animateScrollToPage(homeUiState.selectedPage)
         }
     }
 
@@ -144,25 +151,39 @@ fun HomeContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 HomeHeader(
-                    uiState = uiState,
+                    uiState = homeUiState,
                     compact = compact,
                     onSettingsClick = onSettingsClick,
                     onChangeTelevision = onChangeTelevision,
                     onPowerClick = onPowerClick,
                 )
 
-                AppRow(apps = uiState.shortcutApps, onAppClick = onAppClick)
+                AppRow(apps = homeUiState.shortcutApps, onAppClick = onAppClick)
                 ClassicControls(
-                    uiState = uiState,
+                    uiState = homeUiState,
                     pagerState = pagerState,
                     compact = compact,
                     onRemoteButtonClick = onRemoteButtonClick,
                     onPageSelected = onPageSelected,
                     touchpadMode = touchpadMode,
                     touchpadEvent = touchpadEvent,
+                    showKeyboardSheet = onShowKeyboardSheet
                 )
             }
         }
+    }
+
+    if (keyboardUiState.showKeyboardSheet) {
+        KeyboardInputBottomSheet(
+            onDismiss = {
+                onDismissKeyboardSheet()
+            },
+            onSearch = {
+                onDismissKeyboardSheet()
+                onKeyboardSubmit()
+            },
+            onQueryChange = { onQueryChange(it) },
+        )
     }
 }
 
@@ -557,6 +578,7 @@ private fun ColumnScope.ClassicControls(
     touchpadMode: TouchpadMode,
     touchpadEvent: (TouchpadEvent) -> Unit = {},
     onPageSelected: (Int) -> Unit,
+    showKeyboardSheet: () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -577,9 +599,7 @@ private fun ColumnScope.ClassicControls(
                 icon = IconSource.Vector(Icons.Default.Keyboard),
                 description = "Keyboard",
                 modifier = Modifier.weight(1f),
-            ) {
-                // TODO: show keyboard
-            }
+            ) { showKeyboardSheet() }
             RoundControl(
                 icon = IconSource.Resource(R.drawable.ic_home),
                 description = "Home",
@@ -1048,13 +1068,15 @@ private fun VerticalControl(
 private fun HomeContentClassicPreview() {
     RemoteLASTvTheme {
         HomeContent(
-            uiState = HomeUiState(),
+            homeUiState = HomeUiState(),
             onSettingsClick = {},
             onChangeTelevision = {},
             onPowerClick = {},
             onAppClick = {},
             onRemoteButtonClick = {},
             onPageSelected = {},
+            keyboardUiState = KeyboardUiState(),
+            touchpadMode = TouchpadMode.DIRECTIONAL
         )
     }
 }

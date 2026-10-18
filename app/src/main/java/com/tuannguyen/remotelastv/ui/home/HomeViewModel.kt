@@ -3,7 +3,7 @@ package com.tuannguyen.remotelastv.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tuannguyen.remotelastv.domain.connection.TvConnectionManager
-import com.tuannguyen.remotelastv.domain.controller.TvControllerManager
+import com.tuannguyen.remotelastv.domain.manager.TvControllerManager
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.KnownApp
 import com.tuannguyen.remotelastv.domain.model.TouchpadEvent
@@ -120,7 +120,7 @@ class HomeViewModel @Inject constructor(
         pendingDy += event.dy
         if (flushJob?.isActive == true) return
         flushJob = viewModelScope.launch {
-            delay(16)
+            delay(10)
             val dx = pendingDx;
             val dy = pendingDy
             pendingDx = 0f; pendingDy = 0f

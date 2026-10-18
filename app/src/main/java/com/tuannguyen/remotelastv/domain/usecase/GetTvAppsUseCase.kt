@@ -1,6 +1,6 @@
 package com.tuannguyen.remotelastv.domain.usecase
 
-import com.tuannguyen.remotelastv.domain.controller.TvControllerManager
+import com.tuannguyen.remotelastv.domain.manager.TvControllerManager
 import com.tuannguyen.remotelastv.domain.model.KnownApp
 import jakarta.inject.Inject
 
