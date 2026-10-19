@@ -4,6 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("com.google.protobuf") version "0.10.0"
 }
 
 android {
@@ -38,7 +39,31 @@ android {
     buildFeatures {
         compose = true
     }
+
+    sourceSets {
+        getByName("main") {
+            java.srcDirs(
+                "build/generated/source/proto/main/java",
+                "build/generated/java/generateDebugProto/java",
+                "build/generated/java/generateReleaseProto/java"
+            )
+        }
+    }
 }
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.5"
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                register("java") { option("lite") }
+            }
+        }
+    }
+}
+
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -87,4 +112,7 @@ dependencies {
     implementation(libs.lottie.compose)
 
     implementation(project(":connectsdk"))
+
+    implementation("com.google.protobuf:protobuf-javalite:3.25.5")
+    implementation(libs.bouncy.castle)
 }

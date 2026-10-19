@@ -1,5 +1,6 @@
 package com.tuannguyen.remotelastv.di
 
+import com.tuannguyen.remotelastv.data.tv.android_tv.AndroidTvTController
 import com.tuannguyen.remotelastv.data.tv.lg.LgTextInput
 import com.tuannguyen.remotelastv.data.tv.lg.LgTvController
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
@@ -19,6 +20,11 @@ abstract class ControllerModule {
     @IntoMap
     @BrandKey(TelevisionBrand.LG)
     abstract fun lgController(impl: LgTvController): TvControllerRepository
+
+    @Binds
+    @IntoMap
+    @BrandKey(TelevisionBrand.ANDROID_TV)
+    abstract fun androidTvController(impl: AndroidTvTController): TvControllerRepository
 
     @Binds
     @IntoMap

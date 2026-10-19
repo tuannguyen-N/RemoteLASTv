@@ -52,6 +52,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.DiscoveryStatus
+import com.tuannguyen.remotelastv.domain.model.FailReason
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
 import com.tuannguyen.remotelastv.ui.components.DialogLoading
@@ -65,14 +66,14 @@ import com.tuannguyen.remotelastv.ui.theme.extendedColors
 fun DeviceDiscoveryContent(
     modifier: Modifier = Modifier,
     uiState: DeviceDiscoveryUiState,
-    successTvName: String?,
-    failureMessage: String? = null,
-    onDismissFailure: () -> Unit = {},
     onClose: () -> Unit,
     onRetry: () -> Unit,
     onTelevisionClick: (Television) -> Unit,
     onDisconnectClick: (Television) -> Unit,
+    onDismissFailure: () -> Unit = {},
     onReturnHome: () -> Unit,
+    onSubmitPin: (String) -> Unit = {},
+    onCancelSendPin: () -> Unit = {},
 ) {
     val connectedTv = (uiState.connectionState as? ConnectionState.Connected)?.tv
 
@@ -188,21 +189,73 @@ fun DeviceDiscoveryContent(
                 DialogLoading()
             }
 
+            is ConnectionState.WaitingForPin -> {
+                DialogPinEnter(
+                    onSubmit = { onSubmitPin(it) },
+                    onCancel = { onCancelSendPin() }
+                )
+            }
+
+            is ConnectionState.Failed -> {
+                when (uiState.connectionState.reason) {
+                    FailReason.DEVICE_NOT_FOUND -> {
+                        DialogConnectionFailure(
+                            title = "DEVICE NOT FOUND",
+                            errorMessage = "Unable to find your TV. Please make sure it is turned on and connected to the same Wi-Fi network.",
+                            onRetry = onDismissFailure
+                        )
+                    }
+
+                    FailReason.TIMEOUT -> {
+                        DialogConnectionFailure(
+                            title = "CONNECTION TIMEOUT",
+                            errorMessage = "The connection took too long. Please check your network and try again.",
+                            onRetry = onDismissFailure
+                        )
+                    }
+
+                    FailReason.PAIRING_REJECTED -> {
+                        DialogConnectionFailure(
+                            title = "WRONG PIN",
+                            errorMessage = "Incorrect PIN. Please try again.",
+                            onRetry = onDismissFailure
+                        )
+                    }
+
+                    FailReason.UNSUPPORTED_BRAND -> {
+                        DialogConnectionFailure(
+                            title = "UNSUPPORTED TV",
+                            errorMessage = "Your TV brand or model is not supported. Please check compatibility and try again.",
+                            onRetry = onDismissFailure
+                        )
+                    }
+
+                    FailReason.UNKNOWN -> {
+                        DialogConnectionFailure(
+                            title = "CONNECTION FAILED",
+                            errorMessage = "Something went wrong while connecting to your TV. Please try again.",
+                            onRetry = onDismissFailure
+                        )
+                    }
+
+                    FailReason.NETWORK_ERROR -> {
+                        DialogConnectionFailure(
+                            title = "NETWORK ERROR",
+                            errorMessage = "Unable to communicate with your TV. Please check your Wi-Fi connection and try again.",
+                            onRetry = onDismissFailure
+                        )
+                    }
+                }
+            }
+
+            is ConnectionState.Connected -> {
+                DialogConnectionSuccess(
+                    televisionName = uiState.connectionState.tv.name,
+                    onContinue = onReturnHome
+                )
+            }
+
             else -> Unit
-        }
-
-        successTvName?.let { tvName ->
-            DialogConnectionSuccess(
-                televisionName = tvName,
-                onContinue = onReturnHome
-            )
-        }
-
-        failureMessage?.let { message ->
-            DialogConnectionFailure(
-                errorMessage = message,
-                onRetry = onDismissFailure
-            )
         }
     }
 }
@@ -448,9 +501,7 @@ private fun TelevisionItem(
 }
 
 @Composable
-private fun ConnectedBanner(
-    modifier: Modifier = Modifier,
-) {
+private fun ConnectedBanner() {
     Text(
         text = $$"Connecting",
         modifier = Modifier.padding(
@@ -506,7 +557,7 @@ private fun DeviceDiscoveryScanningPreview() {
             onRetry = {},
             onTelevisionClick = {},
             onReturnHome = {},
-            successTvName = null,
+//            successTvName = null,
             onDisconnectClick = {},
         )
     }
@@ -549,7 +600,7 @@ private fun DeviceDiscoveryScanningWithDevicesPreview() {
             onTelevisionClick = {},
             onReturnHome = {},
             onDisconnectClick = {},
-            successTvName = null,
+//            successTvName = null,
         )
     }
 }
@@ -583,7 +634,7 @@ private fun DeviceDiscoverySuccessWithDevicesPreview() {
             onTelevisionClick = {},
             onReturnHome = {},
             onDisconnectClick = {},
-            successTvName = "",
+//            successTvName = "",
         )
     }
 }

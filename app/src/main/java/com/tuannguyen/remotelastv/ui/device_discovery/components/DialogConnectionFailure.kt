@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -26,8 +27,10 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 
+@Preview
 @Composable
 fun DialogConnectionFailure(
+    title: String = "Connection Failed",
     errorMessage: String = "Unable to connect to your TV. Please try again.",
     onRetry: () -> Unit = {},
 ) {
@@ -62,7 +65,7 @@ fun DialogConnectionFailure(
                 Spacer(Modifier.height(Dimens.Space.xs))
 
                 Text(
-                    text = "Connection Failed",
+                    text = title,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -72,7 +75,7 @@ fun DialogConnectionFailure(
                 Spacer(Modifier.height(Dimens.Space.xxs))
 
                 Text(
-                    text = "Unable to connect to your TV. Please try again. $errorMessage",
+                    text = errorMessage,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

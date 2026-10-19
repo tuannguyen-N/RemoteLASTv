@@ -7,7 +7,6 @@ import com.tuannguyen.remotelastv.domain.model.TouchpadMode
 import com.tuannguyen.remotelastv.domain.model.TvCapability
 import com.tuannguyen.remotelastv.domain.model.VolumeState
 
-
 data class HomeUiState(
     val connectionState: ConnectionState = ConnectionState.Idle,
     val selectedPage: Int = 0,
@@ -26,7 +25,7 @@ data class HomeUiState(
 
     val touchpadMode: TouchpadMode = TouchpadMode.DIRECTIONAL,
     val volume: VolumeState? = null,
-    val capabilities: Set<TvCapability> = emptySet(),
+    val capabilities: Set<TvCapability> = setOf(TvCapability.VOICE),
 ) {
     val supportsVoice: Boolean get() = TvCapability.VOICE in capabilities
 }

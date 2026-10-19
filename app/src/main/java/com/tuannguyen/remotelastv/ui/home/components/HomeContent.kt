@@ -930,7 +930,7 @@ private fun NumberPadKey(
                     )
                 }
             )
-            .bounceClickRepeatable(onClick = onClick),
+            .repeatableClick(onClick = onClick, indication = ripple()),
         contentAlignment = Alignment.Center,
     ) {
         if (isDelete) {

@@ -152,6 +152,10 @@ class TvConnectionManager @Inject constructor(
         (activeRepo as? PinPairable)?.submitPin(pin)
     }
 
+    suspend fun cancelSendPin() {
+        (activeRepo as? PinPairable)?.cancelSendPin()
+    }
+
     private suspend fun stopCurrent() {
         pending?.cancel()
         pending = null
@@ -173,7 +177,7 @@ class TvConnectionManager @Inject constructor(
                         _state.value = if (attempt == 0) ConnectionState.Connecting(tv)
                         else ConnectionState.Reconnecting(tv, attempt)
 
-                    ConnectionStatus.WaitingForPin -> _state.value = ConnectionState.Connecting(tv)
+                    ConnectionStatus.WaitingForPin -> _state.value = ConnectionState.WaitingForPin(tv)
 
                     ConnectionStatus.WaitingForAuth -> _state.value = ConnectionState.Connecting(tv)
 
@@ -186,6 +190,7 @@ class TvConnectionManager @Inject constructor(
                         pending = null
                     }
 
+                    is ConnectionStatus.Failed -> _state.value = ConnectionState.Failed(tv, status.reason)
                     else -> Unit
                 }
             }
@@ -240,6 +245,16 @@ class TvConnectionManager @Inject constructor(
                     pending = null
                     return
                 }
+            }
+        }
+    }
+
+    fun acknowledgeFailure() {
+        _state.update { state ->
+            if (state is ConnectionState.Failed) {
+                ConnectionState.Disconnected
+            } else {
+                state
             }
         }
     }

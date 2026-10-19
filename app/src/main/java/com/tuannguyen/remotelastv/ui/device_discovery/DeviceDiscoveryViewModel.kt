@@ -1,5 +1,6 @@
 package com.tuannguyen.remotelastv.ui.device_discovery
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tuannguyen.remotelastv.domain.connection.TvConnectionManager
@@ -67,13 +68,18 @@ class DeviceDiscoveryViewModel @Inject constructor(
     fun connect(tv: Television) {
         viewModelScope.launch {
             connectionManager.connect(tv)
-                .onSuccess { sendEvent(DiscoveryEvent.ConnectionSuccess(tv.name)) }
-                .onFailure { sendEvent(DiscoveryEvent.ConnectionFailure("Reason: ${it.message}")) }
         }
     }
 
-    fun submitPin(pin: String) = viewModelScope.launch { connectionManager.submitPin(pin) }
     fun disconnect(tv: Television) = connectionManager.disconnect()
+
+    fun submitPin(pin: String) = viewModelScope.launch { connectionManager.submitPin(pin) }
+
+    fun cancelSendPin() = viewModelScope.launch { connectionManager.cancelSendPin() }
+
+    fun acknowledgeConnectionFailure() {
+        connectionManager.acknowledgeFailure()
+    }
 
     private fun sendEvent(event: DiscoveryEvent) = viewModelScope.launch { _events.send(event) }
 }

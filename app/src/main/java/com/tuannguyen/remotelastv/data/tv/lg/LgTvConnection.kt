@@ -147,6 +147,10 @@ class LgTvConnection @Inject constructor(
         registry.activeDevice?.sendPairingKey(pin)
     }
 
+    override suspend fun cancelSendPin() {
+        registry.activeDevice?.cancelPairing()
+    }
+
     private fun ServiceCommandError.toFailReason() =
         if (code == 401) FailReason.PAIRING_REJECTED else FailReason.UNKNOWN
 

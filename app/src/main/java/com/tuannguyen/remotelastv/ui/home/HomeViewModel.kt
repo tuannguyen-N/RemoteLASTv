@@ -85,6 +85,7 @@ class HomeViewModel @Inject constructor(
             availableApps = resolveAvailableApps(supported),
             touchpadMode = tvLive.touchpadMode,
             volume = tvLive.volume,
+            capabilities = tvLive.capabilities
         )
     }.stateIn(
         scope = viewModelScope,

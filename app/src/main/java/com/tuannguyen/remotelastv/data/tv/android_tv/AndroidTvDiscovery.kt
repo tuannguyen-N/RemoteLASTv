@@ -3,6 +3,7 @@ package com.tuannguyen.remotelastv.data.tv.android_tv
 import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
+import android.util.Log
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
 import com.tuannguyen.remotelastv.domain.repository.TvDiscoveryRepository
@@ -47,15 +48,30 @@ class AndroidTvDiscovery @Inject constructor(
         }
 
         launch {
+            val seen = mutableSetOf<String>()
             for (svc in found) {
                 val resolved = nsd.resolve(svc) ?: continue
                 val ip = resolved.host?.hostAddress ?: continue
+
+                val btMac = resolved.attributes["bt"]
+                    ?.toString(Charsets.UTF_8)
+                    ?.trim()
+                    ?.uppercase()
+                    ?.takeIf { it.isNotEmpty() }
+                val id = btMac ?: resolved.serviceName
+
+                Log.d("AndroidTvDiscovery", "found ${resolved.serviceName} ip=$ip attrs=${
+                    resolved.attributes.mapValues { it.value?.toString(Charsets.UTF_8) }
+                }")
+
+                if (!seen.add(id)) continue
+
                 trySend(
                     Television(
+                        id = id,
                         name = resolved.serviceName,
                         ipAddress = ip,
-                        brand = TelevisionBrand.ANDROID_TV,
-                        id = ip // TODO: change UUID 
+                        brand = TelevisionBrand.ANDROID_TV
                     )
                 )
             }

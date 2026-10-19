@@ -6,54 +6,75 @@ import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
 object AppCatalog {
     private val targets: Map<KnownApp, Map<TelevisionBrand, List<String>>> = mapOf(
         KnownApp.NETFLIX to mapOf(
-            TelevisionBrand.LG to listOf("netflix"),                                  // verified (log)
+            TelevisionBrand.LG to listOf("netflix"),
             TelevisionBrand.SAMSUNG to listOf("11101200001", "3201907018807"),
-            TelevisionBrand.ANDROID_TV to listOf("https://www.netflix.com/title"),
+            TelevisionBrand.ANDROID_TV to listOf("com.netflix.ninja"),
         ),
+
         KnownApp.YOUTUBE to mapOf(
-            TelevisionBrand.LG to listOf("youtube.leanback.v4"),                      // verified (log)
+            TelevisionBrand.LG to listOf("youtube.leanback.v4"),
             TelevisionBrand.SAMSUNG to listOf("111299001912"),
-            TelevisionBrand.ANDROID_TV to listOf("https://www.youtube.com"),
+            TelevisionBrand.ANDROID_TV to listOf("com.google.android.youtube.tv"),
         ),
+
         KnownApp.PRIME_VIDEO to mapOf(
             TelevisionBrand.LG to listOf("amazon"),
             TelevisionBrand.SAMSUNG to listOf(
                 "3201512006785",
-                "3201910019365"
-            ),      // id bạn đã có
-            TelevisionBrand.ANDROID_TV to listOf("https://app.primevideo.com"),
+                "3201910019365",
+            ),
+            TelevisionBrand.ANDROID_TV to listOf(
+                "com.amazon.amazonvideo.livingroom",
+            ),
         ),
+
         KnownApp.DISNEY_PLUS to mapOf(
             TelevisionBrand.LG to listOf("com.disney.disneyplus-prod"),
             TelevisionBrand.SAMSUNG to listOf("3201901017640"),
-            TelevisionBrand.ANDROID_TV to listOf("https://www.disneyplus.com"),
+            TelevisionBrand.ANDROID_TV to listOf("com.disney.disneyplus"),
         ),
+
         KnownApp.APPLE_TV to mapOf(
-            TelevisionBrand.LG to listOf("com.apple.appletv"),                        // verified (log)
+            TelevisionBrand.LG to listOf("com.apple.appletv"),
             TelevisionBrand.SAMSUNG to listOf("3201807016597"),
-            TelevisionBrand.ANDROID_TV to listOf("https://tv.apple.com"),
+            TelevisionBrand.ANDROID_TV to listOf(
+                "com.apple.atve.androidtv.appletv",
+            ),
         ),
+
         KnownApp.SPOTIFY to mapOf(
             TelevisionBrand.LG to listOf("spotify-beehive"),
             TelevisionBrand.SAMSUNG to listOf("3201606009684"),
-            TelevisionBrand.ANDROID_TV to listOf("https://open.spotify.com"),
+            TelevisionBrand.ANDROID_TV to listOf("com.spotify.tv.android"),
         ),
+
         KnownApp.PLEX to mapOf(
             TelevisionBrand.LG to listOf("cdp-30"),
             TelevisionBrand.SAMSUNG to listOf("3201512006963"),
-            TelevisionBrand.ANDROID_TV to listOf("https://app.plex.tv"),
+            TelevisionBrand.ANDROID_TV to listOf("com.plexapp.android"),
         ),
+
         KnownApp.FPT_PLAY to mapOf(
             TelevisionBrand.LG to listOf("com.fpt.fptplay"),
-            // SAMSUNG, ANDROID_TV: chưa có id đáng tin, cần lấy từ máy thật
+//            TelevisionBrand.ANDROID_TV to listOf("net.fptplay.ottbox"),
+            // Samsung: cần xác minh trên TV thật.
         ),
+
         KnownApp.VTV_GO to mapOf(
             TelevisionBrand.LG to listOf("com.vtvgotv.app"),
-            // SAMSUNG, ANDROID_TV: chưa có id đáng tin
+//            TelevisionBrand.ANDROID_TV to listOf("vn.vtv.vtvgo"),
+            // Samsung: cần xác minh trên TV thật.
         ),
-        KnownApp.GALAXY_PLAY to mapOf(
-            // Dịch vụ của Samsung nên không có trên LG.
-            // SAMSUNG: chưa có id đáng tin; ANDROID_TV: chưa rõ
+        KnownApp.HBO_MAX to mapOf(
+            // LG / Samsung: cần xác minh app ID trên TV thật.
+            TelevisionBrand.ANDROID_TV to listOf("com.wbd.stream"),
+        ),
+
+        KnownApp.PARAMOUNT_PLUS to mapOf(
+            // LG / Samsung: cần xác minh app ID trên TV thật.
+            // Package Android TV có trang Google Play đối chiếu:
+            // https://play.google.com/store/apps/details?id=com.cbs.ott
+            TelevisionBrand.ANDROID_TV to listOf("com.cbs.ott"),
         ),
     )
 

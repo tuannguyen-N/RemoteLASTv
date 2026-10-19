@@ -16,4 +16,6 @@ fun KnownApp.logoRes(): Int = when (this) {
     KnownApp.PLEX -> R.drawable.img_plex_logo
     KnownApp.VTV_GO -> R.drawable.img_vtv_go
     KnownApp.GALAXY_PLAY -> R.drawable.img_galaxy_play
+    KnownApp.HBO_MAX -> R.drawable.img_logo_hbo_max
+    KnownApp.PARAMOUNT_PLUS -> R.drawable.img_logo_paramount_plus
 }

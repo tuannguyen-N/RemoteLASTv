@@ -1,5 +1,6 @@
 package com.tuannguyen.remotelastv.di
 
+import com.tuannguyen.remotelastv.data.tv.android_tv.AndroidTvConnection
 import com.tuannguyen.remotelastv.data.tv.lg.LgTvConnection
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
 import com.tuannguyen.remotelastv.domain.repository.TvConnectionRepository
@@ -18,9 +19,11 @@ abstract class ConnectionModule {
     @BrandKey(TelevisionBrand.LG)
     abstract fun lgConnection(impl: LgTvConnection): TvConnectionRepository
 
-//    @Binds @IntoMap @BrandKey(TelevisionBrand.SAMSUNG)
+    //    @Binds @IntoMap @BrandKey(TelevisionBrand.SAMSUNG)
 //    abstract fun samsung(impl: SamsungTvConnection): TvConnectionRepository
 //
-//    @Binds @IntoMap @BrandKey(TelevisionBrand.ANDROID_TV)
-//    abstract fun androidTv(impl: AndroidTvConnection): TvConnectionRepository
+    @Binds
+    @IntoMap
+    @BrandKey(TelevisionBrand.ANDROID_TV)
+    abstract fun androidTv(impl: AndroidTvConnection): TvConnectionRepository
 }

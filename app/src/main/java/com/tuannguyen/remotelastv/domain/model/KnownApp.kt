@@ -11,4 +11,6 @@ enum class KnownApp(val displayName: String) {
     FPT_PLAY("FPT Play"),
     VTV_GO("VTV Go"),
     GALAXY_PLAY("Galaxy Play"),
+    HBO_MAX("HBO Max"),
+    PARAMOUNT_PLUS("Paramount Plus"),
 }

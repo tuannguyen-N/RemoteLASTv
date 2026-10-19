@@ -107,4 +107,11 @@
     <string name="home_available_apps">TV Apps</string>
     <string name="home_no_apps_available">No apps available for this TV.</string>
     <string name="common_close">Close</string>
+    <string name="pin_dialog_title">Enter PIN</string>
+    <string name="pin_dialog_description">Enter the 6-digit PIN displayed on your TV.</string>
+    <string name="pin_error_incomplete">Please enter all 6 digits.</string>
+    <string name="pin_verifying">Verifying PIN…</string>
+    <string name="pin_submit">Submit</string>
+    <string name="pin_cancel">Cancel</string>
+
 </resources>

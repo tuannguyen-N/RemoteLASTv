@@ -7,6 +7,7 @@ sealed interface ConnectionState {
     data class WaitingForPin(val tv: Television) : ConnectionState
     data class WaitingForAuth(val tv: Television) : ConnectionState
     data class Connected(val tv: Television) : ConnectionState
+    data class Failed(val tv: Television, val reason: FailReason) : ConnectionState
     data class TempDisconnected(val tv: Television) : ConnectionState
     data class Reconnecting(val tv: Television, val attempt: Int) : ConnectionState
 }
