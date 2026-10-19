@@ -1,7 +1,6 @@
 package com.tuannguyen.remotelastv.data.repository
 
 import com.tuannguyen.remotelastv.data.dao.SavedTvDao
-import com.tuannguyen.remotelastv.data.entities.SavedTvEntity
 import com.tuannguyen.remotelastv.data.mapper.toDomain
 import com.tuannguyen.remotelastv.data.mapper.toEntity
 import com.tuannguyen.remotelastv.domain.model.Television
@@ -48,6 +47,7 @@ class SavedTvRepositoryImpl @Inject constructor(
     override suspend fun delete(id: String) = dao.deleteAndFixDefault(id)
 
     override suspend fun getLastConnected(): Television? = dao.getLastConnected()?.toDomain()
-    override suspend fun observe(id: String): Flow<Television?> = dao.observe(id).map { it?.toDomain()
+    override suspend fun observe(id: String): Flow<Television?> = dao.observe(id).map {
+        it?.toDomain()
     }
 }

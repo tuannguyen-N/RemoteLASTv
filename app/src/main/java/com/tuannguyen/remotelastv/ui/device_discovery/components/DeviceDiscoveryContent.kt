@@ -198,7 +198,7 @@ fun DeviceDiscoveryContent(
             )
         }
 
-        failureMessage?.let { message->
+        failureMessage?.let { message ->
             DialogConnectionFailure(
                 errorMessage = message,
                 onRetry = onDismissFailure

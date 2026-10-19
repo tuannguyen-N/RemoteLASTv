@@ -5,6 +5,9 @@ import com.tuannguyen.remotelastv.domain.model.TouchpadEvent
 import com.tuannguyen.remotelastv.domain.model.TouchpadMode
 import com.tuannguyen.remotelastv.domain.model.TvCapability
 import com.tuannguyen.remotelastv.domain.model.TvKey
+import com.tuannguyen.remotelastv.domain.model.VolumeState
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 interface TvControllerRepository {
     val capabilities: Set<TvCapability>
@@ -17,4 +20,6 @@ interface TvControllerRepository {
         TouchpadEvent.Tap -> sendKey(TvKey.OK)
         else -> Result.success(Unit)
     }
+
+    fun observeVolume(): Flow<VolumeState> = emptyFlow()
 }

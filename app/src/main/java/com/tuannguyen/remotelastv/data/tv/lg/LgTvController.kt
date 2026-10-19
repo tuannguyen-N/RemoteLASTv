@@ -15,8 +15,15 @@ import com.tuannguyen.remotelastv.domain.model.TouchpadEvent
 import com.tuannguyen.remotelastv.domain.model.TouchpadMode
 import com.tuannguyen.remotelastv.domain.model.TvCapability
 import com.tuannguyen.remotelastv.domain.model.TvKey
+import com.tuannguyen.remotelastv.domain.model.VolumeState
 import com.tuannguyen.remotelastv.domain.repository.TvControllerRepository
 import com.tuannguyen.remotelastv.domain.tv.TvException
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.TimeoutException
@@ -24,14 +31,20 @@ import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.math.roundToInt
 
 class LgTvController @Inject constructor(
     private val registry: LgDeviceRegistry
 ) : TvControllerRepository {
-    override val capabilities: Set<TvCapability> = emptySet()
+
+    override val capabilities: Set<TvCapability>
+        get() = buildSet {
+            val device = registry.activeDevice?.takeIf { it.isConnected } ?: return@buildSet
+            if (device.hasCapability(VolumeControl.Volume_Subscribe)) add(TvCapability.VOLUME_STATE)
+        }
+
     override val touchpadMode: TouchpadMode
         get() = if (registry.supportsMouse()) TouchpadMode.POINTER else TouchpadMode.DIRECTIONAL
-
 
     @Volatile
     private var isPlaying = true
@@ -159,6 +172,42 @@ class LgTvController @Inject constructor(
             is TouchpadEvent.Scroll -> mouse.scroll(event.dx.toDouble(), event.dy.toDouble())
             TouchpadEvent.Tap -> mouse.click()
         }
+    }
+
+    ///--------------------VOLUME OBSERVER----------------------
+    override fun observeVolume(): Flow<VolumeState> {
+        val webOs = registry.activeDevice
+            ?.takeIf { it.isConnected }
+            ?.getServiceByName(WebOSTVService.ID) as? WebOSTVService
+            ?: return emptyFlow()
+
+        val level = callbackFlow {
+            val sub = webOs.subscribeVolume(object : VolumeControl.VolumeListener {
+                override fun onSuccess(volume: Float) {
+                    trySend((volume * 100).roundToInt())
+                }
+
+                override fun onError(error: ServiceCommandError) {
+                    Log.e("LgTv", "subscribeVolume failed: ${error.message}")
+                }
+            })
+            awaitClose { sub.unsubscribe() }
+        }
+
+        val muted = callbackFlow {
+            val sub = webOs.subscribeMute(object : VolumeControl.MuteListener {
+                override fun onSuccess(muted: Boolean) {
+                    trySend(muted)
+                }
+
+                override fun onError(error: ServiceCommandError) {
+                    Log.e("LgTv", "subscribeMute failed: ${error.message}")
+                }
+            })
+            awaitClose { sub.unsubscribe() }
+        }
+
+        return combine(level, muted) { l, m -> VolumeState(l, m) }.distinctUntilChanged()
     }
 
     ///--------------------HELPER----------------------

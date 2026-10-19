@@ -23,5 +23,5 @@ abstract class ControllerModule {
     @Binds
     @IntoMap
     @BrandKey(TelevisionBrand.LG)
-    abstract fun lgTextInput(impl: LgTextInput, ): TvTextInputRepository
+    abstract fun lgTextInput(impl: LgTextInput): TvTextInputRepository
 }

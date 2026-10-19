@@ -7,7 +7,10 @@ import com.tuannguyen.remotelastv.domain.manager.TvControllerManager
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.KnownApp
 import com.tuannguyen.remotelastv.domain.model.TouchpadEvent
+import com.tuannguyen.remotelastv.domain.model.TouchpadMode
+import com.tuannguyen.remotelastv.domain.model.TvCapability
 import com.tuannguyen.remotelastv.domain.model.TvKey
+import com.tuannguyen.remotelastv.domain.model.VolumeState
 import com.tuannguyen.remotelastv.domain.repository.SettingsRepository
 import com.tuannguyen.remotelastv.domain.repository.TvControllerRepository
 import com.tuannguyen.remotelastv.domain.tv.TvException
@@ -40,6 +43,19 @@ class HomeViewModel @Inject constructor(
     private val reconnectLastTvUseCase: ReconnectLastTvUseCase,
     private val getTvAppsUseCase: GetTvAppsUseCase
 ) : ViewModel() {
+    private data class TvLiveState(
+        val touchpadMode: TouchpadMode,
+        val volume: VolumeState?,
+        val capabilities: Set<TvCapability>,
+    )
+
+    private val tvLiveState: Flow<TvLiveState> = combine(
+        controllerManager.touchpadMode,
+        controllerManager.volume,
+        controllerManager.capabilities,
+    ) { touchpadMode, volume, capabilities ->
+        TvLiveState(touchpadMode, volume, capabilities)
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val supportedApps: Flow<List<KnownApp>?> = connectionManager.state
@@ -56,8 +72,8 @@ class HomeViewModel @Inject constructor(
         settingsRepository.remoteSettings,
         connectionManager.state,
         supportedApps,
-        controllerManager.touchpadMode
-    ) { local, settings, connectionState, supported, touchpadMode ->
+        tvLiveState,
+    ) { local, settings, connectionState, supported, tvLive ->
         local.copy(
             showMediaButtons = settings.showMediaButtons,
             navigationMode = settings.navigationMode,
@@ -66,7 +82,8 @@ class HomeViewModel @Inject constructor(
             isTheaterModeEnabled = settings.isTheaterModeEnabled,
             isHapticFeedbackEnabled = settings.isHapticFeedbackEnabled,
             shortcutApps = resolveShortcuts(supported),
-            touchpadMode = touchpadMode,
+            touchpadMode = tvLive.touchpadMode,
+            volume = tvLive.volume,
         )
     }.stateIn(
         scope = viewModelScope,

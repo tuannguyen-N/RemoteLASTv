@@ -86,6 +86,7 @@ class LgTvConnection @Inject constructor(
                     DeviceService.PairingType.FIRST_SCREEN -> ConnectionStatus.WaitingForAuth
                     DeviceService.PairingType.PIN_CODE,
                     DeviceService.PairingType.MIXED -> ConnectionStatus.WaitingForPin
+
                     else -> null
                 } ?: return
                 armTimeout(PAIRING_TIMEOUT_MS)

@@ -5,7 +5,7 @@ data class RemoteSettings(
     val navigationMode: NavigationMode = NavigationMode.D_PAD,
 
     //Remote Behavior
-    val isHapticFeedbackEnabled: Boolean = false,
+    val isHapticFeedbackEnabled: Boolean = true,
     val isSmoothPressEnabled: Boolean = false,
     val isAutoShowKeyboardEnabled: Boolean = true,
 

@@ -2,9 +2,7 @@ package com.tuannguyen.remotelastv.ui.settings_remote_behavior
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tuannguyen.remotelastv.domain.model.NavigationMode
 import com.tuannguyen.remotelastv.domain.repository.SettingsRepository
-import com.tuannguyen.remotelastv.ui.settings_remote_layout.RemoteLayoutUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +20,8 @@ class RemoteBehaviorViewModel @Inject constructor(
         .map {
             RemoteBehaviorUiState(
                 isHapticFeedbackEnabled = it.isHapticFeedbackEnabled,
-                isSmoothPressEnabled = it.isSmoothPressEnabled
+                isSmoothPressEnabled = it.isSmoothPressEnabled,
+                isAutoShowKeyboardEnabled = it.isAutoShowKeyboardEnabled
             )
         }
         .stateIn(
@@ -31,15 +30,21 @@ class RemoteBehaviorViewModel @Inject constructor(
             initialValue = RemoteBehaviorUiState()
         )
 
-    fun onHapticFeedbackChanged(value: Boolean){
+    fun onHapticFeedbackChanged(value: Boolean) {
         viewModelScope.launch {
-           settingsRepository.setHapticFeedbackEnabled(value)
+            settingsRepository.setHapticFeedbackEnabled(value)
         }
     }
 
-    fun onSmoothPressChanged(value: Boolean){
+    fun onSmoothPressChanged(value: Boolean) {
         viewModelScope.launch {
             settingsRepository.setSmoothPressEnabled(value)
+        }
+    }
+
+    fun onAutoShowKeyboardChanged(value: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setAutoShowKeyboardEnabled(value)
         }
     }
 }

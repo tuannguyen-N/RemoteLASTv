@@ -5,7 +5,7 @@ import com.connectsdk.discovery.DiscoveryManager
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class RemoteLASTvApp : Application(){
+class RemoteLASTvApp : Application() {
     override fun onCreate() {
         super.onCreate()
         DiscoveryManager.init(this)

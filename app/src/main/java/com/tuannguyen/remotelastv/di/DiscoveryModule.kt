@@ -13,9 +13,11 @@ import dagger.multibindings.IntoSet
 @InstallIn(SingletonComponent::class)
 abstract class DiscoveryModule {
 
-    @Binds @IntoSet
+    @Binds
+    @IntoSet
     abstract fun bindAndroidTv(impl: AndroidTvDiscovery): TvDiscoveryRepository
 
-    @Binds @IntoSet
+    @Binds
+    @IntoSet
     abstract fun bindLgTv(impl: LgTvDiscovery): TvDiscoveryRepository
 }

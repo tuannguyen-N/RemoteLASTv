@@ -1,11 +1,18 @@
 package com.tuannguyen.remotelastv.ui.home.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -38,6 +45,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.VolumeMute
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -47,11 +56,13 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,6 +75,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -90,7 +102,9 @@ import com.tuannguyen.remotelastv.domain.model.TvKey
 import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.bounceClick
 import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
+import com.tuannguyen.remotelastv.ui.common.bounceClickRepeatable
 import com.tuannguyen.remotelastv.ui.common.logoRes
+import com.tuannguyen.remotelastv.ui.common.repeatableClick
 import com.tuannguyen.remotelastv.ui.common.safeClickableNoEffect
 import com.tuannguyen.remotelastv.ui.common.wedgeShape
 import com.tuannguyen.remotelastv.ui.home.HomeUiState
@@ -99,7 +113,9 @@ import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 import com.tuannguyen.remotelastv.ui.theme.extendedColors
 import kotlinx.coroutines.launch
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.sin
 
 @Composable
 fun HomeContent(
@@ -506,9 +522,13 @@ private fun PageDots(
 @Composable
 private fun BottomControls(
     compact: Boolean,
+    volume: Int?,
+    muted: Boolean,
     onRemoteButtonClick: (TvKey) -> Unit,
     centerContent: @Composable ColumnScope.() -> Unit,
 ) {
+    val colors = MaterialTheme.colorScheme
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -521,6 +541,9 @@ private fun BottomControls(
             iconTop = Icons.Default.Add,
             middle = "VOL",
             iconBottom = Icons.Default.Remove,
+            level = volume?.let { it / 100f },
+            waterColor = if (muted) colors.error.copy(alpha = 0.45f)
+            else colors.primary.copy(alpha = 0.35f),
             modifier = Modifier
                 .weight(0.9f)
                 .height(if (compact) 160.dp else 180.dp),
@@ -551,22 +574,16 @@ private fun MuteControl(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    if (!isMuted) {
-        RoundControl(
-            icon = IconSource.Resource(R.drawable.ic_unmute),
-            description = "Mute",
-            modifier = modifier,
-            onClick = onClick,
-        )
-    } else {
-        RoundControl(
-            icon = IconSource.Resource(R.drawable.ic_mute),
-            description = "Unmute",
-            modifier = modifier,
-            containerColor = MaterialTheme.colorScheme.error,
-            onClick = onClick,
-        )
-    }
+    val colors = MaterialTheme.colorScheme
+
+    RoundControl(
+        icon = IconSource.Resource(if (isMuted) R.drawable.ic_mute else R.drawable.ic_unmute),
+        description = if (isMuted) "Unmute" else "Mute",
+        modifier = modifier,
+        containerColor = if (isMuted) colors.errorContainer else colors.surfaceContainer,
+        iconTint = if (isMuted) colors.error else LocalContentColor.current,
+        onClick = onClick,
+    )
 }
 
 @Composable
@@ -593,7 +610,12 @@ private fun ColumnScope.ClassicControls(
 
     PageDots(selectedPage = uiState.selectedPage, onPageSelected = onPageSelected)
 
-    BottomControls(compact = compact, onRemoteButtonClick = onRemoteButtonClick) {
+    BottomControls(
+        compact = compact,
+        onRemoteButtonClick = onRemoteButtonClick,
+        volume = uiState.volume?.level,
+        muted = uiState.volume?.muted == true,
+    ) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             RoundControl(
                 icon = IconSource.Vector(Icons.Default.Keyboard),
@@ -644,16 +666,20 @@ private fun ColumnScope.ClassicControls(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            val muted = uiState.volume?.muted == true
             MuteControl(
-                isMuted = uiState.isMuted,
+                isMuted = muted,
                 modifier = Modifier.weight(1f),
-            ) { onRemoteButtonClick(TvKey.MUTE) }
-            RoundControl(
-                icon = IconSource.Vector(Icons.Default.Mic),
-                description = "Voice",
-                modifier = Modifier.weight(1f),
-            ) {
-                // TODO: voice
+                onClick = { onRemoteButtonClick(TvKey.MUTE) },
+            )
+            if (uiState.supportsVoice) {
+                RoundControl(
+                    icon = IconSource.Vector(Icons.Default.Mic),
+                    description = "Voice",
+                    modifier = Modifier.weight(1f),
+                ) {
+                    // TODO: voice
+                }
             }
             RoundControl(
                 icon = IconSource.Resource(R.drawable.ic_return),
@@ -873,7 +899,7 @@ private fun NumberPadKey(
                     )
                 }
             )
-            .clickable(onClick = onClick),
+            .bounceClickRepeatable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         if (isDelete) {
@@ -962,7 +988,8 @@ private fun DirectionKey(
             .drawBehind {
                 drawRect(highlightColor.copy(alpha = highlightAlpha))
             }
-            .clickable(
+            .repeatableClick(
+                indication = ripple(),
                 onClick = {
                     haptic.performHapticFeedback(
                         HapticFeedbackType.LongPress
@@ -982,6 +1009,7 @@ private fun DirectionKey(
 @Composable
 private fun RoundControl(
     icon: IconSource,
+    iconTint: Color = LocalContentColor.current,
     description: String,
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
@@ -999,6 +1027,7 @@ private fun RoundControl(
                 Icon(
                     imageVector = icon.imageVector,
                     contentDescription = description,
+                    tint = iconTint,
                     modifier = Modifier.size(Dimens.Size.iconLarge)
                 )
             }
@@ -1007,6 +1036,7 @@ private fun RoundControl(
                 Icon(
                     painter = painterResource(id = icon.resId),
                     contentDescription = description,
+                    tint = iconTint,
                     modifier = Modifier.size(Dimens.Size.iconLarge)
                 )
             }
@@ -1015,51 +1045,140 @@ private fun RoundControl(
 }
 
 @Composable
+private fun MuteButton(
+    muted: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
+
+    RoundControl(
+        icon = IconSource.Vector(
+            if (muted) Icons.AutoMirrored.Filled.VolumeOff
+            else Icons.AutoMirrored.Filled.VolumeMute
+        ),
+        description = if (muted) "Unmute" else "Mute",
+        modifier = modifier,
+        containerColor = if (muted) colors.errorContainer else colors.surfaceContainer,
+        iconTint = if (muted) colors.error else LocalContentColor.current,
+        onClick = onClick,
+    )
+}
+
+@Composable
 private fun VerticalControl(
     iconTop: ImageVector,
     middle: String,
     iconBottom: ImageVector,
     modifier: Modifier = Modifier,
+    level: Float? = null,
+    waterColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
     onTop: () -> Unit,
     onBottom: () -> Unit,
 ) {
-    Column(
+    Box(
         modifier = modifier
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surfaceContainer),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceAround,
     ) {
-        Box(
-            Modifier
-                .bounceClick(onClick = onTop, shape = CircleShape, debounceMs = 0)
-                .aspectRatio(1f),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = iconTop,
-                contentDescription = "IconTop$middle",
-                modifier = Modifier.size(Dimens.Size.iconLarge),
+        if (level != null) {
+            WaterFill(
+                level = level,
+                color = waterColor,
+                modifier = Modifier.matchParentSize(),
             )
         }
-        Text(
-            middle,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center,
-        )
-        Box(
-            Modifier
-                .bounceClick(shape = CircleShape, onClick = onBottom, debounceMs = 0)
-                .aspectRatio(1f),
-            contentAlignment = Alignment.Center,
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceAround,
         ) {
-            Icon(
-                imageVector = iconBottom,
-                contentDescription = "IconBottom$middle",
-                modifier = Modifier.size(Dimens.Size.iconLarge),
+            Box(
+                Modifier
+                    .bounceClickRepeatable(onClick = onTop, shape = CircleShape, debounceMs = 0)
+                    .aspectRatio(1f),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = iconTop,
+                    contentDescription = "IconTop$middle",
+                    modifier = Modifier.size(Dimens.Size.iconLarge),
+                )
+            }
+            Text(
+                middle,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
             )
+            Box(
+                Modifier
+                    .bounceClickRepeatable(shape = CircleShape, onClick = onBottom, debounceMs = 0)
+                    .aspectRatio(1f),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = iconBottom,
+                    contentDescription = "IconBottom$middle",
+                    modifier = Modifier.size(Dimens.Size.iconLarge),
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun WaterFill(
+    level: Float,
+    color: Color,
+    modifier: Modifier = Modifier,
+) {
+    val animatedColor by animateColorAsState(
+        targetValue = color,
+        animationSpec = tween(durationMillis = 300),
+        label = "waterColor",
+    )
+
+    val animatedLevel by animateFloatAsState(
+        targetValue = level.coerceIn(0f, 1f),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessLow,
+        ),
+        label = "waterLevel",
+    )
+
+    val transition = rememberInfiniteTransition(label = "wave")
+    val phase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2000, easing = LinearEasing),
+        ),
+        label = "wavePhase",
+    )
+
+    Canvas(modifier = modifier) {
+        val fill = animatedLevel.coerceIn(0f, 1f)
+        if (fill <= 0f) return@Canvas
+
+        val waterTop = size.height * (1f - fill)
+        val amplitude = 4.dp.toPx() * minOf(fill, 1f - fill).coerceAtMost(0.1f) / 0.1f
+        val step = 4f
+
+        val path = Path().apply {
+            moveTo(0f, size.height)
+            lineTo(0f, waterTop)
+            var x = 0f
+            while (x <= size.width) {
+                val y = waterTop + amplitude * sin(x / size.width * 2f * PI.toFloat() + phase)
+                lineTo(x, y)
+                x += step
+            }
+            lineTo(size.width, size.height)
+            close()
+        }
+        drawPath(path = path, color = animatedColor)
     }
 }
 

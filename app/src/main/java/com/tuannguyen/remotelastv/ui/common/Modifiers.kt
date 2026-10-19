@@ -4,15 +4,21 @@ import android.os.SystemClock
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -21,15 +27,28 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+
+val LocalHapticEnabled = compositionLocalOf { true }
+val LocalHoldToRepeatEnabled = compositionLocalOf { true }
 
 fun Modifier.bounceClick(
     scaleDown: Float = 0.8f,
     shape: Shape = CircleShape,
     debounceMs: Long = 500L,
+    hapticEnabled: Boolean? = null,
     onClick: () -> Unit
 ): Modifier = composed {
     val haptic = LocalHapticFeedback.current
+    val globalHapticEnabled = LocalHapticEnabled.current
+    val isHapticOn by rememberUpdatedState(hapticEnabled ?: globalHapticEnabled)
+
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -49,9 +68,9 @@ fun Modifier.bounceClick(
             interactionSource = interactionSource,
             indication = ripple(),
             onClick = {
-                haptic.performHapticFeedback(
-                    HapticFeedbackType.LongPress
-                )
+                if (isHapticOn) {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
                 safeClick()
             }
         )
@@ -114,6 +133,93 @@ fun Modifier.clickableNoEffect(
         indication = null,
         onClick = onClick
     )
+}
+
+fun Modifier.repeatableClick(
+    initialDelayMs: Long = 400L,
+    repeatIntervalMs: Long = 100L,
+    debounceMs: Long = 0L,
+    holdEnabled: Boolean? = null,
+    interactionSource: MutableInteractionSource? = null,
+    indication: Indication? = null,
+    onClick: () -> Unit
+): Modifier = composed {
+    val haptic = LocalHapticFeedback.current
+    val coroutineScope = rememberCoroutineScope()
+    val hapticOn by rememberUpdatedState(LocalHapticEnabled.current)
+    val holdOn by rememberUpdatedState(holdEnabled ?: LocalHoldToRepeatEnabled.current)
+    val currentOnClick by rememberUpdatedState(onClick)
+    val safeFirstClick = rememberDebouncedClick(debounceMs, onClick)
+    val source = interactionSource ?: remember { MutableInteractionSource() }
+
+    this
+        .indication(source, indication)
+        .semantics { this.onClick { currentOnClick(); true } }
+        .pointerInput(Unit) {
+            detectTapGestures(
+                onPress = { offset ->
+                    val press = PressInteraction.Press(offset)
+                    source.emit(press)
+
+                    if (hapticOn) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    safeFirstClick()
+
+                    val repeatJob = if (holdOn) {
+                        coroutineScope.launch {
+                            delay(initialDelayMs)
+                            while (isActive) {
+                                if (hapticOn) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                }
+                                currentOnClick()
+                                delay(repeatIntervalMs)
+                            }
+                        }
+                    } else null
+
+                    val released = tryAwaitRelease()
+                    repeatJob?.cancel()
+                    source.emit(
+                        if (released) PressInteraction.Release(press)
+                        else PressInteraction.Cancel(press)
+                    )
+                }
+            )
+        }
+}
+
+fun Modifier.bounceClickRepeatable(
+    scaleDown: Float = 0.8f,
+    shape: Shape = CircleShape,
+    initialDelayMs: Long = 400L,
+    repeatIntervalMs: Long = 100L,
+    debounceMs: Long = 0L,
+    holdEnabled: Boolean? = null,
+    onClick: () -> Unit
+): Modifier = composed {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) scaleDown else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "scale"
+    )
+
+    this
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
+        .clip(shape)
+        .repeatableClick(
+            initialDelayMs = initialDelayMs,
+            repeatIntervalMs = repeatIntervalMs,
+            debounceMs = debounceMs,
+            holdEnabled = holdEnabled,
+            interactionSource = interactionSource,
+            indication = ripple(),
+            onClick = onClick
+        )
 }
 
 @Composable

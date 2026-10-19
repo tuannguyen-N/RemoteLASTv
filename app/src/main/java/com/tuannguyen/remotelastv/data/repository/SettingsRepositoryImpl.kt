@@ -32,6 +32,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val AUTO_RECONNECT_ENABLED = booleanPreferencesKey("auto_reconnect_enabled")
         val KEEP_SCREEN_AWAKE_ENABLED = booleanPreferencesKey("keep_screen_awake_enabled")
         val THEATER_MODE_ENABLED = booleanPreferencesKey("theater_mode_enabled")
+        val AUTO_SHOW_KEYBOARD_ENABLED = booleanPreferencesKey("auto_show_keyboard_enabled")
     }
 
     override val remoteSettings: Flow<RemoteSettings> = context.settingsDataStore.data
@@ -45,11 +46,16 @@ class SettingsRepositoryImpl @Inject constructor(
                 navigationMode = NavigationMode.entries
                     .firstOrNull { it.name == prefs[Keys.NAVIGATION_MODE] }
                     ?: default.navigationMode,
-                isHapticFeedbackEnabled = prefs[Keys.HAPTIC_FEEDBACK_ENABLED] ?: default.isHapticFeedbackEnabled,
-                isSmoothPressEnabled = prefs[Keys.SMOOTH_PRESS_ENABLED] ?: default.isSmoothPressEnabled,
-                isAutoReconnectEnabled = prefs[Keys.AUTO_RECONNECT_ENABLED] ?: default.isAutoReconnectEnabled,
-                isKeepScreenAwakeEnabled = prefs[Keys.KEEP_SCREEN_AWAKE_ENABLED] ?: default.isKeepScreenAwakeEnabled,
-                isTheaterModeEnabled = prefs[Keys.THEATER_MODE_ENABLED] ?: default.isTheaterModeEnabled,
+                isHapticFeedbackEnabled = prefs[Keys.HAPTIC_FEEDBACK_ENABLED]
+                    ?: default.isHapticFeedbackEnabled,
+                isSmoothPressEnabled = prefs[Keys.SMOOTH_PRESS_ENABLED]
+                    ?: default.isSmoothPressEnabled,
+                isAutoReconnectEnabled = prefs[Keys.AUTO_RECONNECT_ENABLED]
+                    ?: default.isAutoReconnectEnabled,
+                isKeepScreenAwakeEnabled = prefs[Keys.KEEP_SCREEN_AWAKE_ENABLED]
+                    ?: default.isKeepScreenAwakeEnabled,
+                isTheaterModeEnabled = prefs[Keys.THEATER_MODE_ENABLED]
+                    ?: default.isTheaterModeEnabled,
             )
         }
 
@@ -67,6 +73,10 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setSmoothPressEnabled(enabled: Boolean) {
         context.settingsDataStore.edit { it[Keys.SMOOTH_PRESS_ENABLED] = enabled }
+    }
+
+    override suspend fun setAutoShowKeyboardEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.AUTO_SHOW_KEYBOARD_ENABLED] = enabled }
     }
 
     override suspend fun setAutoReconnectEnabled(enabled: Boolean) {

@@ -37,6 +37,7 @@ fun RemoteBehaviorContent(
     onNavigateBack: () -> Unit,
     onHapticFeedbackChanged: (Boolean) -> Unit,
     onSmoothPressChanged: (Boolean) -> Unit,
+    onAutoShowKeyboardChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -83,6 +84,13 @@ fun RemoteBehaviorContent(
                 description = stringResource(R.string.repeat_commands_while_holding_buttons),
                 checked = uiState.isSmoothPressEnabled,
                 onCheckedChange = onSmoothPressChanged
+            )
+
+            PreferenceRow(
+                title = stringResource(R.string.auto_keyboard),
+                description = stringResource(R.string.automatically_show_the_keyboard_when_text_input_is_needed),
+                checked = uiState.isAutoShowKeyboardEnabled,
+                onCheckedChange = onAutoShowKeyboardChanged
             )
         }
     }
@@ -132,8 +140,8 @@ private fun SettingsContentPreview() {
             uiState = RemoteBehaviorUiState(),
             onNavigateBack = {},
             onHapticFeedbackChanged = {},
-            onSmoothPressChanged = {}
-            
+            onSmoothPressChanged = {},
+            onAutoShowKeyboardChanged = {}
         )
     }
 }

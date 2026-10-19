@@ -102,4 +102,6 @@
     <string name="keyboard_input_hint">Netflixa Original</string>
     <string name="keyboard_input_tv_hint">Please make sure your TV keyboard is open before typing</string>
     <string name="keyboard_input_search">Tìm</string>
+    <string name="automatically_show_the_keyboard_when_text_input_is_needed">Automatically show the keyboard when text input is needed</string>
+    <string name="auto_keyboard">Auto Keyboard</string>
 </resources>

@@ -10,6 +10,7 @@ interface SettingsRepository {
     suspend fun setNavigationMode(mode: NavigationMode)
     suspend fun setHapticFeedbackEnabled(enabled: Boolean)
     suspend fun setSmoothPressEnabled(enabled: Boolean)
+    suspend fun setAutoShowKeyboardEnabled(enabled: Boolean)
     suspend fun setAutoReconnectEnabled(enabled: Boolean)
     suspend fun setKeepScreenAwakeEnabled(enabled: Boolean)
     suspend fun setTheaterModeEnabled(enabled: Boolean)

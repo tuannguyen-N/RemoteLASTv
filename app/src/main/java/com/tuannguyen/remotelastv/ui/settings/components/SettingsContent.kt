@@ -11,10 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Feedback
-import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.tuannguyen.remotelastv.R
-import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.bounceClick
 import com.tuannguyen.remotelastv.ui.navigation.Route
 import com.tuannguyen.remotelastv.ui.settings.SettingsAction
@@ -105,7 +100,7 @@ fun SettingsContent(
                 )
 
                 SettingsItem(
-                    title =stringResource(R.string.connection_display),
+                    title = stringResource(R.string.connection_display),
                     onClick = { onAction(SettingsAction.Navigate(Route.ConnectionDisplay)) },
                 )
 

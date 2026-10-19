@@ -48,7 +48,11 @@ class LgTextInput @Inject constructor(
                 }
 
                 override fun onError(error: ServiceCommandError) {
-                    Log.e("LgTextInput", "subscribe error code=${error.code} msg=${error.message}", error)
+                    Log.e(
+                        "LgTextInput",
+                        "subscribe error code=${error.code} msg=${error.message}",
+                        error
+                    )
                     trySend(TextInputState.Unknown)
                 }
             })
