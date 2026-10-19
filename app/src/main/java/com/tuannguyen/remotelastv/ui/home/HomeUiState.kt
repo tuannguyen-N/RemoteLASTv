@@ -20,7 +20,10 @@ data class HomeUiState(
     val isKeepScreenAwakeEnabled: Boolean = true,
     val isTheaterModeEnabled: Boolean = false,
     val isHapticFeedbackEnabled: Boolean = true,
+
     val shortcutApps: List<KnownApp> = emptyList(),
+    val availableApps: List<KnownApp> = emptyList(),
+
     val touchpadMode: TouchpadMode = TouchpadMode.DIRECTIONAL,
     val volume: VolumeState? = null,
     val capabilities: Set<TvCapability> = emptySet(),

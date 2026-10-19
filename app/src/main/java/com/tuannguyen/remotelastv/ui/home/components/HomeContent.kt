@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -45,8 +46,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.VolumeMute
-import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -55,6 +54,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -66,9 +66,11 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -151,6 +153,8 @@ fun HomeContent(
         }
     }
 
+    var showAllApps by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -174,7 +178,12 @@ fun HomeContent(
                     onPowerClick = onPowerClick,
                 )
 
-                AppRow(apps = homeUiState.shortcutApps, onAppClick = onAppClick)
+                AppRow(
+                    apps = homeUiState.shortcutApps,
+                    onMoreClick = { showAllApps = true },
+                    onAppClick = onAppClick
+                )
+
                 ClassicControls(
                     uiState = homeUiState,
                     pagerState = pagerState,
@@ -199,6 +208,14 @@ fun HomeContent(
                 onKeyboardSubmit()
             },
             onQueryChange = { onQueryChange(it) },
+        )
+    }
+
+    if (showAllApps) {
+        MoreAppsDialog(
+            onDismiss = { showAllApps = false },
+            onAppClick = onAppClick,
+            apps = homeUiState.availableApps
         )
     }
 }
@@ -282,15 +299,29 @@ private fun HomeHeader(
 private fun AppRow(
     apps: List<KnownApp>,
     onAppClick: (KnownApp) -> Unit,
+    onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val listState = rememberLazyListState()
+
     LazyRow(
+        state = listState,
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = PaddingValues(horizontal = Dimens.Space.sm),
     ) {
-        items(items = apps, key = { it }) { app ->
-            AppLauncher(app = app, onClick = onAppClick)
+        items(
+            items = apps, key = { it },
+        ) { app ->
+            AppLauncher(
+                app = app,
+                onClick = onAppClick,
+            )
+        }
+
+        item(key = "more_apps") {
+            MoreAppsLauncher(
+                onClick = onMoreClick,
+            )
         }
     }
 }
@@ -937,6 +968,36 @@ private fun AppLauncher(
 }
 
 @Composable
+private fun MoreAppsLauncher(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .bounceClickNoEffect(onClick = onClick)
+            .padding(start = 16.dp)
+            .width(80.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.surfaceContainer),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.MoreHoriz,
+                contentDescription = stringResource(R.string.home_more_apps),
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(32.dp),
+            )
+        }
+    }
+}
+
+@Composable
 private fun HeaderIcon(
     iconRes: Int,
     description: String,
@@ -1008,10 +1069,10 @@ private fun DirectionKey(
 
 @Composable
 private fun RoundControl(
+    modifier: Modifier = Modifier,
     icon: IconSource,
     iconTint: Color = LocalContentColor.current,
     description: String,
-    modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     onClick: () -> Unit,
 ) {
@@ -1042,27 +1103,6 @@ private fun RoundControl(
             }
         }
     }
-}
-
-@Composable
-private fun MuteButton(
-    muted: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    val colors = MaterialTheme.colorScheme
-
-    RoundControl(
-        icon = IconSource.Vector(
-            if (muted) Icons.AutoMirrored.Filled.VolumeOff
-            else Icons.AutoMirrored.Filled.VolumeMute
-        ),
-        description = if (muted) "Unmute" else "Mute",
-        modifier = modifier,
-        containerColor = if (muted) colors.errorContainer else colors.surfaceContainer,
-        iconTint = if (muted) colors.error else LocalContentColor.current,
-        onClick = onClick,
-    )
 }
 
 @Composable

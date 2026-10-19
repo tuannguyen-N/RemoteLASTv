@@ -20,6 +20,7 @@ object Dimens {
         val iconMedium = 24.dp
         val iconLarge = 32.dp
         val borderThin = 1.dp
+         val appLogoSize = 56.dp
     }
 
     val screenPadding = 20.dp

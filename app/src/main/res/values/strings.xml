@@ -104,4 +104,7 @@
     <string name="keyboard_input_search">Tìm</string>
     <string name="automatically_show_the_keyboard_when_text_input_is_needed">Automatically show the keyboard when text input is needed</string>
     <string name="auto_keyboard">Auto Keyboard</string>
+    <string name="home_available_apps">TV Apps</string>
+    <string name="home_no_apps_available">No apps available for this TV.</string>
+    <string name="common_close">Close</string>
 </resources>

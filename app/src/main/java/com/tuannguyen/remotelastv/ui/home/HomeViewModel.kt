@@ -37,9 +37,9 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val settingsRepository: SettingsRepository,
+    settingsRepository: SettingsRepository,
     private val controllerManager: TvControllerManager,
-    private val connectionManager: TvConnectionManager,
+    connectionManager: TvConnectionManager,
     private val reconnectLastTvUseCase: ReconnectLastTvUseCase,
     private val getTvAppsUseCase: GetTvAppsUseCase
 ) : ViewModel() {
@@ -82,13 +82,17 @@ class HomeViewModel @Inject constructor(
             isTheaterModeEnabled = settings.isTheaterModeEnabled,
             isHapticFeedbackEnabled = settings.isHapticFeedbackEnabled,
             shortcutApps = resolveShortcuts(supported),
+            availableApps = resolveAvailableApps(supported),
             touchpadMode = tvLive.touchpadMode,
             volume = tvLive.volume,
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = HomeUiState(shortcutApps = resolveShortcuts(null)),
+        initialValue = HomeUiState(
+            shortcutApps = resolveShortcuts(null),
+            availableApps = resolveAvailableApps(null),
+        ),
     )
 
     private var pendingDx = 0f
@@ -145,13 +149,21 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun resolveShortcuts(supported: List<KnownApp>?): List<KnownApp> {
+    private fun resolveAvailableApps(
+        supported: List<KnownApp>?,
+    ): List<KnownApp> {
         val pool = supported?.takeIf { it.isNotEmpty() } ?: FALLBACK_APPS
-        return KnownApp.entries.filter { it in pool }.take(MAX_SHORTCUTS)
+        return KnownApp.entries.filter { it in pool }
+    }
+
+    private fun resolveShortcuts(
+        supported: List<KnownApp>?,
+    ): List<KnownApp> {
+        return resolveAvailableApps(supported).take(MAX_SHORTCUTS - 1)
     }
 
     private companion object {
-        const val MAX_SHORTCUTS = 5
+        const val MAX_SHORTCUTS = 6
         val FALLBACK_APPS = KnownApp.entries - KnownApp.GALAXY_PLAY
     }
 }
