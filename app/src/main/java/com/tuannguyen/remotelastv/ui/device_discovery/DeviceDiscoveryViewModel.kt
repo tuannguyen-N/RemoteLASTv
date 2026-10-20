@@ -1,6 +1,5 @@
 package com.tuannguyen.remotelastv.ui.device_discovery
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tuannguyen.remotelastv.domain.connection.TvConnectionManager
@@ -67,7 +66,9 @@ class DeviceDiscoveryViewModel @Inject constructor(
 
     fun connect(tv: Television) {
         viewModelScope.launch {
-            connectionManager.connect(tv)
+            connectionManager.connect(tv).onSuccess {
+                sendEvent(DiscoveryEvent.ConnectionSuccess(it))
+            }
         }
     }
 

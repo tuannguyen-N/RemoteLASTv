@@ -72,6 +72,7 @@ fun DeviceDiscoveryContent(
     onDisconnectClick: (Television) -> Unit,
     onDismissFailure: () -> Unit = {},
     onReturnHome: () -> Unit,
+    successTvName: String? = null,
     onSubmitPin: (String) -> Unit = {},
     onCancelSendPin: () -> Unit = {},
 ) {
@@ -247,17 +248,17 @@ fun DeviceDiscoveryContent(
                     }
                 }
             }
-
-            is ConnectionState.Connected -> {
-                DialogConnectionSuccess(
-                    televisionName = uiState.connectionState.tv.name,
-                    onContinue = onReturnHome
-                )
-            }
-
             else -> Unit
         }
     }
+
+    successTvName?.let { tvName ->
+        DialogConnectionSuccess(
+            televisionName = tvName,
+            onContinue = onReturnHome
+        )
+    }
+
 }
 
 @Composable

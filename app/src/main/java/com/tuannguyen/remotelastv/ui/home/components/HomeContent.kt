@@ -1,8 +1,12 @@
 package com.tuannguyen.remotelastv.ui.home.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.StartOffset
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
@@ -75,6 +79,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -89,7 +94,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -404,7 +408,7 @@ private fun TouchPad(
     val currentOnEvent by rememberUpdatedState(onEvent)
     val currentOnKey by rememberUpdatedState(onRemoteButtonClick)
 
-    fun Density.positionToKey(
+    fun positionToKey(
         totalX: Float,
         totalY: Float,
         threshold: Float
@@ -704,12 +708,21 @@ private fun ColumnScope.ClassicControls(
                 onClick = { onRemoteButtonClick(TvKey.MUTE) },
             )
             if (uiState.supportsVoice) {
-                RoundControl(
-                    icon = IconSource.Vector(Icons.Default.Mic),
-                    description = "Voice",
-                    modifier = Modifier.weight(1f),
-                ) {
-                    // TODO: voice
+                if (!uiState.isRecording) {
+                    RoundControl(
+                        icon = IconSource.Vector(Icons.Default.Mic),
+                        description = "Voice",
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        // TODO: start voice
+                    }
+                } else {
+                    RecordingControl(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            // TODO: stop voice
+                        }
+                    )
                 }
             }
             RoundControl(
@@ -1219,6 +1232,80 @@ private fun WaterFill(
             close()
         }
         drawPath(path = path, color = animatedColor)
+    }
+}
+
+@Composable
+private fun RecordingControl(
+    modifier: Modifier = Modifier,
+    description: String = "Stop recording",
+    activeColor: Color = MaterialTheme.colorScheme.error,
+    onActiveColor: Color = MaterialTheme.colorScheme.onError,
+    onClick: () -> Unit,
+) {
+    val transition = rememberInfiniteTransition(label = "recording")
+
+    val wave1 by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1400, easing = LinearOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave1"
+    )
+    val wave2 by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1400, easing = LinearOutSlowInEasing),
+            repeatMode = RepeatMode.Restart,
+            initialStartOffset = StartOffset(700)
+        ),
+        label = "wave2"
+    )
+
+    val micScale by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "micScale"
+    )
+
+    Box(
+        modifier = modifier
+            .aspectRatio(1f)
+            .drawBehind {
+                val baseRadius = size.minDimension / 2f
+                listOf(wave1, wave2).forEach { progress ->
+                    drawCircle(
+                        color = activeColor.copy(alpha = (1f - progress) * 0.35f),
+                        radius = baseRadius * (1f + progress * 0.6f)
+                    )
+                }
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clip(CircleShape)
+                .bounceClick(shape = CircleShape, onClick = onClick)
+                .background(activeColor),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Mic,
+                contentDescription = description,
+                tint = onActiveColor,
+                modifier = Modifier
+                    .size(Dimens.Size.iconLarge)
+                    .scale(micScale)
+            )
+        }
     }
 }
 

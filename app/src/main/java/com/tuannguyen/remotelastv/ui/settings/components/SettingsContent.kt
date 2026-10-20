@@ -11,6 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Feedback
+import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.tuannguyen.remotelastv.R
+import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.bounceClick
 import com.tuannguyen.remotelastv.ui.navigation.Route
 import com.tuannguyen.remotelastv.ui.settings.SettingsAction
@@ -112,51 +117,51 @@ fun SettingsContent(
 
             Spacer(Modifier.height(Dimens.Space.xl))
 
-//            HorizontalDivider(
-//                thickness = Dimens.Size.borderThin,
-//                color = MaterialTheme.colorScheme.outlineVariant,
-//            )
+            HorizontalDivider(
+                thickness = Dimens.Size.borderThin,
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
 
-//            SettingsSectionTitle(
-//                title = stringResource(R.string.settings_section_application),
-//                modifier = Modifier.padding(
-//                    start = Dimens.screenPadding,
-//                    end = Dimens.screenPadding,
-//                    top = Dimens.Space.md,
-//                    bottom = Dimens.Space.sm,
-//                ),
-//            )
-//
-//            Column {
-//                SettingsItem(
-//                    title = stringResource(R.string.settings_faq),
-//                    onClick = { onAction(SettingsAction.Navigate(Route.Faq)) },
-//                )
-//                SettingsItem(
-//                    title = stringResource(R.string.settings_share),
-//                    onClick = { onAction(SettingsAction.Share) },
-//                    trailing = IconSource.Vector(Icons.Default.Share),
-//                )
-//                SettingsItem(
-//                    title = stringResource(R.string.settings_rate_review),
-//                    onClick = { onAction(SettingsAction.RateAndReview) },
-//                    trailing = IconSource.Vector(Icons.Default.Star),
-//                )
-//                SettingsItem(
-//                    title = stringResource(R.string.settings_feedback),
-//                    onClick = { onAction(SettingsAction.Feedback) },
-//                    trailing = IconSource.Vector(Icons.Default.Feedback),
-//                )
-//                SettingsItem(
-//                    title = stringResource(R.string.settings_legal),
-//                    onClick = { onAction(SettingsAction.Navigate(Route.Legal)) },
-//                )
-//                SettingsItem(
-//                    title = stringResource(R.string.settings_activate_premium),
-//                    onClick = { onAction(SettingsAction.ActivatePremium) },
-//                    trailing = IconSource.Vector(Icons.Default.LockOpen),
-//                )
-//            }
+            SettingsSectionTitle(
+                title = stringResource(R.string.settings_section_application),
+                modifier = Modifier.padding(
+                    start = Dimens.screenPadding,
+                    end = Dimens.screenPadding,
+                    top = Dimens.Space.md,
+                    bottom = Dimens.Space.sm,
+                ),
+            )
+
+            Column {
+                SettingsItem(
+                    title = stringResource(R.string.settings_faq),
+                    onClick = { onAction(SettingsAction.Navigate(Route.Faq)) },
+                )
+                SettingsItem(
+                    title = stringResource(R.string.settings_share),
+                    onClick = { onAction(SettingsAction.Share) },
+                    trailing = IconSource.Vector(Icons.Default.Share),
+                )
+                SettingsItem(
+                    title = stringResource(R.string.settings_rate_review),
+                    onClick = { onAction(SettingsAction.RateAndReview) },
+                    trailing = IconSource.Vector(Icons.Default.Star),
+                )
+                SettingsItem(
+                    title = stringResource(R.string.settings_feedback),
+                    onClick = { onAction(SettingsAction.Feedback) },
+                    trailing = IconSource.Vector(Icons.Default.Feedback),
+                )
+                SettingsItem(
+                    title = stringResource(R.string.settings_legal),
+                    onClick = { onAction(SettingsAction.Navigate(Route.Legal)) },
+                )
+                SettingsItem(
+                    title = stringResource(R.string.settings_activate_premium),
+                    onClick = { onAction(SettingsAction.ActivatePremium) },
+                    trailing = IconSource.Vector(Icons.Default.LockOpen),
+                )
+            }
         }
     }
 }

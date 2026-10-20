@@ -4,6 +4,7 @@ import android.view.KeyEvent
 import com.tuannguyen.remotelastv.data.tv.AppCatalog
 import com.tuannguyen.remotelastv.domain.model.KnownApp
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
+import com.tuannguyen.remotelastv.domain.model.TouchpadMode
 import com.tuannguyen.remotelastv.domain.model.TvCapability
 import com.tuannguyen.remotelastv.domain.model.TvKey
 import com.tuannguyen.remotelastv.domain.model.VolumeState
@@ -18,7 +19,8 @@ import kotlin.coroutines.cancellation.CancellationException
 class AndroidTvTController @Inject constructor(
     private val remoteClient: RemoteClient,
 ) : TvControllerRepository {
-    override val capabilities: Set<TvCapability> = setOf(TvCapability.VOLUME_STATE)
+    override val capabilities: Set<TvCapability> = setOf(TvCapability.VOLUME_STATE, TvCapability.VOICE)
+    override val touchpadMode: TouchpadMode get() = TouchpadMode.DIRECTIONAL
 
     override suspend fun sendKey(key: TvKey): Result<Unit> {
         if (!remoteClient.isConnected) {

@@ -66,18 +66,35 @@ class KeyboardViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             tvInput
-                .filter { it !is TextInputState.Unknown }
-                .map { it is TextInputState.Focused }
+                .combine(textInputManager.capabilities) { input, capabilities ->
+                    input to capabilities
+                }
+                .filter { (input, _) -> input !is TextInputState.Unknown }
+                .map { (input, capabilities) ->
+                    (input is TextInputState.Focused) to
+                        (TextCapability.AUTO_SHOW_KEYBOARD_ON_FOCUS in capabilities)
+                }
                 .distinctUntilChanged()
-                .collect { isFocused ->
+                .collect { (isFocused, autoShowOnFocus) ->
                     if (isFocused) {
                         query.value = latestTvText() ?: ""
-                        if (isAutoShowKeyboardEnabled.value) sheetVisible.value = true
+                        if (autoShowOnFocus && isAutoShowKeyboardEnabled.value) {
+                            sheetVisible.value = true
+                        }
                     } else {
                         sheetVisible.value = false
                         query.value = ""
                     }
                 }
+        }
+
+        viewModelScope.launch {
+            textInputManager.keyboardShowRequests.collect {
+                if (isAutoShowKeyboardEnabled.value) {
+                    query.value = latestTvText() ?: ""
+                    sheetVisible.value = true
+                }
+            }
         }
 
         viewModelScope.launch {

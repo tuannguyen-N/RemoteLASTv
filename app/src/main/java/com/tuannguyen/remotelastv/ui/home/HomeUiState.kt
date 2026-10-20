@@ -19,6 +19,7 @@ data class HomeUiState(
     val isKeepScreenAwakeEnabled: Boolean = true,
     val isTheaterModeEnabled: Boolean = false,
     val isHapticFeedbackEnabled: Boolean = true,
+    val isRecording: Boolean = false,
 
     val shortcutApps: List<KnownApp> = emptyList(),
     val availableApps: List<KnownApp> = emptyList(),

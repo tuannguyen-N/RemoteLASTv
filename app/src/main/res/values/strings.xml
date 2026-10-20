@@ -113,5 +113,15 @@
     <string name="pin_verifying">Verifying PIN…</string>
     <string name="pin_submit">Submit</string>
     <string name="pin_cancel">Cancel</string>
-
+    <string name="touchpad_tutorial_title">How to use the Touchpad</string>
+    <string name="touchpad_tutorial_swipe_title">Move the pointer</string>
+    <string name="touchpad_tutorial_swipe_description">Slide one finger across the touchpad to move the pointer on your TV</string>
+    <string name="touchpad_tutorial_tap_title">Tap to click</string>
+    <string name="touchpad_tutorial_tap_description">Tap once to click on whatever the pointer is pointing at.</string>
+    <string name="touchpad_tutorial_two_finger_title">Navigate with two fingers</string>
+    <string name="touchpad_tutorial_two_finger_description">Swipe up, down, left or right with two fingers to act as the arrow keys. Perfect for moving through menus and lists.</string>
+    <string name="touchpad_tutorial_next">Next</string>
+    <string name="touchpad_tutorial_skip">Skip</string>
+    <string name="touchpad_tutorial_got_it">Got it</string>
+    <string name="touchpad_tutorial_swipe_note">Note: some TV models may not support this feature.</string>
 </resources>

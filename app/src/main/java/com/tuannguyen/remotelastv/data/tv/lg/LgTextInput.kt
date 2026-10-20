@@ -22,7 +22,10 @@ class LgTextInput @Inject constructor(
     private val registry: LgDeviceRegistry,
 ) : TvTextInputRepository {
 
-    override val capabilities: Set<TextCapability> = setOf(TextCapability.OBSERVE_FOCUS)
+    override val capabilities: Set<TextCapability> = setOf(
+        TextCapability.OBSERVE_FOCUS,
+        TextCapability.AUTO_SHOW_KEYBOARD_ON_FOCUS,
+    )
 
     override fun observeInput(): Flow<TextInputState> = callbackFlow {
         val control = textControl()

@@ -2,6 +2,7 @@ package com.tuannguyen.remotelastv.data.tv.android_tv
 
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import com.tuannguyen.remotelastv.domain.model.VolumeState
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -9,10 +10,14 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -21,9 +26,32 @@ import java.net.InetSocketAddress
 import java.util.concurrent.CancellationException
 import javax.net.ssl.SSLSocket
 
-/** Điều khiển TV sau khi đã ghép đôi (cổng 6466), dùng lại client cert trong AndroidKeyStore. */
 @Singleton
 class RemoteClient @Inject constructor(private val certManager: AndroidTvCertManager) {
+
+    object Feature {
+        const val PING = 1 shl 0
+        const val KEY = 1 shl 1
+        const val IME = 1 shl 2
+        const val VOICE = 1 shl 3
+        const val POWER = 1 shl 5
+        const val VOLUME = 1 shl 6
+        const val APP_LINK = 1 shl 9
+    }
+
+    data class ImeField(
+        val imeCounter: Int,
+        val fieldCounter: Int,
+        val value: String,
+        val start: Int,
+        val end: Int,
+        val label: String,
+    )
+
+    private val _imeField = MutableStateFlow<ImeField?>(null)
+    val imeField: StateFlow<ImeField?> = _imeField.asStateFlow()
+    private val _imeShowRequests = Channel<Unit>(Channel.CONFLATED)
+    val imeShowRequests: Flow<Unit> = _imeShowRequests.receiveAsFlow()
 
     enum class Direction(val value: Int) { START_LONG(1), END_LONG(2), SHORT(3) }
 
@@ -31,13 +59,15 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
     private val writeLock = Any()
     private val _volumeState = MutableStateFlow<VolumeState?>(null)
 
-    @Volatile private var socket: SSLSocket? = null
-    @Volatile private var closedSignal = CompletableDeferred<Unit>().apply { complete(Unit) }
+    @Volatile
+    private var socket: SSLSocket? = null
+
+    @Volatile
+    private var closedSignal = CompletableDeferred<Unit>().apply { complete(Unit) }
 
     val volumeState: Flow<VolumeState> = _volumeState.filterNotNull().distinctUntilChanged()
 
-    val isConnected: Boolean
-        get() = socket?.let { it.isConnected && !it.isClosed } == true
+    val isConnected: Boolean get() = socket?.let { it.isConnected && !it.isClosed } == true
 
     /** Kết nối và chờ TV gửi RemoteStart. Trả về true khi đã sẵn sàng nhận phím. */
     suspend fun connect(ipAddress: String, alias: String, port: Int = PORT): Boolean =
@@ -50,7 +80,7 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
                 val s = certManager.createSocketFactory(alias).createSocket() as SSLSocket
                 socket = s
                 s.connect(InetSocketAddress(ipAddress, port), CONNECT_TIMEOUT_MS)
-                s.soTimeout = READ_TIMEOUT_MS // TV ping định kỳ, im lặng quá lâu = mất kết nối
+                s.soTimeout = READ_TIMEOUT_MS
                 s.startHandshake()
 
                 scope.launch { readLoop(s, ready, closed) }
@@ -77,6 +107,8 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
         } finally {
             socket = null
             _volumeState.value = null
+            _imeField.value = null
+            _imeShowRequests.tryReceive()
             closedSignal.complete(Unit)
         }
     }
@@ -104,7 +136,7 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
     suspend fun launchApp(appLink: String) =
         withContext(Dispatchers.IO) {
             require(appLink.isNotBlank()) { "App ID or link must not be blank" }
-            val link = if (Uri.parse(appLink).scheme != null) {
+            val link = if (appLink.toUri().scheme != null) {
                 appLink
             } else {
                 Uri.Builder()
@@ -122,6 +154,27 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
             )
         }
 
+    suspend fun sendImeEdit(newValue: String, cursor: Int) = withContext(Dispatchers.IO) {
+        val field = _imeField.value ?: throw IllegalStateException("No active text field")
+        send(
+            Remotemessage.RemoteMessage.newBuilder().setRemoteImeBatchEdit(
+                Remotemessage.RemoteImeBatchEdit.newBuilder()
+                    .setImeCounter(field.imeCounter)
+                    .setFieldCounter(field.fieldCounter)
+                    .addEditInfo(
+                        Remotemessage.RemoteEditInfo.newBuilder()
+                            .setInsert(1)
+                            .setTextFieldStatus(
+                                Remotemessage.RemoteImeObject.newBuilder()
+                                    .setStart(cursor)
+                                    .setEnd(cursor)
+                                    .setValue(newValue)
+                            )
+                    )
+            ).build()
+        )
+    }
+
     private fun readLoop(
         s: SSLSocket,
         ready: CompletableDeferred<Boolean>,
@@ -133,19 +186,24 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
                 val msg = Remotemessage.RemoteMessage.parseDelimitedFrom(input) ?: break
                 when {
                     msg.hasRemoteConfigure() -> send(s, configureReply())
-                    msg.hasRemoteSetActive() -> send(s,
+                    msg.hasRemoteSetActive() -> send(
+                        s,
                         Remotemessage.RemoteMessage.newBuilder().setRemoteSetActive(
                             Remotemessage.RemoteSetActive.newBuilder().setActive(FEATURES)
                         ).build()
                     )
-                    msg.hasRemotePingRequest() -> send(s,
+
+                    msg.hasRemotePingRequest() -> send(
+                        s,
                         Remotemessage.RemoteMessage.newBuilder().setRemotePingResponse(
                             Remotemessage.RemotePingResponse.newBuilder()
                                 .setVal1(msg.remotePingRequest.val1)
                         ).build()
                     )
+
                     msg.hasRemoteSetVolumeLevel() -> {
                         val volume = msg.remoteSetVolumeLevel
+                        Log.d(TAG, "volume raw: $volume")
                         if (volume.volumeMax > 0) {
                             _volumeState.value = VolumeState(
                                 level = (volume.volumeLevel.toLong() * 100 / volume.volumeMax)
@@ -157,6 +215,36 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
                             Log.w(TAG, "Ignoring volume update with max=${volume.volumeMax}")
                         }
                     }
+
+                    msg.hasRemoteImeKeyInject() -> {
+                        Log.d(TAG, "Received RemoteImeKeyInject")
+                        val inj = msg.remoteImeKeyInject
+                        val f = inj.textFieldStatus
+                        _imeField.value = ImeField(
+                            imeCounter = inj.appInfo.counter,
+                            fieldCounter = f.counterField,
+                            value = f.value,
+                            start = f.start,
+                            end = f.end,
+                            label = f.label,
+                        )
+                    }
+
+                    msg.hasRemoteImeShowRequest() -> {
+                        Log.d(TAG, "Received RemoteImeShowRequest")
+                        val f = msg.remoteImeShowRequest.remoteTextFieldStatus
+                        val current = _imeField.value
+                        _imeField.value = ImeField(
+                            imeCounter = current?.imeCounter ?: 0,
+                            fieldCounter = f.counterField,
+                            value = f.value,
+                            start = f.start,
+                            end = f.end,
+                            label = f.label,
+                        )
+                        _imeShowRequests.trySend(Unit)
+                    }
+
                     msg.hasRemoteStart() -> ready.complete(true)
                 }
             }
@@ -164,10 +252,15 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
             Log.w(TAG, "readLoop ended: ${e.message}")
         } finally {
             ready.complete(false)
-            try { s.close() } catch (_: Exception) {}
+            try {
+                s.close()
+            } catch (_: Exception) {
+            }
             if (socket === s) {
                 socket = null
                 _volumeState.value = null
+                _imeField.value = null
+                _imeShowRequests.tryReceive()
             }
             closed.complete(Unit)
         }
@@ -203,7 +296,8 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
     private companion object {
         const val TAG = "RemoteClient"
         const val PORT = 6466
-        const val FEATURES = 622
+        const val FEATURES = Feature.PING or Feature.KEY or Feature.POWER or
+                Feature.VOLUME or Feature.APP_LINK or Feature.VOICE or Feature.IME
         const val CONNECT_TIMEOUT_MS = 5_000
         const val READ_TIMEOUT_MS = 30_000
         const val READY_TIMEOUT_MS = 10_000L

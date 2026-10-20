@@ -11,6 +11,7 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -34,6 +35,12 @@ class TvTextInputManager @Inject constructor(
     val capabilities: Flow<Set<TextCapability>> = connectionManager.connectedTelevision
         .map { tv -> tv?.let { repositories[it.brand]?.capabilities }.orEmpty() }
         .distinctUntilChanged()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val keyboardShowRequests: Flow<Unit> = connectionManager.connectedTelevision
+        .flatMapLatest { tv ->
+            tv?.let { repositories[it.brand]?.keyboardShowRequests } ?: emptyFlow()
+        }
 
     suspend fun <T> execute(
         block: suspend (TvTextInputRepository) -> Result<T>

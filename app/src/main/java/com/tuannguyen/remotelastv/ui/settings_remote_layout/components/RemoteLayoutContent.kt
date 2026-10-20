@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.ui.settings_remote_layout
+package com.tuannguyen.remotelastv.ui.settings_remote_layout.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -30,7 +30,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
 import com.tuannguyen.remotelastv.ui.components.CustomSwitch
+import com.tuannguyen.remotelastv.ui.settings_remote_layout.RemoteLayoutUiState
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 
@@ -56,6 +61,14 @@ fun RemoteLayoutContent(
     onMediaControlsChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showTouchpadTutorial by rememberSaveable { mutableStateOf(false) }
+
+    if (showTouchpadTutorial) {
+        TouchpadTutorialDialog(
+            onDismiss = { showTouchpadTutorial = false }
+        )
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -103,13 +116,15 @@ fun RemoteLayoutContent(
 
             NavigationOptionCard(
                 title = stringResource(R.string.settings_touchpad),
-                description = stringResource(
-                    R.string.settings_touchpad_description
-                ),
+                description = stringResource(R.string.settings_touchpad_description),
                 iconRes = R.drawable.ic_tounch_navigation,
                 selected = uiState.navigationMode == NavigationMode.TOUCH_PAD,
                 onClick = {
+                    val isSwitchingToTouchpad = uiState.navigationMode != NavigationMode.TOUCH_PAD
                     onNavigationModeChanged(NavigationMode.TOUCH_PAD)
+                    if (isSwitchingToTouchpad) {
+                        showTouchpadTutorial = true
+                    }
                 }
             )
 
@@ -121,20 +136,6 @@ fun RemoteLayoutContent(
             )
         }
     }
-}
-
-@Composable
-private fun SettingsSectionTitle(
-    text: String,
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = Dimens.Space.xs)
-    )
 }
 
 @Composable
