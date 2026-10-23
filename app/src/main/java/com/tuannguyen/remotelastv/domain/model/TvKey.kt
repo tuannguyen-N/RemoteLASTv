@@ -16,4 +16,5 @@ enum class TvKey {
 
     DELETE,
     PREVIOUS, NEXT, PLAY_PAUSE,
+    SEARCH
 }

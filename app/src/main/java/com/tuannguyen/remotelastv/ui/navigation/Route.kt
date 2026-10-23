@@ -31,4 +31,7 @@ sealed interface Route {
 
     @Serializable
     data object Legal : Route
+
+    @Serializable
+    data object Language : Route
 }

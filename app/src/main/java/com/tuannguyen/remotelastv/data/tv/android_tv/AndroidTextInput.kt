@@ -16,7 +16,12 @@ class AndroidTextInput @Inject constructor(
 ) : TvTextInputRepository {
 
     override val capabilities: Set<TextCapability> =
-        setOf(TextCapability.OBSERVE_FOCUS, TextCapability.REPLACE_TEXT, TextCapability.READ_TEXT)
+        setOf(
+            TextCapability.OBSERVE_FOCUS,
+            TextCapability.AUTO_SHOW_KEYBOARD_ON_FOCUS,
+            TextCapability.REPLACE_TEXT,
+            TextCapability.READ_TEXT,
+        )
 
     override val keyboardShowRequests: Flow<Unit> = remoteClient.imeShowRequests
 
@@ -36,7 +41,8 @@ class AndroidTextInput @Inject constructor(
         val start = field.start.coerceIn(0, field.value.length)
         val end = field.end.coerceIn(start, field.value.length)
         val newValue = field.value.take(start) + text + field.value.substring(end)
-        remoteClient.sendImeEdit(newValue, start + text.length)
+        // Truyền field đã capture xuống để tránh race condition đọc lại _imeField
+        remoteClient.sendImeEdit(newValue, start + text.length, field)
     }
 
     override suspend fun replaceText(text: String): Result<Unit> = runCatching {

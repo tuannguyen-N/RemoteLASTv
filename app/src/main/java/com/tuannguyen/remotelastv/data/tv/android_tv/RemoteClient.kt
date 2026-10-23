@@ -2,7 +2,9 @@ package com.tuannguyen.remotelastv.data.tv.android_tv
 
 import android.net.Uri
 import android.util.Log
+import android.view.KeyEvent
 import androidx.core.net.toUri
+import com.google.protobuf.ByteString
 import com.tuannguyen.remotelastv.domain.model.VolumeState
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import remote.Remotemessage
 import java.net.InetSocketAddress
@@ -57,7 +60,11 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val writeLock = Any()
+    private val voiceBeginLock = Any()
     private val _volumeState = MutableStateFlow<VolumeState?>(null)
+
+    @Volatile
+    private var pendingVoiceBegin: CompletableDeferred<Int>? = null
 
     @Volatile
     private var socket: SSLSocket? = null
@@ -100,6 +107,7 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
     suspend fun awaitClosed() = closedSignal.await()
 
     fun disconnect() {
+        failPendingVoiceBegin(IllegalStateException("TV connection closed during voice setup"))
         try {
             socket?.close()
         } catch (e: Exception) {
@@ -154,23 +162,82 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
             )
         }
 
-    suspend fun sendImeEdit(newValue: String, cursor: Int) = withContext(Dispatchers.IO) {
-        val field = _imeField.value ?: throw IllegalStateException("No active text field")
+    suspend fun sendImeEdit(newValue: String, cursor: Int, field: ImeField? = null) =
+        withContext(Dispatchers.IO) {
+            val f = field ?: _imeField.value ?: throw IllegalStateException("No active text field")
+            send(
+                Remotemessage.RemoteMessage.newBuilder().setRemoteImeBatchEdit(
+                    Remotemessage.RemoteImeBatchEdit.newBuilder()
+                        .setImeCounter(f.imeCounter)
+                        .setFieldCounter(f.fieldCounter)
+                        .addEditInfo(
+                            Remotemessage.RemoteEditInfo.newBuilder()
+                                .setInsert(1)
+                                .setTextFieldStatus(
+                                    Remotemessage.RemoteImeObject.newBuilder()
+                                        .setStart(cursor)
+                                        .setEnd(cursor)
+                                        .setValue(newValue)
+                                )
+                        )
+                ).build()
+            )
+        }
+
+    suspend fun sendVoiceBegin(sessionId: Int) = withContext(Dispatchers.IO) {
         send(
-            Remotemessage.RemoteMessage.newBuilder().setRemoteImeBatchEdit(
-                Remotemessage.RemoteImeBatchEdit.newBuilder()
-                    .setImeCounter(field.imeCounter)
-                    .setFieldCounter(field.fieldCounter)
-                    .addEditInfo(
-                        Remotemessage.RemoteEditInfo.newBuilder()
-                            .setInsert(1)
-                            .setTextFieldStatus(
-                                Remotemessage.RemoteImeObject.newBuilder()
-                                    .setStart(cursor)
-                                    .setEnd(cursor)
-                                    .setValue(newValue)
-                            )
-                    )
+            Remotemessage.RemoteMessage.newBuilder().setRemoteVoiceBegin(
+                Remotemessage.RemoteVoiceBegin.newBuilder().setSessionId(sessionId)
+            ).build()
+        )
+    }
+
+    suspend fun startVoiceSession(): Int = withContext(Dispatchers.IO) {
+        val response = CompletableDeferred<Int>()
+        synchronized(voiceBeginLock) {
+            check(pendingVoiceBegin == null) { "A voice session is already being started" }
+            pendingVoiceBegin = response
+        }
+
+        try {
+            sendKey(KeyEvent.KEYCODE_SEARCH)
+            val sessionId = withTimeout(VOICE_SESSION_TIMEOUT_MS) { response.await() }
+            sendVoiceBegin(sessionId)
+            sessionId
+        } finally {
+            synchronized(voiceBeginLock) {
+                if (pendingVoiceBegin === response) {
+                    pendingVoiceBegin = null
+                }
+            }
+        }
+    }
+
+    suspend fun sendVoicePayload(sessionId: Int, payload: ByteArray) = withContext(Dispatchers.IO) {
+        require(payload.isNotEmpty()) { "Voice payload must not be empty" }
+        for (offset in payload.indices step VOICE_CHUNK_MAX_SIZE) {
+            val length = minOf(VOICE_CHUNK_MAX_SIZE, payload.size - offset)
+            val samples = ByteArray(maxOf(length, VOICE_CHUNK_MIN_SIZE))
+            payload.copyInto(
+                destination = samples,
+                destinationOffset = 0,
+                startIndex = offset,
+                endIndex = offset + length,
+            )
+            send(
+                Remotemessage.RemoteMessage.newBuilder().setRemoteVoicePayload(
+                    Remotemessage.RemoteVoicePayload.newBuilder()
+                        .setSessionId(sessionId)
+                        .setSamples(ByteString.copyFrom(samples))
+                ).build()
+            )
+        }
+    }
+
+    suspend fun sendVoiceEnd(sessionId: Int) = withContext(Dispatchers.IO) {
+        send(
+            Remotemessage.RemoteMessage.newBuilder().setRemoteVoiceEnd(
+                Remotemessage.RemoteVoiceEnd.newBuilder().setSessionId(sessionId)
             ).build()
         )
     }
@@ -245,12 +312,23 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
                         _imeShowRequests.trySend(Unit)
                     }
 
+                    msg.hasRemoteVoiceBegin() -> {
+                        val sessionId = msg.remoteVoiceBegin.sessionId
+                        val response = synchronized(voiceBeginLock) { pendingVoiceBegin }
+                        if (response?.complete(sessionId) == true) {
+                            Log.d(TAG, "Voice session negotiated: $sessionId")
+                        } else {
+                            Log.d(TAG, "Ignoring unsolicited voice session: $sessionId")
+                        }
+                    }
+
                     msg.hasRemoteStart() -> ready.complete(true)
                 }
             }
         } catch (e: Exception) {
             Log.w(TAG, "readLoop ended: ${e.message}")
         } finally {
+            failPendingVoiceBegin(IllegalStateException("TV connection closed during voice setup"))
             ready.complete(false)
             try {
                 s.close()
@@ -293,9 +371,19 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
         }
     }
 
+    private fun failPendingVoiceBegin(error: Throwable) {
+        val pending = synchronized(voiceBeginLock) {
+            pendingVoiceBegin.also { pendingVoiceBegin = null }
+        }
+        pending?.completeExceptionally(error)
+    }
+
     private companion object {
         const val TAG = "RemoteClient"
         const val PORT = 6466
+        const val VOICE_SESSION_TIMEOUT_MS = 2_000L
+        const val VOICE_CHUNK_MIN_SIZE = 8 * 1024
+        const val VOICE_CHUNK_MAX_SIZE = 20 * 1024
         const val FEATURES = Feature.PING or Feature.KEY or Feature.POWER or
                 Feature.VOLUME or Feature.APP_LINK or Feature.VOICE or Feature.IME
         const val CONNECT_TIMEOUT_MS = 5_000

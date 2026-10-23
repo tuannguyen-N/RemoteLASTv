@@ -40,7 +40,8 @@ message RemoteVoiceBegin {
 }
 
 message RemoteVoicePayload {
-  bytes remote_voice_payload = 31;
+  int32 session_id = 1;
+  bytes samples = 2;
 }
 
 message RemoteVoiceEnd {

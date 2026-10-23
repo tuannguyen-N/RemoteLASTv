@@ -8,17 +8,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tuannguyen.remotelastv.ui.device_discovery.DeviceDiscoveryScreen
+import com.tuannguyen.remotelastv.ui.faq.FaqScreen
 import com.tuannguyen.remotelastv.ui.home.HomeScreen
+import com.tuannguyen.remotelastv.ui.language.LanguageScreen
 import com.tuannguyen.remotelastv.ui.settings.SettingsScreen
 import com.tuannguyen.remotelastv.ui.settings_connected_device.ConnectedDeviceScreen
 import com.tuannguyen.remotelastv.ui.settings_connection_display.ConnectionDisplayScreen
 import com.tuannguyen.remotelastv.ui.settings_remote_behavior.RemoteBehaviorScreen
 import com.tuannguyen.remotelastv.ui.settings_remote_layout.RemoteLayoutScreen
+import com.tuannguyen.remotelastv.ui.utils.sendFeedback
 
 @Composable
 fun AppNavHost(
@@ -87,6 +91,22 @@ fun AppNavHost(
 
         composable<Route.ConnectedDevices> {
             ConnectedDeviceScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<Route.Faq> {
+            val context = LocalContext.current
+            FaqScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onContactClick = {
+                    sendFeedback(context, "RemoteLASTv - FAQ")
+                },
+            )
+        }
+
+        composable<Route.Language> {
+            LanguageScreen(
                 onNavigateBack = { navController.popBackStack() },
             )
         }

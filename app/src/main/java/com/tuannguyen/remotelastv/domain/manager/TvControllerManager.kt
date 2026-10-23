@@ -50,6 +50,13 @@ class TvControllerManager @Inject constructor(
         .map { tv -> tv?.let { repositories[it.brand]?.touchpadMode } ?: TouchpadMode.DIRECTIONAL }
         .distinctUntilChanged()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val voiceRecording: Flow<Boolean> = connectionManager.connectedTelevision
+        .flatMapLatest { tv ->
+            tv?.let { repositories[it.brand]?.observeVoiceRecording() } ?: flowOf(false)
+        }
+        .distinctUntilChanged()
+
     suspend fun <T> execute(
         block: suspend (TvControllerRepository) -> Result<T>
     ): Result<T> {

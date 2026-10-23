@@ -28,10 +28,10 @@ fun shareApp(context: Context) {
     context.startActivity(chooser)
 }
 
-fun sendFeedback(context: Context) {
+fun sendFeedback(context: Context, title: String) {
     val intent = Intent(Intent.ACTION_SENDTO).apply {
         data = Uri.parse("mailto:example@gmail.com")
-        putExtra(Intent.EXTRA_SUBJECT, "RemoteLASTv - Feedback")
+        putExtra(Intent.EXTRA_SUBJECT, title)
     }
 
     runCatching {

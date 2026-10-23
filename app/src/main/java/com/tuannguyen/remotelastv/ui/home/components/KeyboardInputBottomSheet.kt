@@ -54,6 +54,7 @@ import kotlinx.coroutines.flow.first
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KeyboardInputBottomSheet(
+    query: String,
     onQueryChange: (String) -> Unit,
     onDismiss: () -> Unit,
     onSearch: () -> Unit,
@@ -65,7 +66,7 @@ fun KeyboardInputBottomSheet(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val textState = rememberTextFieldState()
+    val textState = rememberTextFieldState(initialText = query)
 
     val singleCharDelete = InputTransformation {
         val removed = originalText.length - length
@@ -77,6 +78,14 @@ fun KeyboardInputBottomSheet(
     LaunchedEffect(textState) {
         snapshotFlow { textState.text.toString() }
             .collect(onQueryChange)
+    }
+
+    LaunchedEffect(query, textState) {
+        if (textState.text.toString() != query) {
+            textState.edit {
+                replace(0, length, query)
+            }
+        }
     }
 
     LaunchedEffect(sheetState) {
@@ -105,7 +114,7 @@ fun KeyboardInputBottomSheet(
                     .padding(vertical = Dimens.Space.sm)
                     .size(
                         width = 40.dp,
-                        height = Dimens.Space.xs,
+                        height = Dimens.Space.xxs,
                     ),
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -226,6 +235,7 @@ private fun KeyboardInputBottomSheetPreview() {
     RemoteLASTvTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
             KeyboardInputBottomSheet(
+                query = "",
                 onDismiss = {},
                 onSearch = {},
                 onQueryChange = {},

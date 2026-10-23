@@ -100,6 +100,7 @@ class LgTvController @Inject constructor(
                 TvKey.NUMBER_8 -> sendDigit(webOs, 8)
                 TvKey.NUMBER_9 -> sendDigit(webOs, 9)
                 TvKey.DELETE -> webOs.sendDelete()
+                TvKey.SEARCH -> null
             }
         }
     }

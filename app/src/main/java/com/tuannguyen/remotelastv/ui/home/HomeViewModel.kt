@@ -57,6 +57,11 @@ class HomeViewModel @Inject constructor(
         TvLiveState(touchpadMode, volume, capabilities)
     }
 
+    private val voiceLiveState: Flow<Pair<TvLiveState, Boolean>> =
+        combine(tvLiveState, controllerManager.voiceRecording) { tvLive, isRecording ->
+            tvLive to isRecording
+        }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private val supportedApps: Flow<List<KnownApp>?> = connectionManager.state
         .map { (it as? ConnectionState.Connected)?.tv }
@@ -72,8 +77,9 @@ class HomeViewModel @Inject constructor(
         settingsRepository.remoteSettings,
         connectionManager.state,
         supportedApps,
-        tvLiveState,
-    ) { local, settings, connectionState, supported, tvLive ->
+        voiceLiveState,
+    ) { local, settings, connectionState, supported, live ->
+        val (tvLive, isRecording) = live
         local.copy(
             showMediaButtons = settings.showMediaButtons,
             navigationMode = settings.navigationMode,
@@ -85,7 +91,8 @@ class HomeViewModel @Inject constructor(
             availableApps = resolveAvailableApps(supported),
             touchpadMode = tvLive.touchpadMode,
             volume = tvLive.volume,
-            capabilities = tvLive.capabilities
+            capabilities = tvLive.capabilities,
+            isRecording = isRecording,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -117,6 +124,26 @@ class HomeViewModel @Inject constructor(
     fun onRemoteButtonClick(key: TvKey) = send { it.sendKey(key) }
     fun onAppClick(channel: KnownApp) {
         send { it.launchApp(channel) }
+    }
+
+    fun startVoiceRecording() {
+        viewModelScope.launch {
+            controllerManager.execute { it.startVoiceRecording() }
+                .onFailure { e -> _effect.send(HomeEvent.ShowMessage("Unable to start voice recording: ${e.message}")) }
+        }
+    }
+
+    fun stopVoiceRecording() {
+        viewModelScope.launch {
+            controllerManager.execute { it.stopVoiceRecording() }
+                .onFailure { e -> _effect.send(HomeEvent.ShowMessage("Unable to stop voice recording: ${e.message}")) }
+        }
+    }
+
+    fun onMicrophonePermissionDenied() {
+        viewModelScope.launch {
+            _effect.send(HomeEvent.ShowMessage("Microphone permission denied. Enable it in app settings to use voice."))
+        }
     }
 
     fun onPageSelected(page: Int) {

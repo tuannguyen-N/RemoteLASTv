@@ -1,11 +1,17 @@
 package com.tuannguyen.remotelastv.ui.home
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tuannguyen.remotelastv.ui.effects.KeepScreenOnEffect
@@ -24,6 +30,17 @@ fun HomeScreen(
     val homeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val keyboardUiState by keyboardViewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val microphonePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            homeViewModel.startVoiceRecording()
+        } else {
+            // TODO: Open app settings when microphone permission has been permanently denied.
+            homeViewModel.onMicrophonePermissionDenied()
+        }
+    }
     val isTheaterModeActive =
         homeUiState.isTheaterModeEnabled && !homeUiState.isKeepScreenAwakeEnabled
 
@@ -59,6 +76,18 @@ fun HomeScreen(
             onDismissKeyboardSheet = keyboardViewModel::dismissKeyboardSheet,
             onQueryChange = keyboardViewModel::onQueryChange,
             onKeyboardSubmit = keyboardViewModel::onEnter,
+            onStartVoiceRecording = {
+                if (ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.RECORD_AUDIO,
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    homeViewModel.startVoiceRecording()
+                } else {
+                    microphonePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                }
+            },
+            onStopVoiceRecording = homeViewModel::stopVoiceRecording,
             keyboardUiState = keyboardUiState,
             modifier = modifier,
         )

@@ -35,7 +35,7 @@ fun SettingsScreen(
                 }
 
                 SettingsAction.Feedback -> {
-                    sendFeedback(context)
+                    sendFeedback(context, "RemoteLASTv - Feedback")
                 }
 
                 SettingsAction.ActivatePremium -> {

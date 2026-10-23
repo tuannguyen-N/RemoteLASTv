@@ -7,6 +7,7 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
@@ -50,6 +51,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardBackspace
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -60,7 +62,6 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -102,9 +103,11 @@ import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.KnownApp
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
 import com.tuannguyen.remotelastv.domain.model.NumberPadItem
+import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.model.TouchpadEvent
 import com.tuannguyen.remotelastv.domain.model.TouchpadMode
 import com.tuannguyen.remotelastv.domain.model.TvKey
+import com.tuannguyen.remotelastv.domain.model.VolumeState
 import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.bounceClick
 import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
@@ -123,6 +126,19 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sin
 
+private val HeaderHeight = 80.dp
+private val HeaderHeightCompact = 64.dp
+private val AppIconSize = 80.dp
+private val RingStroke = 2.dp
+private val RingColors = listOf(
+    Color(0xFF9B4CCB),
+    Color(0xFF3E9AEF),
+    Color(0xFF9B4CCB),
+)
+
+@Composable
+private fun hairline(): Color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+
 @Composable
 fun HomeContent(
     modifier: Modifier = Modifier,
@@ -140,6 +156,8 @@ fun HomeContent(
     onDismissKeyboardSheet: () -> Unit = {},
     onQueryChange: (String) -> Unit = {},
     onKeyboardSubmit: () -> Unit = {},
+    onStartVoiceRecording: () -> Unit = {},
+    onStopVoiceRecording: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val pagerState = rememberPagerState(
@@ -196,7 +214,9 @@ fun HomeContent(
                     onPageSelected = onPageSelected,
                     touchpadMode = touchpadMode,
                     touchpadEvent = touchpadEvent,
-                    showKeyboardSheet = onShowKeyboardSheet
+                    showKeyboardSheet = onShowKeyboardSheet,
+                    onStartVoiceRecording = onStartVoiceRecording,
+                    onStopVoiceRecording = onStopVoiceRecording,
                 )
             }
         }
@@ -204,6 +224,7 @@ fun HomeContent(
 
     if (keyboardUiState.showKeyboardSheet) {
         KeyboardInputBottomSheet(
+            query = keyboardUiState.query,
             onDismiss = {
                 onDismissKeyboardSheet()
             },
@@ -235,7 +256,7 @@ private fun HomeHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (compact) 64.dp else 82.dp)
+            .height(if (compact) HeaderHeightCompact else HeaderHeight)
             .padding(horizontal = Dimens.Space.lg),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -245,48 +266,17 @@ private fun HomeHeader(
             description = "Settings",
             onClick = onSettingsClick,
         )
-        Row(
+
+        Box(
             modifier = Modifier
                 .weight(1f)
-                .safeClickableNoEffect(onChangeTelevision)
                 .padding(horizontal = Dimens.Space.sm),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+            contentAlignment = Alignment.Center,
         ) {
-            val connectionState = uiState.connectionState
-            val isConnected = connectionState is ConnectionState.Connected
-
-            if (isConnected) {
-                Box(
-                    modifier = Modifier
-                        .size(9.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.extendedColors.success),
-                )
-
-                Spacer(Modifier.width(Dimens.Space.xs))
-            }
-
-            Text(
-                text = if (connectionState is ConnectionState.Connected) {
-                    connectionState.tv.name
-                } else {
-                    stringResource(R.string.choose_a_tv)
-                },
-                modifier = Modifier
-                    .weight(1f, fill = false),
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = if (compact) 16.sp else 20.sp,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = stringResource(R.string.choose_a_tv),
-                modifier = Modifier.size(Dimens.Size.iconLarge),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            TvSelector(
+                connectionState = uiState.connectionState,
+                compact = compact,
+                onClick = onChangeTelevision,
             )
         }
 
@@ -295,6 +285,98 @@ private fun HomeHeader(
             description = "Power",
             onClick = onPowerClick,
             tint = MaterialTheme.colorScheme.error,
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+        )
+    }
+}
+
+@Composable
+private fun TvSelector(
+    connectionState: ConnectionState,
+    compact: Boolean,
+    onClick: () -> Unit,
+) {
+    val connected = connectionState as? ConnectionState.Connected
+
+    Row(
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(Dimens.Size.borderThin, hairline(), CircleShape)
+            .safeClickableNoEffect(onClick)
+            .padding(
+                start = Dimens.Space.md,
+                end = Dimens.Space.xs,
+                top = Dimens.Space.xs,
+                bottom = Dimens.Space.xs,
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (connected != null) {
+            StatusDot()
+            Spacer(Modifier.width(Dimens.Space.xs))
+        }
+
+        Text(
+            text = connected?.let { it.tv.name } ?: stringResource(R.string.choose_a_tv),
+            modifier = Modifier.weight(1f, fill = false),
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = if (compact) 16.sp else 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+
+        Icon(
+            imageVector = Icons.Default.ArrowDropDown,
+            contentDescription = stringResource(R.string.choose_a_tv),
+            modifier = Modifier.size(Dimens.Size.iconMedium),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun StatusDot() {
+    val success = MaterialTheme.extendedColors.success
+    Box(
+        modifier = Modifier
+            .size(Dimens.Space.sm)
+            .clip(CircleShape)
+            .background(success.copy(alpha = 0.25f)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(Dimens.Space.xs)
+                .clip(CircleShape)
+                .background(success),
+        )
+    }
+}
+
+@Composable
+private fun HeaderIcon(
+    iconRes: Int,
+    description: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    tint: Color = MaterialTheme.colorScheme.onSurface,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
+) {
+    Box(
+        modifier = modifier
+            .size(Dimens.Size.minTouchTarget)
+            .bounceClickNoEffect(onClick = onClick)
+            .clip(CircleShape)
+            .background(containerColor),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = description,
+            tint = tint,
+            modifier = Modifier.size(Dimens.Size.iconMedium),
         )
     }
 }
@@ -311,7 +393,8 @@ private fun AppRow(
     LazyRow(
         state = listState,
         modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = Dimens.Space.sm),
+        contentPadding = PaddingValues(horizontal = Dimens.Space.lg),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.Space.md),
     ) {
         items(
             items = apps, key = { it },
@@ -331,6 +414,46 @@ private fun AppRow(
 }
 
 @Composable
+private fun AppLauncher(
+    app: KnownApp, onClick: (KnownApp) -> Unit, modifier: Modifier = Modifier
+) {
+    val shape = MaterialTheme.shapes.medium
+    Image(
+        painter = painterResource(app.logoRes()),
+        contentDescription = app.name,
+        modifier = modifier
+            .size(AppIconSize)
+            .bounceClickNoEffect(onClick = { onClick(app) })
+            .clip(shape),
+        contentScale = ContentScale.Crop
+    )
+}
+
+@Composable
+private fun MoreAppsLauncher(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = MaterialTheme.shapes.medium
+    Box(
+        modifier = modifier
+            .size(AppIconSize)
+            .bounceClickNoEffect(onClick = onClick)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(Dimens.Size.borderThin, hairline(), shape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.MoreHoriz,
+            contentDescription = stringResource(R.string.home_more_apps),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(Dimens.Size.iconLarge),
+        )
+    }
+}
+
+@Composable
 private fun ColumnScope.PadSection(
     pagerState: PagerState,
     compact: Boolean,
@@ -340,7 +463,7 @@ private fun ColumnScope.PadSection(
     onRemoteButtonClick: (TvKey) -> Unit,
     dpadOverlay: (@Composable BoxScope.() -> Unit)? = null,
 ) {
-    Spacer(Modifier.height(if (compact) 12.dp else 16.dp))
+    Spacer(Modifier.height(if (compact) Dimens.Space.sm else Dimens.Space.md))
 
     BoxWithConstraints(
         modifier = Modifier
@@ -429,10 +552,8 @@ private fun TouchPad(
             .clip(MaterialTheme.shapes.extraLarge)
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .border(
-                width = 2.dp,
-                brush = Brush.sweepGradient(
-                    listOf(Color(0xFF9B4CCB), Color(0xFF3E9AEF), Color(0xFF9B4CCB))
-                ),
+                width = RingStroke,
+                brush = Brush.sweepGradient(RingColors),
                 shape = MaterialTheme.shapes.extraLarge,
             )
 
@@ -527,7 +648,8 @@ private fun TouchPad(
                 }
             },
         contentAlignment = Alignment.Center,
-    ) {}
+    ) {
+    }
 }
 
 @Composable
@@ -537,16 +659,22 @@ private fun PageDots(
 ) {
     Row(
         modifier = Modifier.padding(bottom = Dimens.Space.lg),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.Space.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         repeat(2) { index ->
+            val selected = selectedPage == index
+            val dotWidth by animateDpAsState(
+                targetValue = if (selected) Dimens.Space.lg else Dimens.Space.xs,
+                label = "dotWidth",
+            )
             Box(
                 Modifier
-                    .size(8.dp)
+                    .height(Dimens.Space.xs)
+                    .width(dotWidth)
                     .clip(CircleShape)
                     .background(
-                        if (selectedPage == index) MaterialTheme.colorScheme.onSurface
+                        if (selected) MaterialTheme.colorScheme.onSurface
                         else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
                     )
                     .bounceClick { onPageSelected(index) })
@@ -567,10 +695,10 @@ private fun BottomControls(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp)
+            .padding(bottom = Dimens.Space.xs)
             .padding(horizontal = Dimens.Space.lg),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.Space.sm),
     ) {
         VerticalControl(
             iconTop = Icons.Default.Add,
@@ -587,7 +715,7 @@ private fun BottomControls(
         )
         Column(
             modifier = Modifier.weight(3f),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(Dimens.Space.sm),
             content = centerContent,
         )
         VerticalControl(
@@ -616,7 +744,7 @@ private fun MuteControl(
         description = if (isMuted) "Unmute" else "Mute",
         modifier = modifier,
         containerColor = if (isMuted) colors.errorContainer else colors.surfaceContainer,
-        iconTint = if (isMuted) colors.error else LocalContentColor.current,
+        iconTint = if (isMuted) colors.error else colors.onSurface,
         onClick = onClick,
     )
 }
@@ -631,6 +759,8 @@ private fun ColumnScope.ClassicControls(
     touchpadEvent: (TouchpadEvent) -> Unit = {},
     onPageSelected: (Int) -> Unit,
     showKeyboardSheet: () -> Unit,
+    onStartVoiceRecording: () -> Unit,
+    onStopVoiceRecording: () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -651,7 +781,7 @@ private fun ColumnScope.ClassicControls(
         volume = uiState.volume?.level,
         muted = uiState.volume?.muted == true,
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.Space.sm)) {
             RoundControl(
                 icon = IconSource.Vector(Icons.Default.Keyboard),
                 description = "Keyboard",
@@ -678,7 +808,7 @@ private fun ColumnScope.ClassicControls(
         }
 
         if (uiState.showMediaButtons) {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.Space.sm)) {
                 RoundControl(
                     icon = IconSource.Resource(R.drawable.ic_previous),
                     description = "Skip Previous",
@@ -700,7 +830,7 @@ private fun ColumnScope.ClassicControls(
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.Space.sm)) {
             val muted = uiState.volume?.muted == true
             MuteControl(
                 isMuted = muted,
@@ -714,32 +844,25 @@ private fun ColumnScope.ClassicControls(
                         description = "Voice",
                         modifier = Modifier.weight(1f),
                     ) {
-                        // TODO: start voice
+                        onStartVoiceRecording()
                     }
                 } else {
                     RecordingControl(
                         modifier = Modifier.weight(1f),
                         onClick = {
-                            // TODO: stop voice
+                            onStopVoiceRecording()
                         }
                     )
                 }
             }
             RoundControl(
-                icon = IconSource.Resource(R.drawable.ic_return),
+                icon = IconSource.Vector(Icons.AutoMirrored.Filled.KeyboardBackspace),
                 description = "Back",
                 modifier = Modifier.weight(1f),
             ) { onRemoteButtonClick(TvKey.BACK) }
         }
     }
 }
-
-private val RingStroke = 2.2.dp
-private val RingColors = listOf(
-    Color(0xFF9B4CCB),
-    Color(0xFF3E9AEF),
-    Color(0xFF9B4CCB),
-)
 
 @Composable
 private fun DPad(
@@ -818,9 +941,9 @@ private fun DPad(
             modifier = Modifier
                 .size(disc * 0.28f)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .background(MaterialTheme.colorScheme.primaryContainer)
                 .border(
-                    width = 2.dp,
+                    width = RingStroke,
                     brush = Brush.sweepGradient(RingColors),
                     shape = CircleShape,
                 )
@@ -829,7 +952,9 @@ private fun DPad(
         ) {
             Text(
                 text = "OK",
-                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
     }
@@ -865,14 +990,14 @@ private fun NumberPad(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(Dimens.Space.sm),
     ) {
         numberPadRows.forEach { row ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.Space.sm),
             ) {
                 row.forEach { item ->
                     when (item) {
@@ -923,24 +1048,25 @@ private fun NumberPadKey(
     onClick: () -> Unit,
 ) {
     val isDelete = key == "delete"
+    val shape = MaterialTheme.shapes.large
 
     Box(
         modifier = modifier
-            .clip(MaterialTheme.shapes.large)
+            .clip(shape)
             .then(
                 if (isDelete) {
                     Modifier.border(
                         width = 1.5.dp,
-                        color = MaterialTheme.colorScheme.outline.copy(
-                            alpha = 0.35f
-                        ),
-                        shape = MaterialTheme.shapes.large,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                        shape = shape,
                     )
                 } else {
-                    Modifier.background(
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                        shape = MaterialTheme.shapes.large,
-                    )
+                    Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceContainer,
+                            shape = shape,
+                        )
+                        .border(Dimens.Size.borderThin, hairline(), shape)
                 }
             )
             .repeatableClick(onClick = onClick, indication = ripple()),
@@ -950,86 +1076,16 @@ private fun NumberPadKey(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.Backspace,
                 contentDescription = "Delete",
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(Dimens.Size.iconMedium + Dimens.Space.xxs),
                 tint = MaterialTheme.colorScheme.onSurface,
             )
         } else if (key.isNotEmpty()) {
             Text(
                 text = key,
-                fontSize = 25.sp,
+                style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }
-    }
-}
-
-@Composable
-private fun AppLauncher(
-    app: KnownApp, onClick: (KnownApp) -> Unit, modifier: Modifier = Modifier
-) {
-    Image(
-        painter = painterResource(app.logoRes()),
-        contentDescription = app.name,
-        modifier = modifier
-            .bounceClickNoEffect(
-                onClick = { onClick(app) })
-            .padding(start = 16.dp)
-            .size(80.dp)
-            .clip(MaterialTheme.shapes.medium),
-        contentScale = ContentScale.Crop
-    )
-}
-
-@Composable
-private fun MoreAppsLauncher(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .bounceClickNoEffect(onClick = onClick)
-            .padding(start = 16.dp)
-            .width(80.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(MaterialTheme.shapes.medium)
-                .background(MaterialTheme.colorScheme.surfaceContainer),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.MoreHoriz,
-                contentDescription = stringResource(R.string.home_more_apps),
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(32.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun HeaderIcon(
-    iconRes: Int,
-    description: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    tint: Color = MaterialTheme.colorScheme.onSurface,
-) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .bounceClickNoEffect(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            painter = painterResource(iconRes),
-            contentDescription = description,
-            tint = tint,
-            modifier = Modifier.size(Dimens.Size.iconLarge),
-        )
     }
 }
 
@@ -1075,6 +1131,7 @@ private fun DirectionKey(
         Icon(
             imageVector = icon,
             contentDescription = command.name,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = iconPadding.size(Dimens.Size.iconLarge),
         )
     }
@@ -1084,7 +1141,7 @@ private fun DirectionKey(
 private fun RoundControl(
     modifier: Modifier = Modifier,
     icon: IconSource,
-    iconTint: Color = LocalContentColor.current,
+    iconTint: Color = MaterialTheme.colorScheme.onSurface,
     description: String,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     onClick: () -> Unit,
@@ -1093,7 +1150,8 @@ private fun RoundControl(
         modifier = modifier
             .aspectRatio(1f)
             .bounceClick(shape = CircleShape, onClick = onClick)
-            .background(containerColor),
+            .background(containerColor)
+            .border(Dimens.Size.borderThin, hairline(), CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         when (icon) {
@@ -1132,7 +1190,8 @@ private fun VerticalControl(
     Box(
         modifier = modifier
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainer),
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(Dimens.Size.borderThin, hairline(), CircleShape),
     ) {
         if (level != null) {
             WaterFill(
@@ -1155,13 +1214,16 @@ private fun VerticalControl(
                 Icon(
                     imageVector = iconTop,
                     contentDescription = "IconTop$middle",
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(Dimens.Size.iconLarge),
                 )
             }
             Text(
-                middle,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 14.sp,
+                text = middle,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 1.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
             Box(
@@ -1173,6 +1235,7 @@ private fun VerticalControl(
                 Icon(
                     imageVector = iconBottom,
                     contentDescription = "IconBottom$middle",
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(Dimens.Size.iconLarge),
                 )
             }
@@ -1314,7 +1377,13 @@ private fun RecordingControl(
 private fun HomeContentClassicPreview() {
     RemoteLASTvTheme {
         HomeContent(
-            homeUiState = HomeUiState(),
+            homeUiState = HomeUiState(
+                connectionState = ConnectionState.Connected(
+                    Television(name = "TV", id = "1234567890", ipAddress = "192.168.1.1"),
+
+                    ),
+                volume = VolumeState(level = 40, muted = false),
+            ),
             onSettingsClick = {},
             onChangeTelevision = {},
             onPowerClick = {},

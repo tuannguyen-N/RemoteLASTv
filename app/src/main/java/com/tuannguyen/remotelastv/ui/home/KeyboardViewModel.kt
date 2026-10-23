@@ -29,6 +29,17 @@ class KeyboardViewModel @Inject constructor(
 ) : ViewModel() {
 
     private sealed interface TextCommand {
+        /**
+         * Thay toàn bộ nội dung ô text trên TV bằng [text].
+         * Dùng khi TV hỗ trợ [TextCapability.REPLACE_TEXT] (VD: Android TV).
+         * Tránh được race condition của [Send] — không cần biết TV field hiện tại.
+         */
+        data class Replace(val text: String) : TextCommand
+
+        /**
+         * Chèn [text] vào vị trí con trỏ hiện tại trên TV.
+         * Dùng như fallback khi TV không hỗ trợ REPLACE_TEXT.
+         */
         data class Send(val text: String) : TextCommand
         data class Delete(val count: Int) : TextCommand
         data object Enter : TextCommand
@@ -46,6 +57,10 @@ class KeyboardViewModel @Inject constructor(
 
     private val tvInput: StateFlow<TextInputState> = textInputManager.inputState
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TextInputState.Unknown)
+
+    /** Snapshot capabilities — đọc synchronously khi cần enqueue command. */
+    private val capsSnapshot: StateFlow<Set<TextCapability>> = textInputManager.capabilities
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
 
     private fun latestTvText(): String? = (tvInput.value as? TextInputState.Focused)?.text
 
@@ -120,6 +135,7 @@ class KeyboardViewModel @Inject constructor(
 
     private suspend fun process(cmd: TextCommand) {
         when (cmd) {
+            is TextCommand.Replace -> textInputManager.execute { it.replaceText(cmd.text) }
             is TextCommand.Send -> textInputManager.execute { it.sendText(cmd.text) }
             is TextCommand.Delete -> repeat(cmd.count) {
                 textInputManager.execute { it.sendDelete() }
@@ -139,12 +155,20 @@ class KeyboardViewModel @Inject constructor(
         if (new == old) return
         query.value = new
 
-        val common = old.commonPrefixWith(new).length
-        val toDelete = old.length - common
-        val toSend = new.substring(common)
+        val canReplace = TextCapability.REPLACE_TEXT in capsSnapshot.value
+        if (canReplace) {
+            // Dùng replaceText: gửi toàn bộ text hiện tại, TV tự cập nhật.
+            // Không phụ thuộc vào TV field state → không bị loạn khi gõ nhanh.
+            enqueue(TextCommand.Replace(new))
+        } else {
+            // Fallback: tính diff và gửi từng thao tác
+            val common = old.commonPrefixWith(new).length
+            val toDelete = old.length - common
+            val toSend = new.substring(common)
 
-        if (toDelete > 0) enqueue(TextCommand.Delete(toDelete))
-        if (toSend.isNotEmpty()) enqueue(TextCommand.Send(toSend))
+            if (toDelete > 0) enqueue(TextCommand.Delete(toDelete))
+            if (toSend.isNotEmpty()) enqueue(TextCommand.Send(toSend))
+        }
     }
 
     fun onEnter() = enqueue(TextCommand.Enter)
