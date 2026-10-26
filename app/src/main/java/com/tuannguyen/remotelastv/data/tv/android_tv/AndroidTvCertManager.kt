@@ -4,6 +4,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.bouncycastle.x509.X509V3CertificateGenerator
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -19,7 +20,6 @@ import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 import javax.security.auth.x500.X500Principal
-import org.bouncycastle.x509.X509V3CertificateGenerator
 
 /**
  * Client cert dạng software key (RSA 2048) lưu trong file PKCS12 ở bộ nhớ riêng của app.
@@ -42,7 +42,8 @@ class AndroidTvCertManager @Inject constructor(
 
     /** Tạo cặp khóa RSA + cert self-signed (sống 10 năm). Ghi đè nếu alias đã tồn tại. */
     fun createIdentity(alias: String) {
-        val keyPair = KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
+        val keyPair =
+            KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
 
         val now = System.currentTimeMillis()
         val dn = X500Principal("CN=AndroidTvRemote,O=RemoteLaStv")

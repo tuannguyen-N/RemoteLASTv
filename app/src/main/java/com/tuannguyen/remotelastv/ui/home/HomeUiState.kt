@@ -16,9 +16,13 @@ data class HomeUiState(
     val isEmpty: Boolean = false,
     val showMediaButtons: Boolean = false,
     val navigationMode: NavigationMode = NavigationMode.D_PAD,
+    val isAutoReconnectEnabled: Boolean = true,
     val isKeepScreenAwakeEnabled: Boolean = true,
     val isTheaterModeEnabled: Boolean = false,
     val isHapticFeedbackEnabled: Boolean = true,
+    val isSmoothPressEnabled: Boolean = false,
+    val isAutoShowKeyboardEnabled: Boolean = true,
+    val showFirstConnectTutorial: Boolean = false,
     val isRecording: Boolean = false,
 
     val shortcutApps: List<KnownApp> = emptyList(),

@@ -7,6 +7,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tuannguyen.remotelastv.ui.navigation.Route
 import com.tuannguyen.remotelastv.ui.settings.components.SettingsContent
+import com.tuannguyen.remotelastv.ui.utils.openPrivacyPolicy
 import com.tuannguyen.remotelastv.ui.utils.sendFeedback
 import com.tuannguyen.remotelastv.ui.utils.shareApp
 
@@ -40,6 +41,10 @@ fun SettingsScreen(
 
                 SettingsAction.ActivatePremium -> {
                     // TODO: Premium
+                }
+
+                SettingsAction.PrivacyPolicy -> {
+                    openPrivacyPolicy(context)
                 }
             }
         },

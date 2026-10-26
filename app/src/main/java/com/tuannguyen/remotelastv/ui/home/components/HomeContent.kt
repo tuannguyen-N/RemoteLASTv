@@ -71,6 +71,7 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -106,6 +107,7 @@ import com.tuannguyen.remotelastv.domain.model.NumberPadItem
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.model.TouchpadEvent
 import com.tuannguyen.remotelastv.domain.model.TouchpadMode
+import com.tuannguyen.remotelastv.domain.model.TutorialActions
 import com.tuannguyen.remotelastv.domain.model.TvKey
 import com.tuannguyen.remotelastv.domain.model.VolumeState
 import com.tuannguyen.remotelastv.ui.common.IconSource
@@ -120,6 +122,7 @@ import com.tuannguyen.remotelastv.ui.home.HomeUiState
 import com.tuannguyen.remotelastv.ui.home.KeyboardUiState
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
+import com.tuannguyen.remotelastv.ui.theme.RingColors
 import com.tuannguyen.remotelastv.ui.theme.extendedColors
 import kotlinx.coroutines.launch
 import kotlin.math.PI
@@ -130,11 +133,6 @@ private val HeaderHeight = 80.dp
 private val HeaderHeightCompact = 64.dp
 private val AppIconSize = 80.dp
 private val RingStroke = 2.dp
-private val RingColors = listOf(
-    Color(0xFF9B4CCB),
-    Color(0xFF3E9AEF),
-    Color(0xFF9B4CCB),
-)
 
 @Composable
 private fun hairline(): Color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
@@ -158,6 +156,7 @@ fun HomeContent(
     onKeyboardSubmit: () -> Unit = {},
     onStartVoiceRecording: () -> Unit = {},
     onStopVoiceRecording: () -> Unit = {},
+    tutorialActions: TutorialActions,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val pagerState = rememberPagerState(
@@ -176,6 +175,7 @@ fun HomeContent(
     }
 
     var showAllApps by remember { mutableStateOf(false) }
+    var tutorialStep by remember { mutableIntStateOf(0) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -241,6 +241,21 @@ fun HomeContent(
             onDismiss = { showAllApps = false },
             onAppClick = onAppClick,
             apps = homeUiState.availableApps
+        )
+    }
+
+    if (homeUiState.showFirstConnectTutorial) {
+        FirstConnectTutorialDialog(
+            step = tutorialStep,
+            uiState = homeUiState,
+            actions = tutorialActions.copy(
+                onBack = { if (tutorialStep > 0) tutorialStep-- },
+                onNext = { if (tutorialStep < TUTORIAL_STEPS - 1) tutorialStep++ },
+                onFinish = {
+                    tutorialStep = 0
+                    tutorialActions.onFinish()
+                },
+            ),
         )
     }
 }
@@ -1391,7 +1406,20 @@ private fun HomeContentClassicPreview() {
             onRemoteButtonClick = {},
             onPageSelected = {},
             keyboardUiState = KeyboardUiState(),
-            touchpadMode = TouchpadMode.DIRECTIONAL
+            touchpadMode = TouchpadMode.DIRECTIONAL,
+            tutorialActions = TutorialActions(
+                onNavigationModeChanged = {},
+                onMediaControlsChanged = {},
+                onAutoReconnectChanged = {},
+                onKeepScreenAwakeChanged = {},
+                onTheaterModeChanged = {},
+                onHapticFeedbackChanged = {},
+                onSmoothPressChanged = {},
+                onAutoShowKeyboardChanged = {},
+                onBack = {},
+                onNext = {},
+                onFinish = {},
+            )
         )
     }
 }

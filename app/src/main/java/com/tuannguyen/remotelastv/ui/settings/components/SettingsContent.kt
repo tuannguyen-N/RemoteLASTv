@@ -128,7 +128,7 @@ private fun SettingsSection(
         Text(
             text = title,
             modifier = Modifier.padding(start = Dimens.Space.xs),
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         content()

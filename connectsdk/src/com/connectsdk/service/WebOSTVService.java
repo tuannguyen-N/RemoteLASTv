@@ -312,7 +312,11 @@ public class WebOSTVService extends WebOSTVDeviceService implements Launcher, Me
 
         @Override
         public void onRegistrationFailed(final ServiceCommandError error) {
-            disconnect();
+            if (socket != null) {
+                socket.setListener(null);
+                socket.disconnect();
+                socket = null;
+            }
 
             Util.runOnUI(new Runnable() {
 

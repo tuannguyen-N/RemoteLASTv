@@ -94,7 +94,7 @@ fun ConnectionDisplayContent(
 }
 
 @Composable
-private fun PreferenceRow(
+fun PreferenceRow(
     title: String,
     description: String,
     checked: Boolean,

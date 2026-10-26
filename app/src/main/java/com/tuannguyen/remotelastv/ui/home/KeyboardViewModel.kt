@@ -87,7 +87,7 @@ class KeyboardViewModel @Inject constructor(
                 .filter { (input, _) -> input !is TextInputState.Unknown }
                 .map { (input, capabilities) ->
                     (input is TextInputState.Focused) to
-                        (TextCapability.AUTO_SHOW_KEYBOARD_ON_FOCUS in capabilities)
+                            (TextCapability.AUTO_SHOW_KEYBOARD_ON_FOCUS in capabilities)
                 }
                 .distinctUntilChanged()
                 .collect { (isFocused, autoShowOnFocus) ->

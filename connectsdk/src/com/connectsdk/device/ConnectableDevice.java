@@ -999,9 +999,9 @@ public class ConnectableDevice implements DeviceServiceListener {
     @Override
     public void onDisconnect(DeviceService service, Error error) {
         if (getConnectedServiceCount() == 0 || services.size() == 0) {
-            final ServiceCommandError cmdError = (error != null)
-                    ? new ServiceCommandError(0, error.getMessage(), null)
-                    : null;
+            final ServiceCommandError cmdError = error instanceof ServiceCommandError
+                    ? (ServiceCommandError) error
+                    : (error != null) ? new ServiceCommandError(0, error.getMessage(), null) : null;
             for (ConnectableDeviceListener listener : listeners) {
                 listener.onDeviceDisconnected(this, cmdError);
             }

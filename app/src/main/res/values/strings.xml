@@ -133,7 +133,6 @@
     <string name="faq_category_connection">Connection</string>
     <string name="faq_category_control">Control</string>
     <string name="faq_category_settings">Settings</string>
-
     <string name="faq_quick_fix_title">Can\'t see your TV?</string>
     <string name="faq_quick_fix_description">Check these three things, then scan again:</string>
     <string name="faq_quick_fix_same_network">Phone and TV are on the same Wi-Fi network</string>
@@ -146,49 +145,34 @@
     <string name="faq_clear_filters">Clear filters</string>
     <string name="faq_still_stuck">Still stuck?</string>
     <string name="faq_send_feedback">Send feedback</string>
-
     <string name="faq_question_supported_tvs">Which TVs are supported?</string>
     <string name="faq_answer_supported_tvs">RemoteLASTv works with LG webOS TVs, Samsung smart TVs, and Android TV / Google TV devices. Your phone and TV must be on the same Wi-Fi network.</string>
-
     <string name="faq_question_same_network">Can I connect over mobile data or a different Wi-Fi network?</string>
     <string name="faq_answer_same_network">No. The app communicates with your TV over your local network, so both devices must be connected to the same network. Guest networks and some public or office Wi-Fi networks may block communication between devices, preventing your TV from appearing. Also, turn off any VPN on your phone.</string>
-
     <string name="faq_question_lg_pair">Why does my LG TV ask me to pair again?</string>
     <string name="faq_answer_lg_pair">If you clear the app\'s data or reinstall it, your TV treats RemoteLASTv as a new device. Accept the pairing prompt on your TV again. The connection should then be remembered.</string>
-
     <string name="faq_question_samsung_allow">My Samsung TV shows an Allow / Deny popup</string>
     <string name="faq_answer_samsung_allow">The first time you connect, your TV asks whether to allow the device. Select Allow using your TV\'s remote. If you accidentally selected Deny, open your TV\'s connection or external device manager settings, remove RemoteLASTv from the blocked list, and try connecting again.</string>
-
     <string name="faq_question_androidtv_pin">My Android TV asks for a PIN</string>
     <string name="faq_answer_androidtv_pin">Enter the 6-character code displayed on your TV. You normally only need to complete pairing once, and the app can reconnect automatically afterward. If the code is rejected, check that you entered it correctly and try again. A new code may appear each time pairing starts.</string>
-
     <string name="faq_question_auto_reconnect">Does the app reconnect automatically?</string>
     <string name="faq_answer_auto_reconnect">Yes. When you open the app, it attempts to reconnect to the TV you used last. It also attempts to reconnect when you return to the app from the background. If you disconnect manually, you must select a TV again before reconnecting. You can turn off auto-reconnect in Settings.</string>
-
     <string name="faq_question_connection_dropped">The connection keeps dropping</string>
     <string name="faq_answer_connection_dropped">Check that your TV is not going to sleep and that your Wi-Fi signal is stable. Restarting your router or TV may help. If the problem continues, scan for TVs again and reconnect.</string>
-
     <string name="faq_question_buttons_no_response">Buttons don\'t do anything</string>
     <string name="faq_answer_buttons_no_response">Make sure the status at the top of the remote says Connected. If it does not, reconnect from the TV list. Some buttons, such as volume or power, may not be supported by every TV model.</string>
-
     <string name="faq_question_power_on">Why can\'t I turn my TV on with the app?</string>
     <string name="faq_answer_power_on">Turning a TV off works on many supported TVs, but turning it on over the network depends on the TV model and its settings. Some TVs disconnect from the network in standby. Check your TV\'s settings for an option such as &quot;Turn on via Wi-Fi&quot; or &quot;Wake on network&quot;.</string>
-
     <string name="faq_question_touchpad">How do I use Touchpad mode?</string>
     <string name="faq_answer_touchpad">Swipe with one finger to move the pointer, then tap to select. Use a two-finger swipe to navigate or scroll where supported. You can switch back to D-pad mode at any time in Settings.</string>
-
     <string name="faq_question_shortcut_apps">Why won\'t some app shortcuts open?</string>
     <string name="faq_answer_shortcut_apps">Samsung and Android TV devices may not allow apps to retrieve the full list of installed apps, so RemoteLASTv launches shortcuts using known app IDs. If an app is not installed or uses a different app ID, its shortcut may not work. LG TVs can report installed apps, so app shortcuts may be more reliable on those devices.</string>
-
     <string name="faq_question_mic_permission">Voice input isn\'t working. How do I allow microphone access?</string>
     <string name="faq_answer_mic_permission">RemoteLASTv needs microphone permission for voice input. If you denied permission, open your phone\'s Settings &gt; Apps &gt; RemoteLASTv &gt; Permissions, select Microphone, and choose Allow. If Android no longer shows the permission prompt, enable microphone access from system settings. Other app features can still work without microphone permission.</string>
-
     <string name="faq_question_nav_mode">Where do I switch between D-pad and Touchpad?</string>
     <string name="faq_answer_nav_mode">Go to Settings &gt; Remote layout and choose your preferred navigation mode.</string>
-
     <string name="faq_question_media_buttons">How do I hide the media buttons?</string>
     <string name="faq_answer_media_buttons">Go to Settings &gt; Remote layout and turn off the media buttons option. This hides the previous, play/pause, and next buttons together.</string>
-
     <string name="faq_question_forget_tv">How do I remove or rename a saved TV?</string>
     <string name="faq_answer_forget_tv">Open the TV list and select your saved TV. From there, you can rename or remove it. Removing a TV also deletes its saved pairing information from this phone, so you may need to pair again later.</string>
     <string name="language">Language</string>
@@ -196,4 +180,18 @@
     <string name="follows_your_phone">Follows your phone: %1$s</string>
     <string name="the_app_refreshes_briefly_when_you_change_the_language">"The app refreshes briefly when you change the language. "</string>
     <string name="your_saved_tvs_and_settings_are_not_affected">Your saved TVs and settings are not affected.</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="tutorial_skip">Skip</string>
+    <string name="tutorial_next">Next</string>
+    <string name="tutorial_back">Back</string>
+    <string name="tutorial_done">Done</string>
+    <string name="tutorial_step_of">Step %1$d of %2$d</string>
+    <string name="tutorial_layout_title">Choose how you navigate</string>
+    <string name="tutorial_change_later">You can change this anytime in Settings.</string>
+    <string name="tutorial_dpad_hint">Press the arrows to move, OK to select.</string>
+    <string name="tutorial_touchpad_hint">Swipe to move, tap to select.</string>
+    <string name="tutorial_behavior_title">Set up your remote</string>
+    <string name="tutorial_behavior_subtitle">The defaults work for most people.</string>
+    <string name="tutorial_group_connection">Connection &amp; display</string>
+    <string name="tutorial_group_input">Input</string>
 </resources>

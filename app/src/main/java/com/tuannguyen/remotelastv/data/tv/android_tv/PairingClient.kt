@@ -24,6 +24,7 @@ class PairingClient @Inject constructor(
 
     @Volatile
     private var socket: SSLSocket? = null
+
     @Volatile
     private var clientCert: Certificate? = null
 

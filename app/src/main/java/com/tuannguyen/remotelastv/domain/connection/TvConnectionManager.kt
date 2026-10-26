@@ -104,11 +104,14 @@ class TvConnectionManager @Inject constructor(
             if (_state.value !is ConnectionState.TempDisconnected) return
 
             Log.d("TvConnection", "App foregrounded: resuming ${targetTv.name}")
-            startConnection(targetTv)
+            startConnection(targetTv, showConnectionState = true)
         }
     }
 
-    suspend fun connect(tv: Television): Result<Television> {
+    suspend fun connect(
+        tv: Television,
+        showConnectionState: Boolean = true,
+    ): Result<Television> {
         val deferredToAwait = lock.withLock {
             userDisconnected = false
             currentTargetTv = tv
@@ -130,7 +133,7 @@ class TvConnectionManager @Inject constructor(
             ) {
                 existingPending
             } else {
-                startConnection(tv)
+                startConnection(tv, showConnectionState)
                     ?: return Result.failure(IllegalStateException("Unsupported brand"))
             }
         }
@@ -165,7 +168,11 @@ class TvConnectionManager @Inject constructor(
         activeRepo = null
     }
 
-    private suspend fun runConnection(repo: TvConnectionRepository, tv: Television) {
+    private suspend fun runConnection(
+        repo: TvConnectionRepository,
+        tv: Television,
+        showConnectionState: Boolean,
+    ) {
         val credentials = savedTvRepository.getCredentials(tv.id)
         var attempt = 0
         while (true) {
@@ -173,13 +180,18 @@ class TvConnectionManager @Inject constructor(
             repo.connect(tv, credentials).collect { status ->
                 last = status
                 when (status) {
-                    ConnectionStatus.Connecting ->
+                    ConnectionStatus.Connecting -> if (showConnectionState) {
                         _state.value = if (attempt == 0) ConnectionState.Connecting(tv)
                         else ConnectionState.Reconnecting(tv, attempt)
+                    }
 
-                    ConnectionStatus.WaitingForPin -> _state.value = ConnectionState.WaitingForPin(tv)
+                    ConnectionStatus.WaitingForPin -> if (showConnectionState) {
+                        _state.value = ConnectionState.WaitingForPin(tv)
+                    }
 
-                    ConnectionStatus.WaitingForAuth -> _state.value = ConnectionState.Connecting(tv)
+                    ConnectionStatus.WaitingForAuth -> if (showConnectionState) {
+                        _state.value = ConnectionState.Connecting(tv)
+                    }
 
                     is ConnectionStatus.Connected -> {
                         attempt = 0
@@ -190,7 +202,10 @@ class TvConnectionManager @Inject constructor(
                         pending = null
                     }
 
-                    is ConnectionStatus.Failed -> _state.value = ConnectionState.Failed(tv, status.reason)
+                    is ConnectionStatus.Failed -> if (showConnectionState) {
+                        _state.value = ConnectionState.Failed(tv, status.reason)
+                    }
+
                     else -> Unit
                 }
             }
@@ -199,7 +214,9 @@ class TvConnectionManager @Inject constructor(
                 is ConnectionStatus.Disconnected -> {
                     if (end.recoverable && attempt < BACKOFF_MS.size) {
                         attempt++
-                        _state.value = ConnectionState.Reconnecting(tv, attempt)
+                        if (showConnectionState) {
+                            _state.value = ConnectionState.Reconnecting(tv, attempt)
+                        }
                         delay(BACKOFF_MS[attempt - 1])
                         continue
                     }
@@ -210,15 +227,21 @@ class TvConnectionManager @Inject constructor(
                 }
 
                 is ConnectionStatus.Failed -> {
-                    _state.value = ConnectionState.Disconnected
-                    _errors.trySend(end.reason)
+                    _state.value = if (showConnectionState) {
+                        ConnectionState.Failed(tv, end.reason)
+                    } else {
+                        ConnectionState.Disconnected
+                    }
+                    if (showConnectionState) _errors.trySend(end.reason)
                     pending?.complete(Result.failure(ConnectException(end.reason.name)))
                     pending = null
                     return
                 }
 
                 is ConnectionStatus.TempDisconnected -> {
-                    _state.value = ConnectionState.TempDisconnected(tv)
+                    if (showConnectionState) {
+                        _state.value = ConnectionState.TempDisconnected(tv)
+                    }
 
                     if (!lifecycleTracker.isForeground.value) {
                         pending?.complete(Result.failure(ConnectException("Temporarily disconnected")))
@@ -259,17 +282,23 @@ class TvConnectionManager @Inject constructor(
         }
     }
 
-    private suspend fun startConnection(tv: Television): CompletableDeferred<Result<Television>>? {
+    private suspend fun startConnection(
+        tv: Television,
+        showConnectionState: Boolean,
+    ): CompletableDeferred<Result<Television>>? {
         stopCurrent()
+        if (!showConnectionState) {
+            _state.value = ConnectionState.Disconnected
+        }
         val repo = repositories[tv.brand]
         if (repo == null) {
-            _errors.trySend(FailReason.UNSUPPORTED_BRAND)
+            if (showConnectionState) _errors.trySend(FailReason.UNSUPPORTED_BRAND)
             return null
         }
         val deferred = CompletableDeferred<Result<Television>>()
         pending = deferred
         activeRepo = repo
-        job = scope.launch { runConnection(repo, tv) }
+        job = scope.launch { runConnection(repo, tv, showConnectionState) }
         return deferred
     }
 

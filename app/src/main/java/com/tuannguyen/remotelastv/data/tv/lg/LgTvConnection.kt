@@ -104,10 +104,15 @@ class LgTvConnection @Inject constructor(
                 Log.e("LgTv", "onDeviceDisconnected: code=${e?.code} msg=${e?.message}")
 
                 val status =
-                    if (reachedConnected.get() && e.isConnectionAborted()) {
-                        ConnectionStatus.TempDisconnected
-                    } else {
-                        ConnectionStatus.Disconnected(reason = e?.message, recoverable = true)
+                    when {
+                        e.isPairingDeclined() ->
+                            ConnectionStatus.Failed(FailReason.PAIRING_DECLINED)
+
+                        reachedConnected.get() && e.isConnectionAborted() ->
+                            ConnectionStatus.TempDisconnected
+
+                        else ->
+                            ConnectionStatus.Disconnected(reason = e?.message, recoverable = true)
                     }
                 trySend(status)
                 close()
@@ -151,11 +156,21 @@ class LgTvConnection @Inject constructor(
         registry.activeDevice?.cancelPairing()
     }
 
-    private fun ServiceCommandError.toFailReason() =
-        if (code == 401) FailReason.PAIRING_REJECTED else FailReason.UNKNOWN
+    private fun ServiceCommandError.toFailReason() = when {
+        isPairingDeclined() -> FailReason.PAIRING_DECLINED
+        code == 401 -> FailReason.PAIRING_REJECTED
+        else -> FailReason.UNKNOWN
+    }
 
     private fun ServiceCommandError?.isConnectionAborted() =
         this?.message?.contains("connection aborted", ignoreCase = true) == true
+
+    private fun ServiceCommandError?.isPairingDeclined() =
+        this != null &&
+                (code == 403 || message?.contains(
+                    "user rejected pairing",
+                    ignoreCase = true
+                ) == true)
 
     private companion object {
         const val CONNECT_TIMEOUT_MS = 15_000L

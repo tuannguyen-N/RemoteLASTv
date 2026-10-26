@@ -60,7 +60,8 @@ class AndroidTvDiscovery @Inject constructor(
                     ?.takeIf { it.isNotEmpty() }
                 val id = btMac ?: resolved.serviceName
 
-                Log.d("AndroidTvDiscovery", "found ${resolved.serviceName} ip=$ip attrs=${
+                Log.d(
+                    "AndroidTvDiscovery", "found ${resolved.serviceName} ip=$ip attrs=${
                     resolved.attributes.mapValues { it.value?.toString(Charsets.UTF_8) }
                 }")
 

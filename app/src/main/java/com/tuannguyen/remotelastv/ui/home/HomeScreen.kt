@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tuannguyen.remotelastv.domain.model.TutorialActions
 import com.tuannguyen.remotelastv.ui.effects.KeepScreenOnEffect
 import com.tuannguyen.remotelastv.ui.effects.TheaterModeContainer
 import com.tuannguyen.remotelastv.ui.home.components.HomeContent
@@ -88,6 +89,19 @@ fun HomeScreen(
                 }
             },
             onStopVoiceRecording = homeViewModel::stopVoiceRecording,
+            tutorialActions = TutorialActions(
+                onNavigationModeChanged = homeViewModel::onTutorialNavigationModeChanged,
+                onMediaControlsChanged = homeViewModel::onTutorialMediaControlsChanged,
+                onAutoReconnectChanged = homeViewModel::onTutorialAutoReconnectChanged,
+                onKeepScreenAwakeChanged = homeViewModel::onTutorialKeepScreenAwakeChanged,
+                onTheaterModeChanged = homeViewModel::onTutorialTheaterModeChanged,
+                onHapticFeedbackChanged = homeViewModel::onTutorialHapticFeedbackChanged,
+                onSmoothPressChanged = homeViewModel::onTutorialSmoothPressChanged,
+                onAutoShowKeyboardChanged = homeViewModel::onTutorialAutoShowKeyboardChanged,
+                onBack = {},
+                onNext = {},
+                onFinish = homeViewModel::onTutorialFinished,
+            ),
             keyboardUiState = keyboardUiState,
             modifier = modifier,
         )

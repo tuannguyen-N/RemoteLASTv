@@ -13,4 +13,5 @@ sealed interface SettingsAction {
     data object RateAndReview : SettingsAction
     data object Feedback : SettingsAction
     data object ActivatePremium : SettingsAction
+    data object PrivacyPolicy : SettingsAction
 }

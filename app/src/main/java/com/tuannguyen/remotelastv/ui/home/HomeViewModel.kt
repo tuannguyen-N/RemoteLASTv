@@ -6,6 +6,7 @@ import com.tuannguyen.remotelastv.domain.connection.TvConnectionManager
 import com.tuannguyen.remotelastv.domain.manager.TvControllerManager
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.KnownApp
+import com.tuannguyen.remotelastv.domain.model.NavigationMode
 import com.tuannguyen.remotelastv.domain.model.TouchpadEvent
 import com.tuannguyen.remotelastv.domain.model.TouchpadMode
 import com.tuannguyen.remotelastv.domain.model.TvCapability
@@ -37,7 +38,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    settingsRepository: SettingsRepository,
+    private val settingsRepository: SettingsRepository,
     private val controllerManager: TvControllerManager,
     connectionManager: TvConnectionManager,
     private val reconnectLastTvUseCase: ReconnectLastTvUseCase,
@@ -84,9 +85,14 @@ class HomeViewModel @Inject constructor(
             showMediaButtons = settings.showMediaButtons,
             navigationMode = settings.navigationMode,
             connectionState = connectionState,
+            isAutoReconnectEnabled = settings.isAutoReconnectEnabled,
             isKeepScreenAwakeEnabled = settings.isKeepScreenAwakeEnabled,
             isTheaterModeEnabled = settings.isTheaterModeEnabled,
             isHapticFeedbackEnabled = settings.isHapticFeedbackEnabled,
+            isSmoothPressEnabled = settings.isSmoothPressEnabled,
+            isAutoShowKeyboardEnabled = settings.isAutoShowKeyboardEnabled,
+            showFirstConnectTutorial =
+                connectionState is ConnectionState.Connected && !settings.hasSeenRemoteTutorial,
             shortcutApps = resolveShortcuts(supported),
             availableApps = resolveAvailableApps(supported),
             touchpadMode = tvLive.touchpadMode,
@@ -174,6 +180,50 @@ class HomeViewModel @Inject constructor(
             val dy = pendingDy
             pendingDx = 0f; pendingDy = 0f
             send { it.sendTouchpad(TouchpadEvent.Move(dx, dy)) }
+        }
+    }
+
+    fun onTutorialFinished() {
+        viewModelScope.launch {
+            settingsRepository.setHasSeenRemoteTutorial(true)
+        }
+    }
+
+    fun onTutorialNavigationModeChanged(mode: NavigationMode) {
+        updateSettings { setNavigationMode(mode) }
+    }
+
+    fun onTutorialMediaControlsChanged(enabled: Boolean) {
+        updateSettings { setShowMediaButtons(enabled) }
+    }
+
+    fun onTutorialAutoReconnectChanged(enabled: Boolean) {
+        updateSettings { setAutoReconnectEnabled(enabled) }
+    }
+
+    fun onTutorialKeepScreenAwakeChanged(enabled: Boolean) {
+        updateSettings { setKeepScreenAwakeEnabled(enabled) }
+    }
+
+    fun onTutorialTheaterModeChanged(enabled: Boolean) {
+        updateSettings { setTheaterModeEnabled(enabled) }
+    }
+
+    fun onTutorialHapticFeedbackChanged(enabled: Boolean) {
+        updateSettings { setHapticFeedbackEnabled(enabled) }
+    }
+
+    fun onTutorialSmoothPressChanged(enabled: Boolean) {
+        updateSettings { setSmoothPressEnabled(enabled) }
+    }
+
+    fun onTutorialAutoShowKeyboardChanged(enabled: Boolean) {
+        updateSettings { setAutoShowKeyboardEnabled(enabled) }
+    }
+
+    private fun updateSettings(update: suspend SettingsRepository.() -> Unit) {
+        viewModelScope.launch {
+            settingsRepository.update()
         }
     }
 

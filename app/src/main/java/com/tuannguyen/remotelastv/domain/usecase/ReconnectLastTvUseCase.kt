@@ -22,7 +22,7 @@ class ReconnectLastTvUseCase @Inject constructor(
         if (!settingsRepository.remoteSettings.first().isAutoReconnectEnabled) return ConnectionState.Idle
         val last = savedTvRepository.getLastConnected() ?: return ConnectionState.Idle
 
-        return connectionManager.connect(last)
+        return connectionManager.connect(last, showConnectionState = false)
             .getOrNull()
             ?.let { ConnectionState.Connected(it) }
             ?: ConnectionState.Idle

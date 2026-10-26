@@ -33,6 +33,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val KEEP_SCREEN_AWAKE_ENABLED = booleanPreferencesKey("keep_screen_awake_enabled")
         val THEATER_MODE_ENABLED = booleanPreferencesKey("theater_mode_enabled")
         val AUTO_SHOW_KEYBOARD_ENABLED = booleanPreferencesKey("auto_show_keyboard_enabled")
+        val HAS_CONNECTED_KEY = booleanPreferencesKey("has_seen_remote_tutorial")
     }
 
     override val remoteSettings: Flow<RemoteSettings> = context.settingsDataStore.data
@@ -56,6 +57,8 @@ class SettingsRepositoryImpl @Inject constructor(
                     ?: default.isKeepScreenAwakeEnabled,
                 isTheaterModeEnabled = prefs[Keys.THEATER_MODE_ENABLED]
                     ?: default.isTheaterModeEnabled,
+                hasSeenRemoteTutorial = prefs[Keys.HAS_CONNECTED_KEY]
+                    ?: default.hasSeenRemoteTutorial
             )
         }
 
@@ -89,5 +92,9 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setTheaterModeEnabled(enabled: Boolean) {
         context.settingsDataStore.edit { it[Keys.THEATER_MODE_ENABLED] = enabled }
+    }
+
+    override suspend fun setHasSeenRemoteTutorial(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Keys.HAS_CONNECTED_KEY] = enabled }
     }
 }

@@ -3,6 +3,7 @@ package com.tuannguyen.remotelastv.ui.utils
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 
 private const val APP_NAME = "RemoteLASTv"
 private const val PLAY_STORE_URL =
@@ -37,4 +38,12 @@ fun sendFeedback(context: Context, title: String) {
     runCatching {
         context.startActivity(intent)
     }
+}
+
+fun openPrivacyPolicy(context: Context) {
+    val intent = Intent(
+        Intent.ACTION_VIEW,
+        "https://sites.google.com/view/remotelatvprivacypolicy".toUri()
+    )
+    context.startActivity(intent)
 }

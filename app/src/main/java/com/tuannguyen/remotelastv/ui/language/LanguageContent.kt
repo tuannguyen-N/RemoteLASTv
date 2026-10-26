@@ -86,6 +86,7 @@ fun LanguageContent(
                                     R.string.follows_your_phone,
                                     deviceLanguage
                                 )
+
                                 else -> language.englishName.takeIf { it != language.nativeName }
                             },
                             selected = language == selected,

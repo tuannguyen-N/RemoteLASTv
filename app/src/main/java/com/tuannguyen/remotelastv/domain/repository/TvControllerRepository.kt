@@ -19,6 +19,7 @@ interface TvControllerRepository {
     suspend fun launchApp(app: KnownApp): Result<Unit>
     suspend fun startVoiceRecording(): Result<Unit> =
         Result.failure(UnsupportedOperationException("Voice recording is not supported"))
+
     suspend fun stopVoiceRecording(): Result<Unit> = Result.success(Unit)
     fun observeVoiceRecording(): Flow<Boolean> = flowOf(false)
     suspend fun sendTouchpad(event: TouchpadEvent): Result<Unit> = when (event) {

@@ -13,4 +13,6 @@ data class RemoteSettings(
     val isAutoReconnectEnabled: Boolean = true,
     val isKeepScreenAwakeEnabled: Boolean = true,
     val isTheaterModeEnabled: Boolean = false,
+
+    val hasSeenRemoteTutorial: Boolean = false
 )

@@ -16,7 +16,7 @@ import kotlin.math.sqrt
 class VoiceRecorder @Inject constructor() {
 
     @SuppressLint("MissingPermission")
-    /** Mỗi phần tử là một khối PCM16 mono. Hủy collect là mic tự dừng và release. */
+            /** Mỗi phần tử là một khối PCM16 mono. Hủy collect là mic tự dừng và release. */
     fun record(): Flow<ByteArray> = flow {
         val minBuffer = AudioRecord.getMinBufferSize(
             SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT

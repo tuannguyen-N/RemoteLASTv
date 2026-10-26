@@ -9,8 +9,8 @@ import com.tuannguyen.remotelastv.domain.repository.TvConnectionRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -111,7 +111,7 @@ class AndroidTvConnection @Inject constructor(
 
             val androidCredentials = current as? TvCredentials.AndroidTv
             val remoteConnected = androidCredentials != null &&
-                remoteClient.connect(television.ipAddress, androidCredentials.certAlias)
+                    remoteClient.connect(television.ipAddress, androidCredentials.certAlias)
             if (closed.isCompleted) {
                 emit(ConnectionStatus.Disconnected(recoverable = false))
                 return@flow

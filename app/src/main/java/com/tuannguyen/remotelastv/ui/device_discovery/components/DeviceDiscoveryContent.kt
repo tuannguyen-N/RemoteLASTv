@@ -223,6 +223,14 @@ fun DeviceDiscoveryContent(
                         )
                     }
 
+                    FailReason.PAIRING_DECLINED -> {
+                        DialogConnectionFailure(
+                            title = "PAIRING REJECTED",
+                            errorMessage = "You rejected the pairing request on your TV. Try again and select Allow on the TV.",
+                            onRetry = onDismissFailure
+                        )
+                    }
+
                     FailReason.UNSUPPORTED_BRAND -> {
                         DialogConnectionFailure(
                             title = "UNSUPPORTED TV",
@@ -248,6 +256,7 @@ fun DeviceDiscoveryContent(
                     }
                 }
             }
+
             else -> Unit
         }
     }

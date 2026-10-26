@@ -14,4 +14,5 @@ interface SettingsRepository {
     suspend fun setAutoReconnectEnabled(enabled: Boolean)
     suspend fun setKeepScreenAwakeEnabled(enabled: Boolean)
     suspend fun setTheaterModeEnabled(enabled: Boolean)
+    suspend fun setHasSeenRemoteTutorial(enabled: Boolean)
 }
