@@ -111,6 +111,7 @@ import com.tuannguyen.remotelastv.domain.model.TutorialActions
 import com.tuannguyen.remotelastv.domain.model.TvKey
 import com.tuannguyen.remotelastv.domain.model.VolumeState
 import com.tuannguyen.remotelastv.ui.common.IconSource
+import com.tuannguyen.remotelastv.ui.common.attentionPulse
 import com.tuannguyen.remotelastv.ui.common.bounceClick
 import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
 import com.tuannguyen.remotelastv.ui.common.bounceClickRepeatable
@@ -312,12 +313,19 @@ private fun TvSelector(
     onClick: () -> Unit,
 ) {
     val connected = connectionState as? ConnectionState.Connected
+    val needsAttention = connected == null
+    val primary = MaterialTheme.colorScheme.primary
 
     Row(
         modifier = Modifier
+            .attentionPulse(enabled = needsAttention, color = primary)
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .border(Dimens.Size.borderThin, hairline(), CircleShape)
+            .border(
+                width = Dimens.Size.borderThin,
+                color = if (needsAttention) primary else hairline(),
+                shape = CircleShape,
+            )
             .safeClickableNoEffect(onClick)
             .padding(
                 start = Dimens.Space.md,
@@ -335,7 +343,7 @@ private fun TvSelector(
         Text(
             text = connected?.let { it.tv.name } ?: stringResource(R.string.choose_a_tv),
             modifier = Modifier.weight(1f, fill = false),
-            color = MaterialTheme.colorScheme.onSurface,
+            color = if (needsAttention) primary else MaterialTheme.colorScheme.onSurface,
             fontSize = if (compact) 16.sp else 18.sp,
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
@@ -346,7 +354,7 @@ private fun TvSelector(
             imageVector = Icons.Default.ArrowDropDown,
             contentDescription = stringResource(R.string.choose_a_tv),
             modifier = Modifier.size(Dimens.Size.iconMedium),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            tint = if (needsAttention) primary else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

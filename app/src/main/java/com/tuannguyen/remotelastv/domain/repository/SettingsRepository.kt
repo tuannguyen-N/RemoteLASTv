@@ -15,4 +15,5 @@ interface SettingsRepository {
     suspend fun setKeepScreenAwakeEnabled(enabled: Boolean)
     suspend fun setTheaterModeEnabled(enabled: Boolean)
     suspend fun setHasSeenRemoteTutorial(enabled: Boolean)
+    suspend fun setHasRequestedMicrophonePermission(requested: Boolean)
 }

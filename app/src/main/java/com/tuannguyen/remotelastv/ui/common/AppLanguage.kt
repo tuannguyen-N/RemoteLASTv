@@ -11,6 +11,8 @@ enum class AppLanguage(
     SYSTEM("", "System default", ""),
     ENGLISH("en", "English", "English"),
     VIETNAMESE("vi", "Tiếng Việt", "Vietnamese"),
+    CHINESE("zh-CN", "简体中文", "Chinese (Simplified)"),
+    KOREAN("ko", "한국어", "Korean"),
     ;
 
     fun apply() {

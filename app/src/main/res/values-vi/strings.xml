@@ -180,4 +180,18 @@
     <string name="follows_your_phone">Theo ngôn ngữ điện thoại: %1$s</string>
     <string name="the_app_refreshes_briefly_when_you_change_the_language">"Ứng dụng sẽ tải lại trong giây lát khi bạn đổi ngôn ngữ. "</string>
     <string name="your_saved_tvs_and_settings_are_not_affected">TV đã lưu và cài đặt của bạn sẽ không bị ảnh hưởng.</string>
+    <string name="privacy_policy">Chính sách quyền riêng tư</string>
+    <string name="tutorial_skip">Bỏ qua</string>
+    <string name="tutorial_next">Tiếp theo</string>
+    <string name="tutorial_back">Quay lại</string>
+    <string name="tutorial_done">Hoàn tất</string>
+    <string name="tutorial_step_of">Bước %1$d trên %2$d</string>
+    <string name="tutorial_layout_title">Chọn cách điều hướng</string>
+    <string name="tutorial_change_later">Bạn có thể thay đổi tùy chọn này bất cứ lúc nào trong phần Cài đặt.</string>
+    <string name="tutorial_dpad_hint">Nhấn các phím mũi tên để di chuyển, nhấn OK để chọn.</string>
+    <string name="tutorial_touchpad_hint">Vuốt để di chuyển, chạm để chọn.</string>
+    <string name="tutorial_behavior_title">Thiết lập điều khiển</string>
+    <string name="tutorial_behavior_subtitle">Các tùy chọn mặc định phù hợp với hầu hết mọi người.</string>
+    <string name="tutorial_group_connection">Kết nối và hiển thị</string>
+    <string name="tutorial_group_input">Nhập liệu</string>
 </resources>

@@ -34,6 +34,8 @@ class SettingsRepositoryImpl @Inject constructor(
         val THEATER_MODE_ENABLED = booleanPreferencesKey("theater_mode_enabled")
         val AUTO_SHOW_KEYBOARD_ENABLED = booleanPreferencesKey("auto_show_keyboard_enabled")
         val HAS_CONNECTED_KEY = booleanPreferencesKey("has_seen_remote_tutorial")
+        val HAS_REQUESTED_MICROPHONE_PERMISSION =
+            booleanPreferencesKey("has_requested_microphone_permission")
     }
 
     override val remoteSettings: Flow<RemoteSettings> = context.settingsDataStore.data
@@ -58,7 +60,10 @@ class SettingsRepositoryImpl @Inject constructor(
                 isTheaterModeEnabled = prefs[Keys.THEATER_MODE_ENABLED]
                     ?: default.isTheaterModeEnabled,
                 hasSeenRemoteTutorial = prefs[Keys.HAS_CONNECTED_KEY]
-                    ?: default.hasSeenRemoteTutorial
+                    ?: default.hasSeenRemoteTutorial,
+                hasRequestedMicrophonePermission =
+                    prefs[Keys.HAS_REQUESTED_MICROPHONE_PERMISSION]
+                        ?: default.hasRequestedMicrophonePermission,
             )
         }
 
@@ -96,5 +101,11 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setHasSeenRemoteTutorial(enabled: Boolean) {
         context.settingsDataStore.edit { it[Keys.HAS_CONNECTED_KEY] = enabled }
+    }
+
+    override suspend fun setHasRequestedMicrophonePermission(requested: Boolean) {
+        context.settingsDataStore.edit {
+            it[Keys.HAS_REQUESTED_MICROPHONE_PERMISSION] = requested
+        }
     }
 }

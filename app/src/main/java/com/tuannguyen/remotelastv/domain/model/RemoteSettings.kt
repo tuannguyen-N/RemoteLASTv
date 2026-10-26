@@ -14,5 +14,6 @@ data class RemoteSettings(
     val isKeepScreenAwakeEnabled: Boolean = true,
     val isTheaterModeEnabled: Boolean = false,
 
-    val hasSeenRemoteTutorial: Boolean = false
+    val hasSeenRemoteTutorial: Boolean = false,
+    val hasRequestedMicrophonePermission: Boolean = false,
 )

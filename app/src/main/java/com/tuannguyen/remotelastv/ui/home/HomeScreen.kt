@@ -1,7 +1,13 @@
 package com.tuannguyen.remotelastv.ui.home
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarHostState
@@ -11,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,14 +39,17 @@ fun HomeScreen(
     val keyboardUiState by keyboardViewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val activity = remember(context) { context.findActivity() }
     val microphonePermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
     ) { granted ->
+        homeViewModel.onMicrophonePermissionRequested()
         if (granted) {
             homeViewModel.startVoiceRecording()
         } else {
-            // TODO: Open app settings when microphone permission has been permanently denied.
-            homeViewModel.onMicrophonePermissionDenied()
+            if (homeUiState.hasRequestedMicrophonePermission) {
+                homeViewModel.onMicrophonePermissionDenied()
+            }
         }
     }
     val isTheaterModeActive =
@@ -84,6 +94,19 @@ fun HomeScreen(
                     ) == PackageManager.PERMISSION_GRANTED
                 ) {
                     homeViewModel.startVoiceRecording()
+                } else if (
+                    homeUiState.hasRequestedMicrophonePermission &&
+                    activity != null &&
+                    !ActivityCompat.shouldShowRequestPermissionRationale(
+                        activity,
+                        Manifest.permission.RECORD_AUDIO,
+                    )
+                ) {
+                    context.startActivity(
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        },
+                    )
                 } else {
                     microphonePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                 }
@@ -106,4 +129,10 @@ fun HomeScreen(
             modifier = modifier,
         )
     }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }

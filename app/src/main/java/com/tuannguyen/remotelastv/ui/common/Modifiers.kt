@@ -1,9 +1,15 @@
 package com.tuannguyen.remotelastv.ui.common
 
 import android.os.SystemClock
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -24,13 +30,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -236,4 +249,49 @@ fun rememberDebouncedClick(
             currentOnClick()
         }
     }
+}
+
+@Composable
+fun Modifier.attentionPulse(enabled: Boolean, color: Color): Modifier {
+    if (!enabled) return this
+
+    val transition = rememberInfiniteTransition(label = "tvSelectorAttention")
+
+    val ring = transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "ring",
+    )
+    val scale = transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "scale",
+    )
+
+    return this
+        .graphicsLayer {
+            scaleX = scale.value
+            scaleY = scale.value
+        }
+        .drawBehind {
+            val p = ring.value
+            val grow = 14.dp.toPx() * p
+            val w = size.width + grow * 2
+            val h = size.height + grow * 2
+            drawRoundRect(
+                color = color.copy(alpha = (1f - p) * 0.5f),
+                topLeft = Offset(-grow, -grow),
+                size = Size(w, h),
+                cornerRadius = CornerRadius(h / 2f),
+                style = Stroke(width = 2.dp.toPx()),
+            )
+        }
 }

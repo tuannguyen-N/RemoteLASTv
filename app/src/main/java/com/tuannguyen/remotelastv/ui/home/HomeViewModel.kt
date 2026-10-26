@@ -91,6 +91,7 @@ class HomeViewModel @Inject constructor(
             isHapticFeedbackEnabled = settings.isHapticFeedbackEnabled,
             isSmoothPressEnabled = settings.isSmoothPressEnabled,
             isAutoShowKeyboardEnabled = settings.isAutoShowKeyboardEnabled,
+            hasRequestedMicrophonePermission = settings.hasRequestedMicrophonePermission,
             showFirstConnectTutorial =
                 connectionState is ConnectionState.Connected && !settings.hasSeenRemoteTutorial,
             shortcutApps = resolveShortcuts(supported),
@@ -149,6 +150,12 @@ class HomeViewModel @Inject constructor(
     fun onMicrophonePermissionDenied() {
         viewModelScope.launch {
             _effect.send(HomeEvent.ShowMessage("Microphone permission denied. Enable it in app settings to use voice."))
+        }
+    }
+
+    fun onMicrophonePermissionRequested() {
+        viewModelScope.launch {
+            settingsRepository.setHasRequestedMicrophonePermission(true)
         }
     }
 

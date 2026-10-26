@@ -24,6 +24,7 @@ data class HomeUiState(
     val isAutoShowKeyboardEnabled: Boolean = true,
     val showFirstConnectTutorial: Boolean = false,
     val isRecording: Boolean = false,
+    val hasRequestedMicrophonePermission: Boolean = false,
 
     val shortcutApps: List<KnownApp> = emptyList(),
     val availableApps: List<KnownApp> = emptyList(),
