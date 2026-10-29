@@ -239,9 +239,7 @@ class TvConnectionManager @Inject constructor(
                 }
 
                 is ConnectionStatus.TempDisconnected -> {
-                    if (showConnectionState) {
-                        _state.value = ConnectionState.TempDisconnected(tv)
-                    }
+                    _state.value = ConnectionState.TempDisconnected(tv)
 
                     if (!lifecycleTracker.isForeground.value) {
                         pending?.complete(Result.failure(ConnectException("Temporarily disconnected")))

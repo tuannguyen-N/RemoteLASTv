@@ -31,7 +31,7 @@ fun shareApp(context: Context) {
 
 fun sendFeedback(context: Context, title: String) {
     val intent = Intent(Intent.ACTION_SENDTO).apply {
-        data = Uri.parse("mailto:example@gmail.com")
+        data = "mailto:tuannguyencode@gmail.com".toUri()
         putExtra(Intent.EXTRA_SUBJECT, title)
     }
 
