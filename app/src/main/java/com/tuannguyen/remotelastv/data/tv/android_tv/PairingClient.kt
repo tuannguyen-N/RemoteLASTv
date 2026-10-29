@@ -33,7 +33,10 @@ class PairingClient @Inject constructor(
         withContext(Dispatchers.IO) {
             cancel()
             try {
-                clientCert = certManager.getCertificate(alias) ?: return@withContext false
+                clientCert = certManager.getCertificate(alias) ?: run {
+                    Log.e(TAG, "Pairing failed: client certificate not found for alias=$alias")
+                    return@withContext false
+                }
 
                 val s = certManager.createSocketFactory(alias).createSocket() as SSLSocket
                 socket = s
@@ -45,9 +48,13 @@ class PairingClient @Inject constructor(
                 val input = s.inputStream
                 val output = s.outputStream
 
-                val ok = exchange(pairingRequest(), input, output) { it.hasPairingRequestAck() } &&
-                        exchange(options(), input, output) { it.hasOptions() } &&
-                        exchange(configuration(), input, output) { it.hasConfigurationAck() }
+                val ok = exchange("PairingRequest", pairingRequest(), input, output) {
+                    it.hasPairingRequestAck()
+                } && exchange("Options", options(), input, output) {
+                    it.hasOptions()
+                } && exchange("Configuration", configuration(), input, output) {
+                    it.hasConfigurationAck()
+                }
                 if (!ok) cancel()
                 ok
             } catch (e: Exception) {
@@ -60,7 +67,14 @@ class PairingClient @Inject constructor(
     suspend fun finish(pin: String): PinResult = withContext(Dispatchers.IO) {
         val s = socket
         val client = clientCert
-        if (s == null || client == null) return@withContext PinResult.ERROR
+        if (s == null || client == null) {
+            Log.e(
+                TAG,
+                "Pairing PIN exchange unavailable: socketPresent=${s != null}, " +
+                        "clientCertificatePresent=${client != null}"
+            )
+            return@withContext PinResult.ERROR
+        }
         try {
             val server = s.session.peerCertificates.first()
             val secret =
@@ -76,7 +90,11 @@ class PairingClient @Inject constructor(
             if (resp?.status == PoloProto.OuterMessage.Status.STATUS_OK && resp.hasSecretAck()) {
                 PinResult.SUCCESS
             } else {
-                Log.e(TAG, "Pairing rejected: $resp")
+                Log.e(
+                    TAG,
+                    "Pairing secret rejected: responseReceived=${resp != null}, " +
+                            "status=${resp?.status}, secretAck=${resp?.hasSecretAck()}"
+                )
                 PinResult.REJECTED
             }
         } catch (e: Exception) {
@@ -136,6 +154,7 @@ class PairingClient @Inject constructor(
     }
 
     private fun exchange(
+        stage: String,
         msg: PoloProto.OuterMessage,
         input: InputStream,
         output: OutputStream,
@@ -145,11 +164,22 @@ class PairingClient @Inject constructor(
         output.flush()
         val resp = PoloProto.OuterMessage.parseDelimitedFrom(input)
         if (resp == null) {
-            Log.w(TAG, "No response from TV")
+            Log.e(TAG, "$stage failed: no response from TV")
             return false
         }
-        Log.d(TAG, "TV response: $resp")
-        return resp.status == PoloProto.OuterMessage.Status.STATUS_OK && expect(resp)
+        val expectedResponseReceived = expect(resp)
+        val accepted =
+            resp.status == PoloProto.OuterMessage.Status.STATUS_OK && expectedResponseReceived
+        if (!accepted) {
+            Log.e(
+                TAG,
+                "$stage failed: status=${resp.status}, " +
+                        "expectedResponseReceived=$expectedResponseReceived"
+            )
+        } else {
+            Log.d(TAG, "$stage succeeded")
+        }
+        return accepted
     }
 
     // ---------- secret ----------

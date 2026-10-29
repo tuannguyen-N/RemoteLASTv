@@ -62,7 +62,7 @@ import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
 import com.tuannguyen.remotelastv.domain.model.TutorialActions
 import com.tuannguyen.remotelastv.ui.home.HomeUiState
-import com.tuannguyen.remotelastv.ui.settings_connection_display.PreferenceRow
+import com.tuannguyen.remotelastv.ui.settings_remote_preferences.components.PreferenceRow
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 import com.tuannguyen.remotelastv.ui.theme.RingColors

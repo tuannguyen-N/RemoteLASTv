@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.ui.settings_remote_behavior
+package com.tuannguyen.remotelastv.ui.settings_remote_preferences
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,13 +12,16 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RemoteBehaviorViewModel @Inject constructor(
+class RemotePreferencesViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
-    val uiState: StateFlow<RemoteBehaviorUiState> = settingsRepository.remoteSettings
+    val uiState: StateFlow<RemotePreferencesUiState> = settingsRepository.remoteSettings
         .map {
-            RemoteBehaviorUiState(
+            RemotePreferencesUiState(
+                isAutoReconnectEnabled = it.isAutoReconnectEnabled,
+                isKeepScreenAwakeEnabled = it.isKeepScreenAwakeEnabled,
+                isTheaterModeEnabled = it.isTheaterModeEnabled,
                 isHapticFeedbackEnabled = it.isHapticFeedbackEnabled,
                 isSmoothPressEnabled = it.isSmoothPressEnabled,
                 isAutoShowKeyboardEnabled = it.isAutoShowKeyboardEnabled
@@ -27,7 +30,7 @@ class RemoteBehaviorViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = RemoteBehaviorUiState()
+            initialValue = RemotePreferencesUiState()
         )
 
     fun onHapticFeedbackChanged(value: Boolean) {
@@ -45,6 +48,24 @@ class RemoteBehaviorViewModel @Inject constructor(
     fun onAutoShowKeyboardChanged(value: Boolean) {
         viewModelScope.launch {
             settingsRepository.setAutoShowKeyboardEnabled(value)
+        }
+    }
+
+    fun onAutoReconnectChanged(value: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setAutoReconnectEnabled(value)
+        }
+    }
+
+    fun onKeepScreenAwakeChanged(value: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setKeepScreenAwakeEnabled(value)
+        }
+    }
+
+    fun onTheaterModeChanged(value: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setTheaterModeEnabled(value)
         }
     }
 }

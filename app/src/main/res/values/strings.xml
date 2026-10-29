@@ -13,7 +13,6 @@
     <string name="settings_title">Settings</string>
     <string name="settings_section_remote">Remote</string>
     <string name="settings_remote_layout">Remote layout</string>
-    <string name="settings_remote_behavior">Remote behavior</string>
     <string name="settings_manage_applications">Manage applications</string>
     <string name="settings_connected_devices">Connected devices</string>
     <string name="settings_section_application">Application</string>
@@ -53,8 +52,6 @@
     <string name="vibrate_when_buttons_are_pressed">Vibrate when buttons are pressed.</string>
     <string name="smooth_press">Smooth Press</string>
     <string name="repeat_commands_while_holding_buttons">Repeat commands while holding buttons.</string>
-    <string name="remote_behavior">Remote behavior</string>
-    <string name="connection_display">Connection &amp; display</string>
     <string name="auto_reconnect">Auto Reconnect</string>
     <string name="auto_reconnect_description">Reconnect to your last TV automatically.</string>
     <string name="keep_screen_awake">Keep Screen Awake</string>
@@ -194,4 +191,7 @@
     <string name="tutorial_behavior_subtitle">The defaults work for most people.</string>
     <string name="tutorial_group_connection">Connection &amp; display</string>
     <string name="tutorial_group_input">Input</string>
+    <string name="remote_preferences">Remote preferences</string>
+    <string name="section_connection">Connection</string>
+    <string name="section_remote_behavior">Remote behavior</string>
 </resources>

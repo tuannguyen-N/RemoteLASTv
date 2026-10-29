@@ -92,9 +92,22 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
 
                 scope.launch { readLoop(s, ready, closed) }
 
-                val ok = withTimeoutOrNull(READY_TIMEOUT_MS) { ready.await() } == true
-                if (!ok) disconnect()
-                ok
+                val readyResult = withTimeoutOrNull(READY_TIMEOUT_MS) { ready.await() }
+                if (readyResult != true) {
+                    if (readyResult == null) {
+                        Log.e(
+                            TAG,
+                            "Timed out waiting for RemoteStart from $ipAddress:$port " +
+                                    "after ${READY_TIMEOUT_MS}ms"
+                        )
+                    } else {
+                        Log.e(TAG, "Socket closed before RemoteStart from $ipAddress:$port")
+                    }
+                    disconnect()
+                    false
+                } else {
+                    true
+                }
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 Log.e(TAG, "connect error", e)
@@ -115,7 +128,7 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
         } finally {
             socket = null
             _volumeState.value = null
-            _imeField.value = null
+            clearImeField("disconnect requested")
             _imeShowRequests.tryReceive()
             closedSignal.complete(Unit)
         }
@@ -154,6 +167,7 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
                     .build()
                     .toString()
             }
+            Log.i(TAG, "Sending app link: $link")
             send(
                 Remotemessage.RemoteMessage.newBuilder().setRemoteAppLinkLaunchRequest(
                     Remotemessage.RemoteAppLinkLaunchRequest.newBuilder()
@@ -162,9 +176,16 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
             )
         }
 
-    suspend fun sendImeEdit(newValue: String, cursor: Int, field: ImeField? = null) =
+    suspend fun sendImeEdit(
+        text: String,
+        start: Int,
+        end: Int,
+        field: ImeField? = null,
+    ) =
         withContext(Dispatchers.IO) {
             val f = field ?: _imeField.value ?: throw IllegalStateException("No active text field")
+            val safeStart = start.coerceIn(0, f.value.length)
+            val safeEnd = end.coerceIn(safeStart, f.value.length)
             send(
                 Remotemessage.RemoteMessage.newBuilder().setRemoteImeBatchEdit(
                     Remotemessage.RemoteImeBatchEdit.newBuilder()
@@ -175,13 +196,25 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
                                 .setInsert(1)
                                 .setTextFieldStatus(
                                     Remotemessage.RemoteImeObject.newBuilder()
-                                        .setStart(cursor)
-                                        .setEnd(cursor)
-                                        .setValue(newValue)
+                                        .setStart(safeStart)
+                                        .setEnd(safeEnd)
+                                        .setValue(text)
                                 )
                         )
                 ).build()
             )
+
+            if (
+                _imeField.value?.let {
+                    it.imeCounter == f.imeCounter && it.fieldCounter == f.fieldCounter
+                } == true
+            ) {
+                _imeField.value = f.copy(
+                    value = f.value.replaceRange(safeStart, safeEnd, text),
+                    start = safeStart + text.length,
+                    end = safeStart + text.length,
+                )
+            }
         }
 
     suspend fun sendVoiceBegin(sessionId: Int) = withContext(Dispatchers.IO) {
@@ -250,7 +283,11 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
         try {
             val input = s.inputStream
             while (true) {
-                val msg = Remotemessage.RemoteMessage.parseDelimitedFrom(input) ?: break
+                val msg = Remotemessage.RemoteMessage.parseDelimitedFrom(input)
+                if (msg == null) {
+                    Log.w(TAG, "TV closed the remote connection")
+                    break
+                }
                 when {
                     msg.hasRemoteConfigure() -> send(s, configureReply())
                     msg.hasRemoteSetActive() -> send(
@@ -284,21 +321,43 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
                     }
 
                     msg.hasRemoteImeKeyInject() -> {
-                        Log.d(TAG, "Received RemoteImeKeyInject")
                         val inj = msg.remoteImeKeyInject
                         val f = inj.textFieldStatus
-                        _imeField.value = ImeField(
-                            imeCounter = inj.appInfo.counter,
-                            fieldCounter = f.counterField,
-                            value = f.value,
-                            start = f.start,
-                            end = f.end,
-                            label = f.label,
-                        )
+                        val previousField = _imeField.value
+                        if (
+                            inj.appInfo.counter == 0 &&
+                            f.counterField == 0 &&
+                            f.value.isBlank() &&
+                            f.start == 0 &&
+                            f.end == 0 &&
+                            f.label.isBlank()
+                        ) {
+                            _imeField.value = null
+                            Log.i(
+                                TAG,
+                                "TV IME field reset received; treating phone keyboard as dismissed " +
+                                        "(previousFieldPresent=${previousField != null})"
+                            )
+                        } else {
+                            _imeField.value = ImeField(
+                                imeCounter = inj.appInfo.counter,
+                                fieldCounter = f.counterField,
+                                value = f.value,
+                                start = f.start,
+                                end = f.end,
+                                label = f.label,
+                            )
+                            Log.i(
+                                TAG,
+                                "TV IME text field ${if (previousField == null) "focused" else "updated"}: " +
+                                        "imeCounter=${inj.appInfo.counter}, fieldCounter=${f.counterField}, " +
+                                        "textLength=${f.value.length}, cursor=${f.start}-${f.end}, " +
+                                        "label=${f.label}"
+                            )
+                        }
                     }
 
                     msg.hasRemoteImeShowRequest() -> {
-                        Log.d(TAG, "Received RemoteImeShowRequest")
                         val f = msg.remoteImeShowRequest.remoteTextFieldStatus
                         val current = _imeField.value
                         _imeField.value = ImeField(
@@ -308,6 +367,12 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
                             start = f.start,
                             end = f.end,
                             label = f.label,
+                        )
+                        Log.i(
+                            TAG,
+                            "TV requested keyboard show: fieldCounter=${f.counterField}, " +
+                                    "textLength=${f.value.length}, cursor=${f.start}-${f.end}, " +
+                                    "label=${f.label}"
                         )
                         _imeShowRequests.trySend(Unit)
                     }
@@ -326,7 +391,7 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
                 }
             }
         } catch (e: Exception) {
-            Log.w(TAG, "readLoop ended: ${e.message}")
+            Log.w(TAG, "readLoop ended unexpectedly", e)
         } finally {
             failPendingVoiceBegin(IllegalStateException("TV connection closed during voice setup"))
             ready.complete(false)
@@ -336,12 +401,23 @@ class RemoteClient @Inject constructor(private val certManager: AndroidTvCertMan
             }
             if (socket === s) {
                 socket = null
+                clearImeField("remote socket closed")
                 _volumeState.value = null
-                _imeField.value = null
                 _imeShowRequests.tryReceive()
             }
             closed.complete(Unit)
         }
+    }
+
+    private fun clearImeField(reason: String) {
+        val previousField = _imeField.value
+        if (previousField != null) {
+            Log.i(
+                TAG,
+                "TV text field focus cleared ($reason); actual TV keyboard visibility is unknown"
+            )
+        }
+        _imeField.value = null
     }
 
     private fun configureReply(): Remotemessage.RemoteMessage =

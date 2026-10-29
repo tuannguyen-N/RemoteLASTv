@@ -31,7 +31,12 @@ class AndroidTextInput @Inject constructor(
                 if (field == null) {
                     TextInputState.Idle
                 } else {
-                    TextInputState.Focused(text = field.value, keyboardType = null)
+                    TextInputState.Focused(
+                        text = field.value,
+                        keyboardType = null,
+                        label = field.label.takeIf(String::isNotBlank),
+                        shouldAutoShowKeyboard = field.label.isNotBlank(),
+                    )
                 }
             }
             .distinctUntilChanged()
@@ -40,14 +45,12 @@ class AndroidTextInput @Inject constructor(
         val field = requireField()
         val start = field.start.coerceIn(0, field.value.length)
         val end = field.end.coerceIn(start, field.value.length)
-        val newValue = field.value.take(start) + text + field.value.substring(end)
-        // Truyền field đã capture xuống để tránh race condition đọc lại _imeField
-        remoteClient.sendImeEdit(newValue, start + text.length, field)
+        remoteClient.sendImeEdit(text, start, end, field)
     }
 
     override suspend fun replaceText(text: String): Result<Unit> = runCatching {
-        requireField()
-        remoteClient.sendImeEdit(text, text.length)
+        val field = requireField()
+        remoteClient.sendImeEdit(text, 0, field.value.length, field)
     }
 
     override suspend fun sendDelete(): Result<Unit> = runCatching {

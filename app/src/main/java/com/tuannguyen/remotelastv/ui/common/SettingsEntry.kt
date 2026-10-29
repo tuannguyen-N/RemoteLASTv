@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Tv
-import androidx.compose.material.icons.filled.Visibility
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.ui.navigation.Route
 import com.tuannguyen.remotelastv.ui.settings.SettingsAction
@@ -28,14 +27,9 @@ data class SettingsEntry(
                 SettingsAction.Navigate(Route.RemoteLayout),
             ),
             SettingsEntry(
-                R.string.remote_behavior,
+                R.string.remote_preferences,
                 IconSource.Vector(Icons.Default.Tune),
-                SettingsAction.Navigate(Route.RemoteBehavior),
-            ),
-            SettingsEntry(
-                R.string.connection_display,
-                IconSource.Vector(Icons.Default.Visibility),
-                SettingsAction.Navigate(Route.ConnectionDisplay),
+                SettingsAction.Navigate(Route.RemotePreferences),
             ),
             SettingsEntry(
                 R.string.settings_connected_devices,

@@ -13,7 +13,6 @@
     <string name="settings_title">Cài đặt</string>
     <string name="settings_section_remote">Điều khiển</string>
     <string name="settings_remote_layout">Bố cục điều khiển</string>
-    <string name="settings_remote_behavior">Cách điều khiển hoạt động</string>
     <string name="settings_manage_applications">Quản lý ứng dụng</string>
     <string name="settings_connected_devices">Thiết bị đã kết nối</string>
     <string name="settings_section_application">Ứng dụng</string>
@@ -53,8 +52,9 @@
     <string name="vibrate_when_buttons_are_pressed">Rung khi nhấn nút.</string>
     <string name="smooth_press">Nhấn mượt</string>
     <string name="repeat_commands_while_holding_buttons">Lặp lại lệnh khi nhấn giữ nút.</string>
-    <string name="remote_behavior">Cách điều khiển hoạt động</string>
-    <string name="connection_display">Kết nối và hiển thị</string>
+    <string name="remote_preferences">Tùy chọn điều khiển</string>
+    <string name="section_connection">Kết nối</string>
+    <string name="section_remote_behavior">Cách điều khiển</string>
     <string name="auto_reconnect">Tự động kết nối lại</string>
     <string name="auto_reconnect_description">Tự động kết nối lại với TV bạn đã dùng gần đây nhất.</string>
     <string name="keep_screen_awake">Giữ màn hình luôn bật</string>

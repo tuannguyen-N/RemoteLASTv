@@ -1,5 +1,6 @@
 package com.tuannguyen.remotelastv.data.tv.android_tv
 
+import android.util.Log
 import com.tuannguyen.remotelastv.domain.model.ConnectionStatus
 import com.tuannguyen.remotelastv.domain.model.FailReason
 import com.tuannguyen.remotelastv.domain.model.Television
@@ -54,6 +55,11 @@ class AndroidTvConnection @Inject constructor(
                         certManager.delete(alias)
                         emit(ConnectionStatus.Disconnected(recoverable = false))
                     } else {
+                        Log.e(
+                            TAG,
+                            "Android TV pairing connection failed: tv=${television.id}, " +
+                                    "ip=${television.ipAddress}, port=${PAIRING_PORT}"
+                        )
                         certManager.delete(alias)
                         emit(ConnectionStatus.Failed(FailReason.NETWORK_ERROR))
                     }
@@ -95,6 +101,11 @@ class AndroidTvConnection @Inject constructor(
                     }
 
                     PairingClient.PinResult.ERROR -> {
+                        Log.e(
+                            TAG,
+                            "Android TV pairing PIN exchange failed: tv=${television.id}, " +
+                                    "ip=${television.ipAddress}, port=${PAIRING_PORT}"
+                        )
                         certManager.delete(alias)
                         emit(ConnectionStatus.Failed(FailReason.NETWORK_ERROR))
                         return@flow
@@ -117,6 +128,11 @@ class AndroidTvConnection @Inject constructor(
                 return@flow
             }
             if (!remoteConnected) {
+                Log.e(
+                    TAG,
+                    "Android TV remote connection failed: tv=${television.id}, " +
+                            "ip=${television.ipAddress}, port=${REMOTE_PORT}"
+                )
                 emit(ConnectionStatus.Failed(FailReason.NETWORK_ERROR))
                 return@flow
             }
@@ -161,6 +177,9 @@ class AndroidTvConnection @Inject constructor(
     }
 
     private companion object {
+        const val TAG = "AndroidTvConnection"
+        const val PAIRING_PORT = 6467
+        const val REMOTE_PORT = 6466
         const val PIN_TIMEOUT_MS = 120_000L
     }
 }

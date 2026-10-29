@@ -75,7 +75,7 @@ fun DialogPinEnter(
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(Dimens.Space.md),
+                verticalArrangement = Arrangement.spacedBy(Dimens.Space.xs),
             ) {
                 Text(
                     text = stringResource(R.string.pin_dialog_description),
@@ -127,7 +127,6 @@ fun DialogPinEnter(
                     ),
                 ) {
                     repeat(PIN_LENGTH) { index ->
-                        val isFilled = index < pin.length
                         val isActive = index == pin.length
                         Column(
                             modifier = Modifier

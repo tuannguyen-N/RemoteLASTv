@@ -226,6 +226,7 @@ fun HomeContent(
     if (keyboardUiState.showKeyboardSheet) {
         KeyboardInputBottomSheet(
             query = keyboardUiState.query,
+            inputHint = keyboardUiState.inputHint,
             onDismiss = {
                 onDismissKeyboardSheet()
             },
@@ -341,7 +342,7 @@ private fun TvSelector(
         }
 
         Text(
-            text = connected?.let { it.tv.name } ?: stringResource(R.string.choose_a_tv),
+            text = connected?.tv?.name ?: stringResource(R.string.choose_a_tv),
             modifier = Modifier.weight(1f, fill = false),
             color = if (needsAttention) primary else MaterialTheme.colorScheme.onSurface,
             fontSize = if (compact) 16.sp else 18.sp,

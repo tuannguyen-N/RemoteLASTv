@@ -1,3 +1,4 @@
+
 package com.tuannguyen.remotelastv.ui.home.components
 
 import androidx.compose.foundation.background
@@ -16,7 +17,6 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -44,17 +45,20 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KeyboardInputBottomSheet(
     query: String,
+    inputHint: String? = null,
     onQueryChange: (String) -> Unit,
     onDismiss: () -> Unit,
     onSearch: () -> Unit,
@@ -66,29 +70,31 @@ fun KeyboardInputBottomSheet(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val textState = rememberTextFieldState(initialText = query)
+    val textState = rememberTextFieldState(
+        initialText = query.toSingleLineText(),
+    )
 
-    val singleCharDelete = InputTransformation {
-        val removed = originalText.length - length
-        if (removed > 1 && originalText.startsWith(asCharSequence())) {
-            replace(0, length, originalText.dropLast(1))
-        }
-    }
+    val singleLineHint = inputHint
+        ?.takeIf(String::isNotBlank)
+        ?.toSingleLineText()
 
     LaunchedEffect(textState) {
         snapshotFlow { textState.text.toString() }
+            .distinctUntilChanged()
             .collect(onQueryChange)
     }
 
-    LaunchedEffect(query, textState) {
-        if (textState.text.toString() != query) {
+    LaunchedEffect(query) {
+        val newQuery = query.toSingleLineText()
+
+        if (textState.text.toString() != newQuery) {
             textState.edit {
-                replace(0, length, query)
+                replace(0, length, newQuery)
             }
         }
     }
 
-    LaunchedEffect(sheetState) {
+    LaunchedEffect(sheetState, focusRequester) {
         snapshotFlow { sheetState.currentValue }
             .first { it == SheetValue.Expanded }
 
@@ -159,10 +165,8 @@ fun KeyboardInputBottomSheet(
                         .heightIn(min = Dimens.Size.minTouchTarget)
                         .focusRequester(focusRequester),
                     lineLimits = TextFieldLineLimits.SingleLine,
-                    inputTransformation = singleCharDelete,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface,
-                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
                     ),
                     cursorBrush = SolidColor(
                         MaterialTheme.colorScheme.primary,
@@ -173,17 +177,23 @@ fun KeyboardInputBottomSheet(
                     ),
                     onKeyboardAction = { onSearch() },
                     decorator = { innerTextField ->
-                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
                             if (textState.text.isEmpty()) {
                                 Text(
-                                    text = stringResource(
-                                        R.string.keyboard_input_hint,
-                                    ),
+                                    text = singleLineHint
+                                        ?: stringResource(
+                                            R.string.keyboard_input_hint,
+                                        ),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                             }
+
                             innerTextField()
                         }
                     },
@@ -191,7 +201,11 @@ fun KeyboardInputBottomSheet(
 
                 if (textState.text.isNotEmpty()) {
                     IconButton(
-                        onClick = { onQueryChange("") },
+                        onClick = {
+                            textState.edit {
+                                replace(0, length, "")
+                            }
+                        },
                     ) {
                         Text(
                             text = "×",
@@ -214,20 +228,20 @@ fun KeyboardInputBottomSheet(
                 )
 
                 Text(
-                    text = stringResource(
-                        R.string.keyboard_input_tv_hint,
-                    ),
+                    text = stringResource(R.string.keyboard_input_tv_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             Spacer(Modifier.height(Dimens.Space.xxl))
-
             Spacer(Modifier.height(Dimens.Space.lg))
         }
     }
 }
+
+private fun String.toSingleLineText(): String =
+    replace('\r', ' ').replace('\n', ' ')
 
 @Preview(showBackground = true)
 @Composable

@@ -13,7 +13,6 @@
     <string name="settings_title">设置</string>
     <string name="settings_section_remote">遥控器</string>
     <string name="settings_remote_layout">遥控器布局</string>
-    <string name="settings_remote_behavior">遥控器行为</string>
     <string name="settings_manage_applications">管理应用</string>
     <string name="settings_connected_devices">已连接的设备</string>
     <string name="settings_section_application">应用</string>
@@ -53,8 +52,9 @@
     <string name="vibrate_when_buttons_are_pressed">按下按钮时振动。</string>
     <string name="smooth_press">平滑按压</string>
     <string name="repeat_commands_while_holding_buttons">按住按钮时重复发送指令。</string>
-    <string name="remote_behavior">遥控器行为</string>
-    <string name="connection_display">连接和显示</string>
+    <string name="remote_preferences">遥控器偏好设置</string>
+    <string name="section_connection">连接</string>
+    <string name="section_remote_behavior">遥控器行为</string>
     <string name="auto_reconnect">自动重新连接</string>
     <string name="auto_reconnect_description">自动重新连接到上次使用的电视。</string>
     <string name="keep_screen_awake">保持屏幕常亮</string>

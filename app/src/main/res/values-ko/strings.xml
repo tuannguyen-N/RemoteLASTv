@@ -13,7 +13,6 @@
     <string name="settings_title">설정</string>
     <string name="settings_section_remote">리모컨</string>
     <string name="settings_remote_layout">리모컨 레이아웃</string>
-    <string name="settings_remote_behavior">리모컨 동작</string>
     <string name="settings_manage_applications">앱 관리</string>
     <string name="settings_connected_devices">연결된 기기</string>
     <string name="settings_section_application">애플리케이션</string>
@@ -53,8 +52,9 @@
     <string name="vibrate_when_buttons_are_pressed">버튼을 누를 때 진동합니다.</string>
     <string name="smooth_press">부드러운 누르기</string>
     <string name="repeat_commands_while_holding_buttons">버튼을 누르고 있는 동안 명령을 반복합니다.</string>
-    <string name="remote_behavior">리모컨 동작</string>
-    <string name="connection_display">연결 및 화면</string>
+    <string name="remote_preferences">리모컨 설정</string>
+    <string name="section_connection">연결</string>
+    <string name="section_remote_behavior">리모컨 동작</string>
     <string name="auto_reconnect">자동 재연결</string>
     <string name="auto_reconnect_description">마지막으로 사용한 TV에 자동으로 다시 연결합니다.</string>
     <string name="keep_screen_awake">화면 켜짐 유지</string>

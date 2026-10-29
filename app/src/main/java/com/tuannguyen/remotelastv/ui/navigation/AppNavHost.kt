@@ -19,8 +19,7 @@ import com.tuannguyen.remotelastv.ui.home.HomeScreen
 import com.tuannguyen.remotelastv.ui.language.LanguageScreen
 import com.tuannguyen.remotelastv.ui.settings.SettingsScreen
 import com.tuannguyen.remotelastv.ui.settings_connected_device.ConnectedDeviceScreen
-import com.tuannguyen.remotelastv.ui.settings_connection_display.ConnectionDisplayScreen
-import com.tuannguyen.remotelastv.ui.settings_remote_behavior.RemoteBehaviorScreen
+import com.tuannguyen.remotelastv.ui.settings_remote_preferences.RemotePreferencesScreen
 import com.tuannguyen.remotelastv.ui.settings_remote_layout.RemoteLayoutScreen
 import com.tuannguyen.remotelastv.ui.utils.sendFeedback
 
@@ -77,14 +76,8 @@ fun AppNavHost(
             )
         }
 
-        composable<Route.RemoteBehavior> {
-            RemoteBehaviorScreen(
-                onNavigateBack = { navController.popBackStack() },
-            )
-        }
-
-        composable<Route.ConnectionDisplay> {
-            ConnectionDisplayScreen(
+        composable<Route.RemotePreferences> {
+            RemotePreferencesScreen(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
