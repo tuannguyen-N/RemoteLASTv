@@ -1,9 +1,11 @@
 package com.tuannguyen.remotelastv.ui.settings
 
+import androidx.annotation.StringRes
+import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.ui.navigation.Route
 
 data class SettingsUiState(
-    val title: String = "Settings",
+    @param:StringRes val titleRes: Int = R.string.settings_title,
 )
 
 sealed interface SettingsAction {

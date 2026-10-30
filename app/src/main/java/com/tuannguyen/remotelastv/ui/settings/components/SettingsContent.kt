@@ -1,6 +1,7 @@
 package com.tuannguyen.remotelastv.ui.settings.components
 
 import android.content.res.Configuration
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,7 +57,10 @@ fun SettingsContent(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState()),
         ) {
-            SettingsHeader(onClose = { onAction(SettingsAction.Close) })
+            SettingsHeader(
+                titleRes = uiState.titleRes,
+                onClose = { onAction(SettingsAction.Close) },
+            )
 
             Column(
                 modifier = Modifier.padding(horizontal = Dimens.screenPadding),
@@ -87,7 +91,10 @@ fun SettingsContent(
 }
 
 @Composable
-private fun SettingsHeader(onClose: () -> Unit) {
+private fun SettingsHeader(
+    @StringRes titleRes: Int,
+    onClose: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -96,7 +103,7 @@ private fun SettingsHeader(onClose: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = stringResource(R.string.settings_title),
+            text = stringResource(titleRes),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
@@ -111,7 +118,7 @@ private fun SettingsHeader(onClose: () -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Close", // TODO: move to strings.xml
+                contentDescription = stringResource(R.string.a11y_close),
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(Dimens.Size.iconMedium),
             )

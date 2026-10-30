@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.ui.device_discovery.DeviceDiscoveryScreen
 import com.tuannguyen.remotelastv.ui.faq.FaqScreen
 import com.tuannguyen.remotelastv.ui.home.HomeScreen
@@ -93,7 +94,7 @@ fun AppNavHost(
             FaqScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onContactClick = {
-                    sendFeedback(context, "RemoteLASTv - FAQ")
+                    sendFeedback(context, R.string.faq_feedback_subject)
                 },
             )
         }

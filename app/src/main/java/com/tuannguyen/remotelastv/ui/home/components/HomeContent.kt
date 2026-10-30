@@ -280,7 +280,7 @@ private fun HomeHeader(
     ) {
         HeaderIcon(
             iconRes = R.drawable.ic_setting,
-            description = "Settings",
+            description = stringResource(R.string.a11y_settings),
             onClick = onSettingsClick,
         )
 
@@ -299,7 +299,7 @@ private fun HomeHeader(
 
         HeaderIcon(
             iconRes = R.drawable.ic_on_off,
-            description = "Power",
+            description = stringResource(R.string.a11y_power),
             onClick = onPowerClick,
             tint = MaterialTheme.colorScheme.error,
             containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -765,7 +765,9 @@ private fun MuteControl(
 
     RoundControl(
         icon = IconSource.Resource(if (isMuted) R.drawable.ic_mute else R.drawable.ic_unmute),
-        description = if (isMuted) "Unmute" else "Mute",
+        description = stringResource(
+            if (isMuted) R.string.a11y_unmute else R.string.a11y_mute,
+        ),
         modifier = modifier,
         containerColor = if (isMuted) colors.errorContainer else colors.surfaceContainer,
         iconTint = if (isMuted) colors.error else colors.onSurface,
@@ -808,12 +810,12 @@ private fun ColumnScope.ClassicControls(
         Row(horizontalArrangement = Arrangement.spacedBy(Dimens.Space.sm)) {
             RoundControl(
                 icon = IconSource.Vector(Icons.Default.Keyboard),
-                description = "Keyboard",
+                description = stringResource(R.string.a11y_keyboard),
                 modifier = Modifier.weight(1f),
             ) { showKeyboardSheet() }
             RoundControl(
                 icon = IconSource.Resource(R.drawable.ic_home),
-                description = "Home",
+                description = stringResource(R.string.a11y_home),
                 modifier = Modifier.weight(1f),
             ) { onRemoteButtonClick(TvKey.HOME) }
 
@@ -822,7 +824,9 @@ private fun ColumnScope.ClassicControls(
             RoundControl(
                 icon = if (isDPadPage) IconSource.Vector(Icons.Default.Apps)
                 else IconSource.Resource(R.drawable.ic_dpad),
-                description = if (isDPadPage) "Number Pad" else "Directional Pad",
+                description = stringResource(
+                    if (isDPadPage) R.string.a11y_number_pad else R.string.a11y_directional_pad,
+                ),
                 modifier = Modifier.weight(1f),
             ) {
                 coroutineScope.launch {
@@ -835,20 +839,20 @@ private fun ColumnScope.ClassicControls(
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.Space.sm)) {
                 RoundControl(
                     icon = IconSource.Resource(R.drawable.ic_previous),
-                    description = "Skip Previous",
+                    description = stringResource(R.string.a11y_skip_previous),
                     modifier = Modifier.weight(1f),
                 ) {
                     onRemoteButtonClick(TvKey.PREVIOUS)
                 }
                 RoundControl(
                     icon = IconSource.Resource(R.drawable.ic_pause_play),
-                    description = "Play/Pause",
+                    description = stringResource(R.string.a11y_play_pause),
                     modifier = Modifier.weight(1f),
                 ) { onRemoteButtonClick(TvKey.PLAY_PAUSE) }
 
                 RoundControl(
                     icon = IconSource.Resource(R.drawable.ic_next),
-                    description = "Skip Next",
+                    description = stringResource(R.string.a11y_skip_next),
                     modifier = Modifier.weight(1f),
                 ) { onRemoteButtonClick(TvKey.NEXT) }
             }
@@ -865,7 +869,7 @@ private fun ColumnScope.ClassicControls(
                 if (!uiState.isRecording) {
                     RoundControl(
                         icon = IconSource.Vector(Icons.Default.Mic),
-                        description = "Voice",
+                        description = stringResource(R.string.a11y_voice),
                         modifier = Modifier.weight(1f),
                     ) {
                         onStartVoiceRecording()
@@ -881,7 +885,7 @@ private fun ColumnScope.ClassicControls(
             }
             RoundControl(
                 icon = IconSource.Vector(Icons.AutoMirrored.Filled.KeyboardBackspace),
-                description = "Back",
+                description = stringResource(R.string.a11y_back),
                 modifier = Modifier.weight(1f),
             ) { onRemoteButtonClick(TvKey.BACK) }
         }
@@ -975,7 +979,7 @@ private fun DPad(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = "OK",
+                text = stringResource(R.string.remote_ok),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -1099,7 +1103,7 @@ private fun NumberPadKey(
         if (isDelete) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.Backspace,
-                contentDescription = "Delete",
+                contentDescription = stringResource(R.string.a11y_delete),
                 modifier = Modifier.size(Dimens.Size.iconMedium + Dimens.Space.xxs),
                 tint = MaterialTheme.colorScheme.onSurface,
             )
@@ -1237,7 +1241,9 @@ private fun VerticalControl(
             ) {
                 Icon(
                     imageVector = iconTop,
-                    contentDescription = "IconTop$middle",
+                    contentDescription = stringResource(
+                        if (middle == "VOL") R.string.a11y_volume_up else R.string.a11y_channel_up,
+                    ),
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(Dimens.Size.iconLarge),
                 )
@@ -1258,7 +1264,9 @@ private fun VerticalControl(
             ) {
                 Icon(
                     imageVector = iconBottom,
-                    contentDescription = "IconBottom$middle",
+                    contentDescription = stringResource(
+                        if (middle == "VOL") R.string.a11y_volume_down else R.string.a11y_channel_down,
+                    ),
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(Dimens.Size.iconLarge),
                 )

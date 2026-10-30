@@ -1,7 +1,9 @@
 package com.tuannguyen.remotelastv.ui.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.connection.TvConnectionManager
 import com.tuannguyen.remotelastv.domain.manager.TvControllerManager
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
@@ -17,6 +19,7 @@ import com.tuannguyen.remotelastv.domain.repository.TvControllerRepository
 import com.tuannguyen.remotelastv.domain.tv.TvException
 import com.tuannguyen.remotelastv.domain.usecase.GetTvAppsUseCase
 import com.tuannguyen.remotelastv.domain.usecase.ReconnectLastTvUseCase
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,6 +41,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
     private val controllerManager: TvControllerManager,
     connectionManager: TvConnectionManager,
@@ -122,7 +126,11 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val result = reconnectLastTvUseCase()
             if (result is ConnectionState.Connected) {
-                _effect.send(HomeEvent.ShowMessage("Connected to ${result.tv.name}"))
+                _effect.send(
+                    HomeEvent.ShowMessage(
+                        context.getString(R.string.home_connected_to_tv, result.tv.name)
+                    )
+                )
             }
         }
     }
@@ -136,20 +144,40 @@ class HomeViewModel @Inject constructor(
     fun startVoiceRecording() {
         viewModelScope.launch {
             controllerManager.execute { it.startVoiceRecording() }
-                .onFailure { e -> _effect.send(HomeEvent.ShowMessage("Unable to start voice recording: ${e.message}")) }
+                .onFailure { e ->
+                    _effect.send(
+                        HomeEvent.ShowMessage(
+                            context.getString(
+                                R.string.voice_recording_start_failed,
+                                e.message ?: context.getString(R.string.error_unknown),
+                            )
+                        )
+                    )
+                }
         }
     }
 
     fun stopVoiceRecording() {
         viewModelScope.launch {
             controllerManager.execute { it.stopVoiceRecording() }
-                .onFailure { e -> _effect.send(HomeEvent.ShowMessage("Unable to stop voice recording: ${e.message}")) }
+                .onFailure { e ->
+                    _effect.send(
+                        HomeEvent.ShowMessage(
+                            context.getString(
+                                R.string.voice_recording_stop_failed,
+                                e.message ?: context.getString(R.string.error_unknown),
+                            )
+                        )
+                    )
+                }
         }
     }
 
     fun onMicrophonePermissionDenied() {
         viewModelScope.launch {
-            _effect.send(HomeEvent.ShowMessage("Microphone permission denied. Enable it in app settings to use voice."))
+            _effect.send(
+                HomeEvent.ShowMessage(context.getString(R.string.microphone_permission_denied))
+            )
         }
     }
 

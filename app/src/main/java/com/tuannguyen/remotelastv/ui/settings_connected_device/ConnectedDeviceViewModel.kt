@@ -1,9 +1,12 @@
 package com.tuannguyen.remotelastv.ui.settings_connected_device
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.repository.SavedTvRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.CancellationException
@@ -15,6 +18,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ConnectedDeviceViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val savedTvRepository: SavedTvRepository,
 ) : ViewModel() {
 
@@ -61,7 +65,12 @@ class ConnectedDeviceViewModel @Inject constructor(
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
-                showError("Unable to rename device: ${exception.message ?: "Unknown error"}")
+                showError(
+                    context.getString(
+                        R.string.connected_device_rename_failed,
+                        exception.message ?: context.getString(R.string.error_unknown),
+                    )
+                )
             }
         }
     }
@@ -94,7 +103,12 @@ class ConnectedDeviceViewModel @Inject constructor(
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
-                showError("Unable to remove device: ${exception.message ?: "Unknown error"}")
+                showError(
+                    context.getString(
+                        R.string.connected_device_remove_failed,
+                        exception.message ?: context.getString(R.string.error_unknown),
+                    )
+                )
             }
         }
     }
@@ -118,7 +132,12 @@ class ConnectedDeviceViewModel @Inject constructor(
             } catch (exception: CancellationException) {
                 throw exception
             } catch (exception: Exception) {
-                showError("Unable to load devices: ${exception.message ?: "Unknown error"}")
+                showError(
+                    context.getString(
+                        R.string.connected_device_load_failed,
+                        exception.message ?: context.getString(R.string.error_unknown),
+                    )
+                )
             }
         }
     }

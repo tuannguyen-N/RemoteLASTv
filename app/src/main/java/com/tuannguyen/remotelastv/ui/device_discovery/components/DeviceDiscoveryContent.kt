@@ -175,7 +175,7 @@ fun DeviceDiscoveryContent(
                                     )
 
                                     Text(
-                                        text = "Rescan",
+                                        text = stringResource(R.string.discovery_rescan),
                                     )
                                 }
                             }
@@ -201,56 +201,56 @@ fun DeviceDiscoveryContent(
                 when (uiState.connectionState.reason) {
                     FailReason.DEVICE_NOT_FOUND -> {
                         DialogConnectionFailure(
-                            title = "DEVICE NOT FOUND",
-                            errorMessage = "Unable to find your TV. Please make sure it is turned on and connected to the same Wi-Fi network.",
+                            title = stringResource(R.string.failure_device_not_found_title),
+                            errorMessage = stringResource(R.string.failure_device_not_found_message),
                             onRetry = onDismissFailure
                         )
                     }
 
                     FailReason.TIMEOUT -> {
                         DialogConnectionFailure(
-                            title = "CONNECTION TIMEOUT",
-                            errorMessage = "The connection took too long. Please check your network and try again.",
+                            title = stringResource(R.string.failure_connection_timeout_title),
+                            errorMessage = stringResource(R.string.failure_connection_timeout_message),
                             onRetry = onDismissFailure
                         )
                     }
 
                     FailReason.PAIRING_REJECTED -> {
                         DialogConnectionFailure(
-                            title = "WRONG PIN",
-                            errorMessage = "Incorrect PIN. Please try again.",
+                            title = stringResource(R.string.failure_wrong_pin_title),
+                            errorMessage = stringResource(R.string.failure_wrong_pin_message),
                             onRetry = onDismissFailure
                         )
                     }
 
                     FailReason.PAIRING_DECLINED -> {
                         DialogConnectionFailure(
-                            title = "PAIRING REJECTED",
-                            errorMessage = "You rejected the pairing request on your TV. Try again and select Allow on the TV.",
+                            title = stringResource(R.string.failure_pairing_rejected_title),
+                            errorMessage = stringResource(R.string.failure_pairing_rejected_message),
                             onRetry = onDismissFailure
                         )
                     }
 
                     FailReason.UNSUPPORTED_BRAND -> {
                         DialogConnectionFailure(
-                            title = "UNSUPPORTED TV",
-                            errorMessage = "Your TV brand or model is not supported. Please check compatibility and try again.",
+                            title = stringResource(R.string.failure_unsupported_tv_title),
+                            errorMessage = stringResource(R.string.failure_unsupported_tv_message),
                             onRetry = onDismissFailure
                         )
                     }
 
                     FailReason.UNKNOWN -> {
                         DialogConnectionFailure(
-                            title = "CONNECTION FAILED",
-                            errorMessage = "Something went wrong while connecting to your TV. Please try again.",
+                            title = stringResource(R.string.failure_connection_failed_title),
+                            errorMessage = stringResource(R.string.failure_connection_failed_message),
                             onRetry = onDismissFailure
                         )
                     }
 
                     FailReason.NETWORK_ERROR -> {
                         DialogConnectionFailure(
-                            title = "NETWORK ERROR",
-                            errorMessage = "Unable to communicate with your TV. Please check your Wi-Fi connection and try again.",
+                            title = stringResource(R.string.failure_network_error_title),
+                            errorMessage = stringResource(R.string.failure_network_error_message),
                             onRetry = onDismissFailure
                         )
                     }
@@ -370,7 +370,7 @@ private fun DiscoveryEmptyContent(
                 onClick = onRetry,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Try Again")
+                Text(stringResource(R.string.common_try_again))
             }
         }
     }
@@ -513,7 +513,7 @@ private fun TelevisionItem(
 @Composable
 private fun ConnectedBanner() {
     Text(
-        text = $$"Connecting",
+        text = stringResource(R.string.discovery_connecting),
         modifier = Modifier.padding(
             vertical = Dimens.Space.xxs,
         ),

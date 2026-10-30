@@ -54,7 +54,10 @@ fun LanguageContent(
                 title = { Text(stringResource(R.string.language)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.a11y_back),
+                        )
                     }
                 },
             )
@@ -147,7 +150,7 @@ private fun LanguageRow(
         if (selected) {
             Icon(
                 Icons.Default.Check,
-                contentDescription = "Selected",
+                contentDescription = stringResource(R.string.a11y_selected),
                 tint = MaterialTheme.colorScheme.primary,
             )
         } else {

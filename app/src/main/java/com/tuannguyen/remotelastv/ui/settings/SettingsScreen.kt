@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.ui.navigation.Route
 import com.tuannguyen.remotelastv.ui.settings.components.SettingsContent
 import com.tuannguyen.remotelastv.ui.utils.openPrivacyPolicy
@@ -36,7 +37,7 @@ fun SettingsScreen(
                 }
 
                 SettingsAction.Feedback -> {
-                    sendFeedback(context, "RemoteLASTv - Feedback")
+                    sendFeedback(context, R.string.feedback_subject)
                 }
 
                 SettingsAction.ActivatePremium -> {

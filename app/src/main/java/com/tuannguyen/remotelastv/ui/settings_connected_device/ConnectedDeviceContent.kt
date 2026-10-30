@@ -557,7 +557,7 @@ private fun ConnectedDeviceErrorPreview() {
     RemoteLASTvTheme {
         ConnectedDeviceContent(
             uiState = ConnectedDeviceUiState(
-                errorMessage = "Unable to load devices.",
+                errorMessage = stringResource(R.string.connected_device_load_failed, stringResource(R.string.error_unknown)),
             ),
             onNavigateBack = {},
             onEditClick = {},

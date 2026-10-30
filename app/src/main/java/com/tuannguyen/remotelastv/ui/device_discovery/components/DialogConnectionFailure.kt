@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.res.stringResource
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
@@ -30,8 +31,8 @@ import com.tuannguyen.remotelastv.ui.theme.Dimens
 @Preview
 @Composable
 fun DialogConnectionFailure(
-    title: String = "Connection Failed",
-    errorMessage: String = "Unable to connect to your TV. Please try again.",
+    title: String = stringResource(R.string.failure_connection_failed_title),
+    errorMessage: String = stringResource(R.string.failure_connection_failed_message),
     onRetry: () -> Unit = {},
 ) {
     val composition by rememberLottieComposition(
@@ -93,7 +94,7 @@ fun DialogConnectionFailure(
                         .padding(horizontal = Dimens.Space.xs),
                 ) {
                     Text(
-                        text = "Try Again",
+                        text = stringResource(R.string.common_try_again),
                     )
                 }
             }
