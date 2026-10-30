@@ -1,5 +1,5 @@
 
-package com.tuannguyen.remotelastv.ui.home.components
+package com.tuannguyen.remotelastv.ui.remote.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

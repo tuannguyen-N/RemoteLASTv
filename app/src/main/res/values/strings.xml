@@ -194,4 +194,13 @@
     <string name="remote_preferences">Remote preferences</string>
     <string name="section_connection">Connection</string>
     <string name="section_remote_behavior">Remote behavior</string>
+    <string name="cast_video_casting_to">Casting to</string>
+    <string name="cast_video_rewind_10">Rewind 10 seconds</string>
+    <string name="cast_video_forward_10">Forward 10 seconds</string>
+    <string name="cast_video_play">Play</string>
+    <string name="cast_video_pause">Pause</string>
+    <string name="cast_video_mute">Mute</string>
+    <string name="cast_video_unmute">Unmute</string>
+    <string name="cast_video_volume">Volume</string>
+    <string name="cast_video_stop">Stop casting</string>
 </resources>
