@@ -39,6 +39,8 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material.icons.rounded.Replay10
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -84,12 +86,21 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.tuannguyen.remotelastv.R
+import com.tuannguyen.remotelastv.domain.model.CastFailReason
 import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
 import com.tuannguyen.remotelastv.ui.common.gradientTint
+import com.tuannguyen.remotelastv.ui.common.messageResource
 import com.tuannguyen.remotelastv.ui.components.DialogLoading
+import com.tuannguyen.remotelastv.ui.device_discovery.components.DialogConnectionFailure
 import com.tuannguyen.remotelastv.ui.theme.ButtonColors
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
@@ -111,6 +122,8 @@ fun CastVideoContent(
     onMuteClick: () -> Unit,
     onStopCastingClick: () -> Unit,
     onSeekTo: (Long) -> Unit,
+    failureReason: CastFailReason?,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     thumbnail: @Composable BoxScope.() -> Unit = { ThumbnailPlaceholder() },
 ) {
@@ -126,7 +139,7 @@ fun CastVideoContent(
                     .padding(horizontal = Dimens.Space.lg, vertical = Dimens.Space.md),
             )
         },
-    ) {innerPadding ->
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -181,9 +194,96 @@ fun CastVideoContent(
                     modal = false,
                 )
             }
+
+            failureReason?.let { reason ->
+                ConnectionFailureOverlay(
+                    title = stringResource(R.string.cast_video_failure_title),
+                    errorMessage = stringResource(reason.messageResource()),
+                    retryLabel = stringResource(R.string.cast_video_try_again),
+                    onRetry = onRetry,
+                    modifier = Modifier
+                        .fillMaxSize()
+                )
+            }
         }
     }
 }
+
+
+@Composable
+fun ConnectionFailureOverlay(
+    title: String = "Connection Failed",
+    errorMessage: String = "Unable to connect to your TV. Please try again.",
+    retryLabel: String = "Try Again",
+    onRetry: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(R.raw.error)
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f)
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Dimens.Space.lg),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            tonalElevation = 0.dp,
+        ) {
+            Column(
+                modifier = Modifier.padding(Dimens.Space.lg),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                LottieAnimation(
+                    composition = composition,
+                    modifier = Modifier.size(Dimens.Size.dialogIllustration),
+                )
+
+                Spacer(Modifier.height(Dimens.Space.xs))
+
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                )
+
+                Spacer(Modifier.height(Dimens.Space.xxs))
+
+                Text(
+                    text = errorMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+
+                Spacer(Modifier.height(Dimens.Space.md))
+
+                Button(
+                    onClick = onRetry,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.Space.xs),
+                ) {
+                    Text(text = retryLabel)
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 private fun CastingToHeader(
@@ -362,7 +462,9 @@ private fun ProgressSection(
             onValueChangeFinished = {
                 if (isSeeking.value) {
                     isSeeking.value = false
-                    onSeekTo((sliderProgress.floatValue * durationMs).toLong().coerceIn(0L, durationMs))
+                    onSeekTo(
+                        (sliderProgress.floatValue * durationMs).toLong().coerceIn(0L, durationMs)
+                    )
                 }
             },
             enabled = durationMs > 0L,
@@ -427,7 +529,10 @@ private fun TransportControls(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(Dimens.Size.castControls, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(
+            Dimens.Size.castControls,
+            Alignment.CenterHorizontally
+        ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         FilledTonalIconButton(
@@ -625,6 +730,8 @@ private fun CastVideoContentPlayingPreview() {
                 onMuteClick = {},
                 onStopCastingClick = {},
                 onSeekTo = {},
+                failureReason = null,
+                onRetry = {},
             )
         }
     }
@@ -653,6 +760,8 @@ private fun CastVideoContentPausedMutedPreview() {
                 onMuteClick = {},
                 onStopCastingClick = {},
                 onSeekTo = {},
+                failureReason = CastFailReason.DEVICE_NOT_FOUND,
+                onRetry = {},
             )
         }
     }

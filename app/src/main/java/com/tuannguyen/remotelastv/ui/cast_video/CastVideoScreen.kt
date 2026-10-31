@@ -7,13 +7,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.CastFailReason
-import com.tuannguyen.remotelastv.ui.common.messageResource
-import com.tuannguyen.remotelastv.ui.device_discovery.components.DialogConnectionFailure
 
 @Composable
 fun CastVideoScreen(
@@ -55,17 +51,10 @@ fun CastVideoScreen(
         onMuteClick = viewModel::onMuteClick,
         onStopCastingClick = viewModel::onStopCastingClick,
         onSeekTo = viewModel::onSeekTo,
+        failureReason = failureReason,
+        onRetry = {
+            failureReason = null
+            viewModel.onRetryCasting()
+        }
     )
-
-    failureReason?.let { reason ->
-        DialogConnectionFailure(
-            title = stringResource(R.string.cast_video_failure_title),
-            errorMessage = stringResource(reason.messageResource()),
-            retryLabel = stringResource(R.string.cast_video_try_again),
-            onRetry = {
-                failureReason = null
-                viewModel.onRetryCasting()
-            },
-        )
-    }
 }
