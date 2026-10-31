@@ -203,4 +203,14 @@
     <string name="cast_video_unmute">Unmute</string>
     <string name="cast_video_volume">Volume</string>
     <string name="cast_video_stop">Stop casting</string>
+    <string name="cast_video_volume_up">Volume up</string>
+    <string name="cast_video_volume_down">Volume down</string>
+    <string name="cast_video_loading_message">Some videos may take longer than usual to start. Please wait.</string>
+    <string name="cast_video_failure_title">Unable to cast video</string>
+    <string name="cast_video_failure_message">We couldn’t start playback on your TV. Check your connection and try again.</string>
+    <string name="cast_video_failure_device_not_found">The TV could not be found. Make sure it is on and connected to the same Wi-Fi network.</string>
+    <string name="cast_video_failure_timeout">The TV took too long to respond. Check your connection and try again.</string>
+    <string name="cast_video_failure_not_supported">This TV does not support casting this video.</string>
+    <string name="cast_video_failure_disconnected">The connection to the TV was lost. Reconnect and try again.</string>
+    <string name="cast_video_try_again">Try again</string>
 </resources>

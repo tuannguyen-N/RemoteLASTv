@@ -57,12 +57,12 @@ import kotlinx.coroutines.flow.first
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KeyboardInputBottomSheet(
+    modifier: Modifier = Modifier,
     query: String,
     inputHint: String? = null,
     onQueryChange: (String) -> Unit,
     onDismiss: () -> Unit,
     onSearch: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
@@ -131,7 +131,7 @@ fun KeyboardInputBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = Dimens.screenPadding)
+                .padding(horizontal = Dimens.Space.screenHorizontal)
                 .padding(top = Dimens.Space.xxl),
             verticalArrangement = Arrangement.spacedBy(Dimens.Space.xs),
         ) {

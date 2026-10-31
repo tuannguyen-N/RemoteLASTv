@@ -65,7 +65,7 @@ fun RemotePreferencesContent(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = Dimens.screenPadding)
+                .padding(horizontal = Dimens.Space.screenHorizontal)
                 .padding(top = Dimens.Space.xs, bottom = Dimens.Space.xl),
             verticalArrangement = Arrangement.spacedBy(Dimens.Space.xl)
         ) {

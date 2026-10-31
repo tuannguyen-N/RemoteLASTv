@@ -32,6 +32,7 @@ import com.tuannguyen.remotelastv.ui.theme.Dimens
 fun DialogConnectionFailure(
     title: String = "Connection Failed",
     errorMessage: String = "Unable to connect to your TV. Please try again.",
+    retryLabel: String = "Try Again",
     onRetry: () -> Unit = {},
 ) {
     val composition by rememberLottieComposition(
@@ -59,7 +60,7 @@ fun DialogConnectionFailure(
             ) {
                 LottieAnimation(
                     composition = composition,
-                    modifier = Modifier.size(120.dp),
+                    modifier = Modifier.size(Dimens.Size.dialogIllustration),
                 )
 
                 Spacer(Modifier.height(Dimens.Space.xs))
@@ -92,9 +93,7 @@ fun DialogConnectionFailure(
                         .fillMaxWidth()
                         .padding(horizontal = Dimens.Space.xs),
                 ) {
-                    Text(
-                        text = "Try Again",
-                    )
+                    Text(text = retryLabel)
                 }
             }
         }

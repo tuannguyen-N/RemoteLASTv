@@ -17,9 +17,7 @@ import com.tuannguyen.remotelastv.domain.model.ConnectionState
 fun CastPage(
     modifier: Modifier = Modifier,
     connectionState: ConnectionState,
-    openCastImage: (Uri) -> Unit,
-    openCastVideo: (Uri) -> Unit,
-    openCastAudio: (Uri) -> Unit,
+    openCast: (CastMediaType,Uri) -> Unit,
     viewModel: CastTvViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -27,19 +25,19 @@ fun CastPage(
     val pickImage = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        uri?.let { openCastImage(uri) }
+        uri?.let { openCast(CastMediaType.IMAGE, uri) }
     }
 
     val pickVideo = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        uri?.let { openCastVideo(uri) }
+        uri?.let {openCast(CastMediaType.VIDEO, uri) }
     }
 
     val pickAudio = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
-        uri?.let { openCastAudio(uri) }
+        uri?.let {openCast(CastMediaType.AUDIO, uri) }
     }
 
     LaunchedEffect(viewModel) {

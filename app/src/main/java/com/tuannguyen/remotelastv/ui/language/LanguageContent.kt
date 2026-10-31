@@ -64,7 +64,7 @@ fun LanguageContent(
             modifier = Modifier
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = Dimens.screenPadding, vertical = Dimens.Space.xs),
+                .padding(horizontal = Dimens.Space.screenHorizontal, vertical = Dimens.Space.xs),
             verticalArrangement = Arrangement.spacedBy(Dimens.Space.md),
         ) {
             Text(

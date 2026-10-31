@@ -194,4 +194,12 @@
     <string name="tutorial_behavior_subtitle">Các tùy chọn mặc định phù hợp với hầu hết mọi người.</string>
     <string name="tutorial_group_connection">Kết nối và hiển thị</string>
     <string name="tutorial_group_input">Nhập liệu</string>
+    <string name="cast_video_loading_message">Một số video có thể mất nhiều thời gian hơn bình thường để bắt đầu. Vui lòng chờ.</string>
+    <string name="cast_video_failure_title">Không thể truyền video</string>
+    <string name="cast_video_failure_message">Không thể bắt đầu phát video trên TV. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="cast_video_failure_device_not_found">Không tìm thấy TV. Hãy đảm bảo TV đang bật và kết nối cùng mạng Wi-Fi.</string>
+    <string name="cast_video_failure_timeout">TV phản hồi quá lâu. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="cast_video_failure_not_supported">TV này không hỗ trợ truyền video này.</string>
+    <string name="cast_video_failure_disconnected">Đã mất kết nối với TV. Hãy kết nối lại và thử lại.</string>
+    <string name="cast_video_try_again">Thử lại</string>
 </resources>

@@ -102,7 +102,7 @@ fun DeviceDiscoveryContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = Dimens.screenPadding),
+                    .padding(horizontal = Dimens.Space.screenHorizontal),
             ) {
                 when (val status = uiState.discoveryStatus) {
                     is DiscoveryStatus.Scanning -> {

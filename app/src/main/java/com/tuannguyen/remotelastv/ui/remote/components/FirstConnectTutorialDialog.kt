@@ -125,7 +125,7 @@ fun FirstConnectTutorialDialog(
                 Column(
                     modifier = Modifier
                         .safeDrawingPadding()
-                        .padding(horizontal = Dimens.screenPadding),
+                        .padding(horizontal = Dimens.Space.screenHorizontal),
                 ) {
                     TutorialTopBar(step = step, onSkip = actions.onFinish)
 

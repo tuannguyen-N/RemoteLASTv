@@ -96,7 +96,7 @@ fun RemoteLayoutContent(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = Dimens.screenPadding)
+                .padding(horizontal = Dimens.Space.screenHorizontal)
                 .padding(bottom = Dimens.Space.xl),
             verticalArrangement = Arrangement.spacedBy(Dimens.Space.md)
         ) {
@@ -247,7 +247,7 @@ private fun SettingsOptionCard(
         modifier = Modifier
             .fillMaxWidth()
             .border(
-                width = Dimens.Size.borderThin,
+                width = Dimens.Border.thin,
                 color = borderColor,
                 shape = MaterialTheme.shapes.large
             )

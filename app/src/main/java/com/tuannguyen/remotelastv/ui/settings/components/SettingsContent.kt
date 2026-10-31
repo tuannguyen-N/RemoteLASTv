@@ -59,7 +59,7 @@ fun SettingsContent(
             SettingsHeader(onClose = { onAction(SettingsAction.Close) })
 
             Column(
-                modifier = Modifier.padding(horizontal = Dimens.screenPadding),
+                modifier = Modifier.padding(horizontal = Dimens.Space.screenHorizontal),
                 verticalArrangement = Arrangement.spacedBy(Dimens.Space.lg),
             ) {
                 SettingsSection(title = stringResource(R.string.settings_section_remote)) {
@@ -91,7 +91,7 @@ private fun SettingsHeader(onClose: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = Dimens.screenPadding, vertical = Dimens.Space.md),
+            .padding(horizontal = Dimens.Space.screenHorizontal, vertical = Dimens.Space.md),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -166,7 +166,7 @@ private fun SettingsGroup(
                             start = Dimens.Space.md + SettingsIconTileSize + Dimens.Space.md,
                             end = Dimens.Space.md,
                         ),
-                        thickness = Dimens.Size.borderThin,
+                        thickness = Dimens.Border.thin,
                         color = MaterialTheme.colorScheme.outlineVariant,
                     )
                 }

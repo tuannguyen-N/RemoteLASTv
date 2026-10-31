@@ -531,7 +531,7 @@ private fun DPad(
     diameter: Dp,
     onRemoteButtonClick: (TvKey) -> Unit,
 ) {
-    val ringPadding = Dimens.screenPadding
+    val ringPadding = Dimens.Space.screenHorizontal
     val disc = diameter - ringPadding * 2
     val edge = disc * 0.12f
 
@@ -728,7 +728,7 @@ private fun NumberPadKey(
                             color = MaterialTheme.colorScheme.surfaceContainer,
                             shape = shape,
                         )
-                        .border(Dimens.Size.borderThin, hairline(), shape)
+                        .border(Dimens.Border.thin, hairline(), shape)
                 }
             )
             .repeatableClick(onClick = onClick, indication = ripple()),
@@ -816,7 +816,7 @@ private fun RoundControl(
                 .aspectRatio(1f)
                 .bounceClick(shape = CircleShape, onClick = onClick)
                 .background(containerColor)
-                .border(Dimens.Size.borderThin, hairline(), CircleShape),
+                .border(Dimens.Border.thin, hairline(), CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             when (icon) {
@@ -857,7 +857,7 @@ private fun VerticalControl(
         modifier = modifier
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .border(Dimens.Size.borderThin, hairline(), CircleShape),
+            .border(Dimens.Border.thin, hairline(), CircleShape),
     ) {
         if (level != null) {
             WaterFill(

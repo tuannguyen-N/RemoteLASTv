@@ -228,7 +228,7 @@ private fun TvSelector(
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .border(
-                width = Dimens.Size.borderThin,
+                width = Dimens.Border.thin,
                 color = if (needsAttention) primary else hairline(),
                 shape = CircleShape,
             )
@@ -384,7 +384,7 @@ private fun MoreAppsLauncher(
             .bounceClickNoEffect(onClick = onClick)
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .border(Dimens.Size.borderThin, hairline(), shape),
+            .border(Dimens.Border.thin, hairline(), shape),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
