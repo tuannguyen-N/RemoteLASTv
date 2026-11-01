@@ -378,7 +378,9 @@ class RemoteViewModel @Inject constructor(
     private fun send(block: suspend (TvControllerRepository) -> Result<Unit>) {
         viewModelScope.launch {
             controllerManager.execute(block).onFailure { error ->
-                if (error !is TvException.NotConnected) {
+                if (error is TvException.NotConnected) {
+                    _effect.send(RemoteEvent.NotConnected)
+                } else {
                     _effect.send(RemoteEvent.ShowMessage("Remote action failed: ${error.message}"))
                 }
             }

@@ -272,7 +272,7 @@ fun DeviceDiscoveryContent(
         }
     }
 
-    if (!showSupportInfo) {
+    if (showSupportInfo) {
         DiscoveryInfoDialog(onDismiss = { showSupportInfo = false })
     }
 

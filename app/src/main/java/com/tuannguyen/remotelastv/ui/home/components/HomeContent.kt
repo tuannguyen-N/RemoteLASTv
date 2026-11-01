@@ -135,8 +135,9 @@ fun HomeContent(
                         .weight(1f),
                     userScrollEnabled = false,
                 ) { page ->
-                    if (page == screenPagerState.currentPage) {
-                        if (page == 0) remotePage() else castPage()
+                    when (page) {
+                        0 -> remotePage()
+                        1 -> castPage()
                     }
                 }
             }

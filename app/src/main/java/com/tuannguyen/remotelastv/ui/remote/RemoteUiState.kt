@@ -28,4 +28,5 @@ data class RemoteUiState(
 
 sealed interface RemoteEvent {
     data class ShowMessage(val message: String) : RemoteEvent
+    data object NotConnected : RemoteEvent
 }

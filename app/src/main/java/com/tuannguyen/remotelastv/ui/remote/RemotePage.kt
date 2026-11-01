@@ -23,18 +23,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.TutorialActions
 import com.tuannguyen.remotelastv.ui.remote.components.FirstConnectTutorialDialog
 import com.tuannguyen.remotelastv.ui.remote.components.KeyboardInputBottomSheet
 import com.tuannguyen.remotelastv.ui.remote.components.RemoteControls
 import com.tuannguyen.remotelastv.ui.utils.findActivity
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 @Composable
 fun RemotePage(
@@ -44,6 +48,7 @@ fun RemotePage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val notConnectedMessage = stringResource(R.string.remote_not_connected_message)
     var tutorialStep by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
@@ -59,9 +64,16 @@ fun RemotePage(
     }
 
     LaunchedEffect(Unit) {
+        var snackbarJob: Job? = null
         viewModel.effect.collect { event ->
-            when (event) {
-                is RemoteEvent.ShowMessage -> snackbarHostState.showSnackbar(event.message)
+            val message = when (event) {
+                is RemoteEvent.ShowMessage -> event.message
+                RemoteEvent.NotConnected -> notConnectedMessage
+            }
+            snackbarJob?.cancel()
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarJob = this@LaunchedEffect.launch {
+                snackbarHostState.showSnackbar(message)
             }
         }
     }
