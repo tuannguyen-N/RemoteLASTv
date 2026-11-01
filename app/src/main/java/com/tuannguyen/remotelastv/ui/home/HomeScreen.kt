@@ -23,6 +23,7 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit = {},
     onNavigateToDeviceDiscovery: () -> Unit = {},
     openCast: (CastMediaType, Uri) -> Unit,
+    openAudio: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -51,7 +52,9 @@ fun HomeScreen(
             },
             castPage = {
                 CastPage(
-                    connectionState = uiState.connectionState, openCast = openCast
+                    connectionState = uiState.connectionState,
+                    openCast = openCast,
+                    openAudio = openAudio,
                 )
             },
             modifier = modifier,

@@ -1,5 +1,6 @@
 package com.tuannguyen.remotelastv.ui.cast_video
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +16,7 @@ import com.tuannguyen.remotelastv.domain.usecase.GetConnectedTelevisionUseCase
 import com.tuannguyen.remotelastv.domain.usecase.GetMediaInfoUseCase
 import com.tuannguyen.remotelastv.domain.usecase.GetVideoThumbnailUseCase
 import com.tuannguyen.remotelastv.domain.usecase.StartCastUseCase
+import com.tuannguyen.remotelastv.domain.usecase.StopCastUseCase
 import com.tuannguyen.remotelastv.ui.navigation.Route
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
@@ -22,12 +24,14 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 
 @HiltViewModel
 class CastVideoViewModel @Inject constructor(
@@ -37,52 +41,68 @@ class CastVideoViewModel @Inject constructor(
     private val getVideoThumbnail: GetVideoThumbnailUseCase,
     private val startCast: StartCastUseCase,
     private val playback: CastPlaybackUseCase,
+    private val stopCast: StopCastUseCase,
     @param:ApplicationScope private val appScope: CoroutineScope,
 ) : ViewModel() {
-
     private val mediaUri = savedStateHandle.toRoute<Route.CastVideo>().uri
-
     private val _uiState = MutableStateFlow(CastVideoUiState())
     val uiState: StateFlow<CastVideoUiState> = _uiState.asStateFlow()
-
     private val _events = Channel<CastVideoEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
-
-    private var stopped = false
+    private val commandMutex = Mutex()
+    private var castJob: Job? = null
     private var statusJob: Job? = null
 
     init {
-        startCasting()
+        castMedia()
+        loadThumbnail()
     }
 
-    private fun startCasting() = viewModelScope.launch {
-        try {
-            val television = getConnectedTelevision()
-                ?: return@launch failAndExit(CastFailReason.DEVICE_NOT_FOUND)
-            val mediaInfo = getMediaInfo(mediaUri)
-            _uiState.update { it.copy(title = mediaInfo.title, tvName = television.name) }
+    private fun castMedia() {
+        castJob?.cancel()
+        statusJob?.cancel()
+        castJob = viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val television =
+                    getConnectedTelevision() ?: return@launch fail(CastFailReason.DEVICE_NOT_FOUND)
+                val mediaInfo = getMediaInfo(mediaUri)
+                _uiState.update { it.copy(title = mediaInfo.title, tvName = television.name) }
 
-            val media = CastMedia(
-                contentUri = mediaUri,
-                type = CastMediaType.VIDEO,
-                title = mediaInfo.title,
-                mimeType = mediaInfo.mimeType,
-            )
-            startCast(television, media)
-                .onSuccess {
-                    observe()
-                    val thumbnailBytes = getVideoThumbnail(mediaUri)
-                    _uiState.update { it.copy(thumbnailBytes = thumbnailBytes) }
+                val media = CastMedia(
+                    contentUri = mediaUri,
+                    type = CastMediaType.VIDEO,
+                    title = mediaInfo.title,
+                    mimeType = mediaInfo.mimeType,
+                )
+
+                startCast(television, media).onSuccess { observe() }.onFailure { error ->
+                    ensureActive()
+                    Log.e(TAG, "Failed to cast media to ${television.ipAddress}", error)
+                    fail(failReason(error))
                 }
-                .onFailure { error ->
-                    android.util.Log.e(TAG, "Failed to cast media to ${television.ipAddress}", error)
-                    failAndExit(failReason(error))
-                }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to prepare media for casting", e)
-            failAndExit(failReason(e))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to prepare media for casting", e)
+                fail(failReason(e))
+            }
+        }
+    }
+
+    private fun loadThumbnail() {
+        viewModelScope.launch {
+            val bytes = try {
+                getVideoThumbnail(mediaUri)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w(TAG, "Thumbnail unavailable", e)
+                null
+            }
+            if (bytes != null) {
+                _uiState.update { it.copy(thumbnailBytes = bytes) }
+            }
         }
     }
 
@@ -101,8 +121,8 @@ class CastVideoViewModel @Inject constructor(
                     )
                 }
                 if (status.state == CastPlayerState.ERROR) {
-                    android.util.Log.e(TAG, "Cast playback failed: ${status.errorMessage}")
-                    failAndExit(CastFailReason.UNKNOWN)
+                    Log.e(TAG, "Cast playback failed: ${status.errorMessage}")
+                    fail(CastFailReason.UNKNOWN)
                 }
             }
         }
@@ -113,32 +133,39 @@ class CastVideoViewModel @Inject constructor(
     }
 
     fun onRewindClick() = withCast { playback.seekBy(-SEEK_STEP_MS) }
-
     fun onForwardClick() = withCast { playback.seekBy(SEEK_STEP_MS) }
-
-    fun onVolumeUpClick() = withCast { playback.changeVolume(VOLUME_STEP) }
-
-    fun onVolumeDownClick() = withCast { playback.changeVolume(-VOLUME_STEP) }
-
+    fun onVolumeUpClick() = withCast(dropIfBusy = true) { playback.changeVolume(VOLUME_STEP) }
+    fun onVolumeDownClick() = withCast(dropIfBusy = true) { playback.changeVolume(-VOLUME_STEP) }
     fun onMuteClick() = withCast { playback.setMuted(!_uiState.value.isMuted) }
-
     fun onSeekTo(positionMs: Long) = withCast { playback.seekTo(positionMs) }
-
     fun onRetryCasting() {
-        stopped = false
-        statusJob?.cancel()
-        _uiState.update { it.copy(isLoading = true, thumbnailBytes = null) }
-        startCasting()
+        castMedia()
     }
 
     fun onStopCastingClick() {
-        stopOnce { _events.send(CastVideoEvent.NavigateBack) }
+        castJob?.cancel()
+        statusJob?.cancel()
+        _events.trySend(CastVideoEvent.NavigateBack)
     }
 
-    private fun withCast(command: suspend () -> Result<Unit>) {
+    private fun withCast(
+        dropIfBusy: Boolean = false,
+        command: suspend () -> Result<Unit>,
+    ) {
         viewModelScope.launch {
-            command().onFailure { error ->
-                _events.send(CastVideoEvent.ShowMessage(failReason(error)))
+            val acquired = if (dropIfBusy) {
+                commandMutex.tryLock()
+            } else {
+                commandMutex.lock()
+                true
+            }
+            if (!acquired) return@launch
+            try {
+                command().onFailure { error ->
+                    _events.send(CastVideoEvent.ShowMessage(failReason(error)))
+                }
+            } finally {
+                commandMutex.unlock()
             }
         }
     }
@@ -146,24 +173,19 @@ class CastVideoViewModel @Inject constructor(
     private fun failReason(error: Throwable): CastFailReason =
         (error as? CastException)?.reason ?: CastFailReason.UNKNOWN
 
-    private fun failAndExit(reason: CastFailReason) {
+    private fun fail(reason: CastFailReason) {
+        statusJob?.cancel()
         _uiState.update { it.copy(isLoading = false) }
-        stopOnce { _events.send(CastVideoEvent.CastFailed(reason)) }
-    }
-
-    private fun stopOnce(afterStop: (suspend () -> Unit)? = null) {
-        if (stopped) return
-        stopped = true
-        appScope.launch {
-            playback.stop().onFailure { error ->
-                android.util.Log.e(TAG, "Failed to stop casting", error)
-            }
-            afterStop?.invoke()
-        }
+        _events.trySend(CastVideoEvent.CastFailed(reason))
     }
 
     override fun onCleared() {
-        stopOnce()
+        appScope.launch {
+            playback.stop().onFailure { error ->
+                Log.e(TAG, "Failed to stop casting", error)
+            }
+            stopCast()
+        }
         super.onCleared()
     }
 

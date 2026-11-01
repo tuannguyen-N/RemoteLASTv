@@ -122,4 +122,5 @@ dependencies {
     implementation(libs.protobuf.javalite)
     implementation(libs.bouncy.castle)
     implementation(libs.nanohttpd)
+    implementation(libs.coil.compose)
 }

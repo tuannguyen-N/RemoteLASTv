@@ -202,4 +202,5 @@
     <string name="cast_video_failure_not_supported">이 TV는 이 동영상 전송을 지원하지 않습니다.</string>
     <string name="cast_video_failure_disconnected">TV 연결이 끊겼습니다. 다시 연결한 후 시도해 주세요.</string>
     <string name="cast_video_try_again">다시 시도</string>
+    <string name="cast_audio_permission_denied">기기의 음악을 탐색하려면 오디오 액세스를 허용하세요.</string>
 </resources>

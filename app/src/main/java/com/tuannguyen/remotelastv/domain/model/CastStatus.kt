@@ -2,6 +2,7 @@ package com.tuannguyen.remotelastv.domain.model
 
 data class CastStatus(
     val state: CastPlayerState = CastPlayerState.IDLE,
+    val mediaUri: String? = null,
     val positionMs: Long = 0L,
     val durationMs: Long = 0L,
     val volume: Int? = null,

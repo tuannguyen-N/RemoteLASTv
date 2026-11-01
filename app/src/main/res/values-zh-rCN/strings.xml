@@ -202,4 +202,5 @@
     <string name="cast_video_failure_not_supported">此电视不支持投放该视频。</string>
     <string name="cast_video_failure_disconnected">与电视的连接已断开。请重新连接后重试。</string>
     <string name="cast_video_try_again">重试</string>
+    <string name="cast_audio_permission_denied">请允许访问音频，以浏览设备上的音乐。</string>
 </resources>

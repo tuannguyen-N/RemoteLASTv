@@ -14,6 +14,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tuannguyen.remotelastv.domain.model.CastMediaType
+import com.tuannguyen.remotelastv.ui.cast_audio.CastAudioScreen
+import com.tuannguyen.remotelastv.ui.cast_image.CastImageScreen
 import com.tuannguyen.remotelastv.ui.cast_video.CastVideoScreen
 import com.tuannguyen.remotelastv.ui.device_discovery.DeviceDiscoveryScreen
 import com.tuannguyen.remotelastv.ui.faq.FaqScreen
@@ -60,8 +62,11 @@ fun AppNavHost(
                     when (castType) {
                         CastMediaType.IMAGE -> navController.navigate(Route.CastImage(uri.toString()))
                         CastMediaType.VIDEO -> navController.navigate(Route.CastVideo(uri.toString()))
-                        CastMediaType.AUDIO -> navController.navigate(Route.CastAudio(uri.toString()))
+                        CastMediaType.AUDIO -> navController.navigate(Route.CastAudio)
                     }
+                },
+                openAudio = {
+                    navController.navigate(Route.CastAudio)
                 },
             )
         }
@@ -115,6 +120,18 @@ fun AppNavHost(
 
         composable<Route.CastVideo> {
             CastVideoScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<Route.CastImage> {
+            CastImageScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<Route.CastAudio> {
+            CastAudioScreen(
                 onNavigateBack = { navController.popBackStack() },
             )
         }

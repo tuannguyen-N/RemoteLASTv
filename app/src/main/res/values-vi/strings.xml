@@ -202,4 +202,5 @@
     <string name="cast_video_failure_not_supported">TV này không hỗ trợ truyền video này.</string>
     <string name="cast_video_failure_disconnected">Đã mất kết nối với TV. Hãy kết nối lại và thử lại.</string>
     <string name="cast_video_try_again">Thử lại</string>
+    <string name="cast_audio_permission_denied">Hãy cấp quyền truy cập âm thanh để duyệt nhạc trên thiết bị.</string>
 </resources>

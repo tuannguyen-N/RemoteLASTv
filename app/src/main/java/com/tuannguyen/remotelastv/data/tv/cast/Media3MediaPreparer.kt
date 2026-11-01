@@ -11,6 +11,7 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import androidx.core.net.toUri
 
 @Singleton
 class Media3MediaPreparer @Inject constructor(
@@ -18,7 +19,7 @@ class Media3MediaPreparer @Inject constructor(
 ) : MediaPreparer {
     override suspend fun prepare(media: CastMedia, providerId: CastProviderId): PreparedCastMedia {
         val outputFile = if (providerId == CastProviderId.DLNA && media.type == CastMediaType.VIDEO) {
-            videoTranscoder.transcodeIfNeeded(Uri.parse(media.contentUri), media.title)
+            videoTranscoder.transcodeIfNeeded(media.contentUri.toUri(), media.title)
         } else {
             null
         }

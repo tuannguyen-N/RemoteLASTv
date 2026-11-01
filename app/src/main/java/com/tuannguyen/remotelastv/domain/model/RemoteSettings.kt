@@ -16,4 +16,5 @@ data class RemoteSettings(
 
     val hasSeenRemoteTutorial: Boolean = false,
     val hasRequestedMicrophonePermission: Boolean = false,
+    val hasRequestedAudioPermission: Boolean = false,
 )

@@ -40,6 +40,10 @@ object Dimens {
         val castPlayIcon = 52.dp
         val castProgressHeight = 6.dp
         val castVolumeProgressHeight = 4.dp
+
+         // SeekBar
+        val seekBarTrackHeight = 6.dp
+        val seekBarThumb = 16.dp
     }
 
     object Radius {

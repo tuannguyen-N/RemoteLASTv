@@ -55,7 +55,10 @@ class DlnaCastSession(
                 try {
                     suspendRunCatching {
                         stopPolling()
-                        _status.value = CastStatus(state = CastPlayerState.LOADING)
+                        _status.value = CastStatus(
+                            state = CastPlayerState.LOADING,
+                            mediaUri = media.contentUri,
+                        )
 
                         val mimeType = media.mimeType?.takeIf { it.isNotBlank() } ?: when (media.type) {
                             CastMediaType.VIDEO -> "video/mp4"
@@ -88,7 +91,11 @@ class DlnaCastSession(
                         Log.e(TAG, "DLNA cast failed for ${device.host}", e)
                         mediaServer.stop()
                         isLoaded = false
-                        _status.value = CastStatus(state = CastPlayerState.ERROR, errorMessage = e.message)
+                        _status.value = CastStatus(
+                            state = CastPlayerState.ERROR,
+                            mediaUri = media.contentUri,
+                            errorMessage = e.message,
+                        )
                     }
                 } catch (e: CancellationException) {
                     stopPolling()
@@ -281,11 +288,14 @@ class DlnaCastSession(
                     // Lúc mới nạp TV có thể báo STOPPED ngắn -> coi là LOADING
                     if (state == CastPlayerState.STOPPED && !hasPlayed && tick < 8) state = CastPlayerState.LOADING
                     val volume = if (tick % 3 == 0) suspendRunCatching { soap.getVolume(device) }.getOrNull() else null
+                    val reportedPositionMs = UpnpTime.parse(position["RelTime"])
                     failures = 0
                     _status.update { old ->
                         old.copy(
                             state = state,
-                            positionMs = UpnpTime.parse(position["RelTime"]) ?: old.positionMs,
+                            positionMs = reportedPositionMs
+                                ?.takeIf { it > 0L || state != CastPlayerState.STOPPED }
+                                ?: old.positionMs,
                             durationMs = UpnpTime.parse(position["TrackDuration"]) ?: old.durationMs,
                             volume = volume ?: old.volume,
                             errorMessage = null,

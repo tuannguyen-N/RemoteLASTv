@@ -34,11 +34,17 @@ private val AppColorScheme = darkColorScheme(
 data class ExtendedColors(
     val success: Color,
     val link: Color,
+    val thumbnailBackground: Color,
+    val thumbnailGradientStart: Color,
+    val thumbnailGradientEnd: Color,
 )
 
 private val AppExtendedColors = ExtendedColors(
     success = Green400,
     link = Indigo200,
+    thumbnailBackground = ThumbnailBackground,
+    thumbnailGradientStart = ThumbnailGradientStart,
+    thumbnailGradientEnd = ThumbnailGradientEnd,
 )
 
 private val LocalExtendedColors = staticCompositionLocalOf { AppExtendedColors }

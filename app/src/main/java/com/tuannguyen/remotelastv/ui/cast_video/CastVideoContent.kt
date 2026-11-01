@@ -99,7 +99,10 @@ import com.tuannguyen.remotelastv.domain.model.CastFailReason
 import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
 import com.tuannguyen.remotelastv.ui.common.gradientTint
 import com.tuannguyen.remotelastv.ui.common.messageResource
+import com.tuannguyen.remotelastv.ui.components.CastingToHeader
+import com.tuannguyen.remotelastv.ui.components.CustomSeekBar
 import com.tuannguyen.remotelastv.ui.components.DialogLoading
+import com.tuannguyen.remotelastv.ui.components.VolumeControl
 import com.tuannguyen.remotelastv.ui.device_discovery.components.DialogConnectionFailure
 import com.tuannguyen.remotelastv.ui.theme.ButtonColors
 import com.tuannguyen.remotelastv.ui.theme.Dimens
@@ -162,7 +165,7 @@ fun CastVideoContent(
 
                 Spacer(Modifier.weight(1f))
 
-                ProgressSection(
+                CustomSeekBar(
                     positionMs = uiState.positionMs,
                     durationMs = uiState.durationMs,
                     onSeekTo = onSeekTo,
@@ -284,93 +287,6 @@ fun ConnectionFailureOverlay(
     }
 }
 
-
-@Composable
-private fun CastingToHeader(
-    tvName: String,
-    onStopCastingClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = Icons.Rounded.Cast,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(Dimens.Size.iconMedium),
-        )
-
-        Spacer(Modifier.width(Dimens.Space.sm))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.cast_video_casting_to),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = tvName,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-
-        Spacer(Modifier.width(Dimens.Space.sm))
-
-        HeaderIcon(
-            iconRes = R.drawable.ic_casting_disconnect,
-            description = stringResource(R.string.cast_video_stop),
-            onClick = onStopCastingClick,
-            containerColor = MaterialTheme.colorScheme.errorContainer,
-            tint = MaterialTheme.colorScheme.error
-        )
-    }
-}
-
-@Composable
-private fun HeaderIcon(
-    @DrawableRes iconRes: Int,
-    description: String,
-    onClick: () -> Unit,
-    containerColor: Color,
-    modifier: Modifier = Modifier,
-    imageVector: ImageVector? = null,
-    tint: Color = LocalContentColor.current,
-    tintBrush: Brush? = null,
-) {
-    Box(
-        modifier = modifier
-            .size(Dimens.Size.minTouchTarget)
-            .bounceClickNoEffect(onClick = onClick)
-            .clip(CircleShape)
-            .background(containerColor),
-        contentAlignment = Alignment.Center,
-    ) {
-        val iconModifier = Modifier
-            .size(Dimens.Size.iconMedium)
-            .then(if (tintBrush != null) Modifier.gradientTint(tintBrush) else Modifier)
-        if (imageVector != null) {
-            Icon(
-                imageVector = imageVector,
-                contentDescription = description,
-                tint = if (tintBrush != null) Color.Unspecified else tint,
-                modifier = iconModifier,
-            )
-        } else {
-            Icon(
-                painter = painterResource(iconRes),
-                contentDescription = description,
-                tint = if (tintBrush != null) Color.Unspecified else tint,
-                modifier = iconModifier,
-            )
-        }
-    }
-}
-
-
 @Composable
 private fun NowPlaying(
     title: String,
@@ -424,100 +340,6 @@ private fun BoxScope.VideoThumbnail(bytes: ByteArray) {
             modifier = Modifier.fillMaxSize(),
         )
     } ?: ThumbnailPlaceholder()
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun ProgressSection(
-    positionMs: Long,
-    durationMs: Long,
-    onSeekTo: (Long) -> Unit,
-) {
-    val progress = if (durationMs > 0L) {
-        (positionMs.toFloat() / durationMs).coerceIn(0f, 1f)
-    } else {
-        0f
-    }
-    val isSeeking = remember { mutableStateOf(false) }
-    val sliderProgress = remember { mutableFloatStateOf(progress) }
-    LaunchedEffect(progress) {
-        if (!isSeeking.value) sliderProgress.floatValue = progress
-    }
-    val displayedPositionMs = if (isSeeking.value && durationMs > 0L) {
-        (sliderProgress.floatValue * durationMs).toLong().coerceIn(0L, durationMs)
-    } else {
-        positionMs
-    }
-    val timeStyle = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum")
-    val inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-    val ringBrush = remember { Brush.horizontalGradient(RingColors) }
-
-    Column {
-        Slider(
-            value = sliderProgress.floatValue,
-            onValueChange = { value ->
-                isSeeking.value = true
-                sliderProgress.floatValue = value
-            },
-            onValueChangeFinished = {
-                if (isSeeking.value) {
-                    isSeeking.value = false
-                    onSeekTo(
-                        (sliderProgress.floatValue * durationMs).toLong().coerceIn(0L, durationMs)
-                    )
-                }
-            },
-            enabled = durationMs > 0L,
-            modifier = Modifier.fillMaxWidth(),
-            colors = SliderDefaults.colors(
-                thumbColor = RingColors.first(),
-                activeTrackColor = RingColors.first(),
-                inactiveTrackColor = inactiveTrackColor,
-            ),
-            track = { sliderState ->
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(Dimens.Size.castProgressHeight),
-                ) {
-                    val trackHeight = size.height
-                    val trackTop = (size.height - trackHeight) / 2f
-                    val trackSize = Size(size.width, trackHeight)
-                    val trackCornerRadius = CornerRadius(trackHeight / 2f)
-                    drawRoundRect(
-                        color = inactiveTrackColor,
-                        topLeft = Offset(0f, trackTop),
-                        size = trackSize,
-                        cornerRadius = trackCornerRadius,
-                    )
-                    clipRect(right = size.width * sliderState.value.coerceIn(0f, 1f)) {
-                        drawRoundRect(
-                            brush = ringBrush,
-                            topLeft = Offset(0f, trackTop),
-                            size = trackSize,
-                            cornerRadius = trackCornerRadius,
-                        )
-                    }
-                }
-            },
-        )
-        Spacer(Modifier.height(Dimens.Space.xs))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = formatTime(displayedPositionMs),
-                style = timeStyle,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = formatTime(durationMs),
-                style = timeStyle,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
 }
 
 @Composable
@@ -580,134 +402,6 @@ private fun TransportControls(
     }
 }
 
-@Composable
-private fun VolumeControl(
-    volume: Int?,
-    isMuted: Boolean,
-    onVolumeUpClick: () -> Unit,
-    onVolumeDownClick: () -> Unit,
-    onMuteClick: () -> Unit,
-) {
-    val level = if (isMuted) 0 else volume
-    val volumeIcon = when {
-        level == 0 -> Icons.AutoMirrored.Rounded.VolumeOff
-        (level ?: 100) < 50 -> Icons.AutoMirrored.Rounded.VolumeDown
-        else -> Icons.AutoMirrored.Rounded.VolumeUp
-    }
-
-    Surface(
-        shape = RoundedCornerShape(Dimens.Radius.controlSurface),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimens.Space.sm),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimens.Space.sm),
-        ) {
-            HoldToRepeatButton(
-                icon = Icons.Rounded.Remove,
-                contentDescription = stringResource(R.string.cast_video_volume_down),
-                onStep = onVolumeDownClick,
-            )
-
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onMuteClick) {
-                        Icon(
-                            imageVector = volumeIcon,
-                            contentDescription = stringResource(
-                                if (isMuted) R.string.cast_video_unmute else R.string.cast_video_mute,
-                            ),
-                        )
-                    }
-                }
-                if (level != null) {
-                    LinearProgressIndicator(
-                        progress = { level / 100f },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(Dimens.Size.castVolumeProgressHeight)
-                            .clip(CircleShape),
-                        trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    )
-                }
-            }
-
-            HoldToRepeatButton(
-                icon = Icons.Rounded.Add,
-                contentDescription = stringResource(R.string.cast_video_volume_up),
-                onStep = onVolumeUpClick,
-            )
-        }
-    }
-}
-
-@Composable
-private fun HoldToRepeatButton(
-    icon: ImageVector,
-    contentDescription: String,
-    onStep: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val currentOnStep by rememberUpdatedState(onStep)
-    val interactionSource = remember { MutableInteractionSource() }
-    val scope = rememberCoroutineScope()
-
-    Box(
-        modifier = modifier
-            .size(Dimens.Size.castVolumeButton)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-            .indication(interactionSource, ripple())
-            .semantics(mergeDescendants = true) {
-                role = Role.Button
-                this.contentDescription = contentDescription
-                onClick {
-                    currentOnStep()
-                    true
-                }
-            }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = { offset ->
-                        val press = PressInteraction.Press(offset)
-                        interactionSource.emit(press)
-                        val repeatJob = scope.launch {
-                            currentOnStep()
-                            delay(HOLD_INITIAL_DELAY_MS)
-                            while (true) {
-                                currentOnStep()
-                                delay(HOLD_REPEAT_INTERVAL_MS)
-                            }
-                        }
-                        val released = tryAwaitRelease()
-                        repeatJob.cancel()
-                        interactionSource.emit(
-                            if (released) PressInteraction.Release(press) else PressInteraction.Cancel(
-                                press
-                            ),
-                        )
-                    },
-                )
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-        )
-    }
-}
-
-private const val HOLD_INITIAL_DELAY_MS = 400L
-private const val HOLD_REPEAT_INTERVAL_MS = 120L
-
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 800)
 @Composable
 private fun CastVideoContentPlayingPreview() {
@@ -720,6 +414,7 @@ private fun CastVideoContentPlayingPreview() {
                     isPlaying = true,
                     positionMs = 754_000L,
                     durationMs = 3_725_000L,
+                    isLoading = false,
                     volume = 35,
                 ),
                 onPlayPauseClick = {},
@@ -747,6 +442,7 @@ private fun CastVideoContentPausedMutedPreview() {
                     title = "A very long video title that should wrap onto two lines and then truncate gracefully",
                     tvName = "Samsung The Frame 55\" in the master bedroom",
                     isPlaying = true,
+                    isLoading = false,
                     positionMs = 12_000L,
                     durationMs = 95_000L,
                     volume = 60,

@@ -1,6 +1,5 @@
 package com.tuannguyen.remotelastv.ui.navigation
 
-import android.net.Uri
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -40,5 +39,5 @@ sealed interface Route {
     data class CastImage(val uri: String) : Route
 
     @Serializable
-    data class CastAudio(val uri: String) : Route
+    data object CastAudio : Route
 }

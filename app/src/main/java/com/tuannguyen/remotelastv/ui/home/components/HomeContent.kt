@@ -166,7 +166,7 @@ private fun HomeHeader(
         modifier = Modifier
             .fillMaxWidth()
             .height(if (compact) HeaderHeightCompact else HeaderHeight)
-            .padding(horizontal = Dimens.Space.lg),
+            .padding(horizontal = Dimens.Space.md),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {

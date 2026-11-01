@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tuannguyen.remotelastv.R
@@ -43,6 +44,7 @@ import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 @Composable
 fun SettingsContent(
     uiState: SettingsUiState,
+    versionName: String?,
     onAction: (SettingsAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -81,7 +83,14 @@ fun SettingsContent(
                 }
             }
 
-            Spacer(Modifier.height(Dimens.Space.lg))
+            Spacer(Modifier.height(Dimens.Space.sm))
+
+            Text(
+                text = "Version $versionName",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
+                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.5f),
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
         }
     }
 }
@@ -180,7 +189,7 @@ private fun SettingsGroup(
 private fun SettingsContentPreview() {
     RemoteLASTvTheme {
         Surface {
-            SettingsContent(uiState = SettingsUiState(), onAction = {})
+            SettingsContent(uiState = SettingsUiState(), onAction = {}, versionName = null)
         }
     }
 }
@@ -190,7 +199,7 @@ private fun SettingsContentPreview() {
 private fun SettingsContentDarkPreview() {
     RemoteLASTvTheme {
         Surface {
-            SettingsContent(uiState = SettingsUiState(), onAction = {})
+            SettingsContent(uiState = SettingsUiState(), onAction = {}, versionName = "123123")
         }
     }
 }

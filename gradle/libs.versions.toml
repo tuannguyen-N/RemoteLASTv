@@ -1,5 +1,6 @@
 [versions]
 agp = "9.0.1"
+coilCompose = "2.7.0"
 coreKtx = "1.17.0"
 datastorePreferences = "1.2.1"
 hiltAndroid = "2.60.1"
@@ -42,6 +43,7 @@ androidx-media3-transformer = { module = "androidx.media3:media3-transformer", v
 androidx-media3-effect = { module = "androidx.media3:media3-effect", version.ref = "media3" }
 androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room3Compiler" }
 androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room3Runtime" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
