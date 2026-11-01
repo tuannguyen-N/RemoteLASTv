@@ -100,7 +100,7 @@ fun ConnectedDeviceContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = Dimens.screenPadding),
+                .padding(horizontal = Dimens.Space.screenHorizontal),
         ) {
             when {
                 uiState.isLoading -> {

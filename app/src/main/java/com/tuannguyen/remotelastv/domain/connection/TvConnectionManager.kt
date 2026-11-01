@@ -1,6 +1,5 @@
 package com.tuannguyen.remotelastv.domain.connection
 
-import android.util.Log
 import com.tuannguyen.remotelastv.di.ApplicationScope
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.ConnectionStatus
@@ -36,6 +35,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.net.ConnectException
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.coroutines.cancellation.CancellationException
 
 @Singleton
@@ -103,7 +104,6 @@ class TvConnectionManager @Inject constructor(
             val targetTv = currentTargetTv ?: return
             if (_state.value !is ConnectionState.TempDisconnected) return
 
-            Log.d("TvConnection", "App foregrounded: resuming ${targetTv.name}")
             startConnection(targetTv, showConnectionState = true)
         }
     }
@@ -306,7 +306,7 @@ class TvConnectionManager @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e("TvConnection", "save failed", e)
+            Logger.getLogger("TvConnection").log(Level.WARNING, "save failed", e)
         }
         return savedTvRepository.get(tv.id) ?: tv
     }

@@ -224,7 +224,7 @@ private fun AppGridItem(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .padding(TilePadding)
-                    .size(Dimens.Size.appLogoSize)
+                    .size(Dimens.Size.appLogo)
                     .clip(LogoShape),
             )
         }

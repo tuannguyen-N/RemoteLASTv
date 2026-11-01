@@ -16,4 +16,5 @@ interface SettingsRepository {
     suspend fun setTheaterModeEnabled(enabled: Boolean)
     suspend fun setHasSeenRemoteTutorial(enabled: Boolean)
     suspend fun setHasRequestedMicrophonePermission(requested: Boolean)
+    suspend fun setHasRequestedAudioPermission(requested: Boolean)
 }

@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.ui.home
+package com.tuannguyen.remotelastv.ui.remote
 
 import com.tuannguyen.remotelastv.domain.model.TextInputState
 

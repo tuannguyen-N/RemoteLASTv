@@ -101,6 +101,8 @@ dependencies {
     //navigation
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.media3.transformer)
+    implementation(libs.androidx.media3.effect)
 
     //room
     implementation(libs.androidx.room3.runtime)
@@ -117,6 +119,8 @@ dependencies {
 
     implementation(project(":connectsdk"))
 
-    implementation("com.google.protobuf:protobuf-javalite:3.25.5")
+    implementation(libs.protobuf.javalite)
     implementation(libs.bouncy.castle)
+    implementation(libs.nanohttpd)
+    implementation(libs.coil.compose)
 }

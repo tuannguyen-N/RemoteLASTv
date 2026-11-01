@@ -13,6 +13,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.tuannguyen.remotelastv.domain.model.CastMediaType
+import com.tuannguyen.remotelastv.ui.cast_audio.CastAudioScreen
+import com.tuannguyen.remotelastv.ui.cast_image.CastImageScreen
+import com.tuannguyen.remotelastv.ui.cast_video.CastVideoScreen
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.ui.device_discovery.DeviceDiscoveryScreen
 import com.tuannguyen.remotelastv.ui.faq.FaqScreen
@@ -20,8 +24,8 @@ import com.tuannguyen.remotelastv.ui.home.HomeScreen
 import com.tuannguyen.remotelastv.ui.language.LanguageScreen
 import com.tuannguyen.remotelastv.ui.settings.SettingsScreen
 import com.tuannguyen.remotelastv.ui.settings_connected_device.ConnectedDeviceScreen
-import com.tuannguyen.remotelastv.ui.settings_remote_preferences.RemotePreferencesScreen
 import com.tuannguyen.remotelastv.ui.settings_remote_layout.RemoteLayoutScreen
+import com.tuannguyen.remotelastv.ui.settings_remote_preferences.RemotePreferencesScreen
 import com.tuannguyen.remotelastv.ui.utils.sendFeedback
 
 @Composable
@@ -54,6 +58,16 @@ fun AppNavHost(
                 },
                 onNavigateToDeviceDiscovery = {
                     navController.navigate(Route.DeviceDiscovery)
+                },
+                openCast = { castType, uri ->
+                    when (castType) {
+                        CastMediaType.IMAGE -> navController.navigate(Route.CastImage(uri.toString()))
+                        CastMediaType.VIDEO -> navController.navigate(Route.CastVideo(uri.toString()))
+                        CastMediaType.AUDIO -> navController.navigate(Route.CastAudio)
+                    }
+                },
+                openAudio = {
+                    navController.navigate(Route.CastAudio)
                 },
             )
         }
@@ -101,6 +115,24 @@ fun AppNavHost(
 
         composable<Route.Language> {
             LanguageScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<Route.CastVideo> {
+            CastVideoScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<Route.CastImage> {
+            CastImageScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<Route.CastAudio> {
+            CastAudioScreen(
                 onNavigateBack = { navController.popBackStack() },
             )
         }

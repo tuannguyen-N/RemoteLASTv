@@ -2,6 +2,7 @@ package com.tuannguyen.remotelastv.ui.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -20,6 +21,11 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val versionName = remember {
+        context.packageManager
+            .getPackageInfo(context.packageName, 0)
+            .versionName
+    }
 
     SettingsContent(
         uiState = uiState,
@@ -49,5 +55,6 @@ fun SettingsScreen(
                 }
             }
         },
+        versionName = versionName
     )
 }

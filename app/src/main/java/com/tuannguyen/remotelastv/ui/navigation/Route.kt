@@ -31,4 +31,13 @@ sealed interface Route {
 
     @Serializable
     data object Language : Route
+
+    @Serializable
+    data class CastVideo(val uri: String) : Route
+
+    @Serializable
+    data class CastImage(val uri: String) : Route
+
+    @Serializable
+    data object CastAudio : Route
 }

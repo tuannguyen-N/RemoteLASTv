@@ -23,3 +23,7 @@ val White = Color(0xFFFFFFFF)
 val Red500 = Color(0xFFE5484D)      // nút nguồn
 val RedDeep = Color(0xFF2A1517)     // nền nút nguồn
 val Green400 = Color(0xFF4CC38A)    // chấm "đã kết nối"
+
+val ThumbnailBackground = Color(0xFF2A1B45)
+val ThumbnailGradientStart = Color(0xFFB57BFF)
+val ThumbnailGradientEnd = Color(0xFF6F42E8)

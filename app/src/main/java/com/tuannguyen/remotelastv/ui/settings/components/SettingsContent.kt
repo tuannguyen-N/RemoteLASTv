@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tuannguyen.remotelastv.R
@@ -44,6 +45,7 @@ import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 @Composable
 fun SettingsContent(
     uiState: SettingsUiState,
+    versionName: String?,
     onAction: (SettingsAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -63,7 +65,7 @@ fun SettingsContent(
             )
 
             Column(
-                modifier = Modifier.padding(horizontal = Dimens.screenPadding),
+                modifier = Modifier.padding(horizontal = Dimens.Space.screenHorizontal),
                 verticalArrangement = Arrangement.spacedBy(Dimens.Space.lg),
             ) {
                 SettingsSection(title = stringResource(R.string.settings_section_remote)) {
@@ -85,7 +87,14 @@ fun SettingsContent(
                 }
             }
 
-            Spacer(Modifier.height(Dimens.Space.lg))
+            Spacer(Modifier.height(Dimens.Space.sm))
+
+            Text(
+                text = "Version $versionName",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
+                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.5f),
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
         }
     }
 }
@@ -98,7 +107,7 @@ private fun SettingsHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = Dimens.screenPadding, vertical = Dimens.Space.md),
+            .padding(horizontal = Dimens.Space.screenHorizontal, vertical = Dimens.Space.md),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -173,7 +182,7 @@ private fun SettingsGroup(
                             start = Dimens.Space.md + SettingsIconTileSize + Dimens.Space.md,
                             end = Dimens.Space.md,
                         ),
-                        thickness = Dimens.Size.borderThin,
+                        thickness = Dimens.Border.thin,
                         color = MaterialTheme.colorScheme.outlineVariant,
                     )
                 }
@@ -187,7 +196,7 @@ private fun SettingsGroup(
 private fun SettingsContentPreview() {
     RemoteLASTvTheme {
         Surface {
-            SettingsContent(uiState = SettingsUiState(), onAction = {})
+            SettingsContent(uiState = SettingsUiState(), onAction = {}, versionName = null)
         }
     }
 }
@@ -197,7 +206,7 @@ private fun SettingsContentPreview() {
 private fun SettingsContentDarkPreview() {
     RemoteLASTvTheme {
         Surface {
-            SettingsContent(uiState = SettingsUiState(), onAction = {})
+            SettingsContent(uiState = SettingsUiState(), onAction = {}, versionName = "123123")
         }
     }
 }

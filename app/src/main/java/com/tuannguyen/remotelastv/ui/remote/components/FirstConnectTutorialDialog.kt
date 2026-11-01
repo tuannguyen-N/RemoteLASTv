@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.ui.home.components
+package com.tuannguyen.remotelastv.ui.remote.components
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
@@ -14,7 +14,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -35,7 +34,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
@@ -48,6 +46,7 @@ import androidx.compose.material.icons.outlined.Theaters
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -84,7 +83,7 @@ import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
 import com.tuannguyen.remotelastv.domain.model.TutorialActions
 import com.tuannguyen.remotelastv.ui.components.CustomSwitch
-import com.tuannguyen.remotelastv.ui.home.HomeUiState
+import com.tuannguyen.remotelastv.ui.remote.RemoteUiState
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 import com.tuannguyen.remotelastv.ui.theme.RingColors
@@ -95,7 +94,7 @@ private val RingGradient = Brush.linearGradient(RingColors)
 @Composable
 fun FirstConnectTutorialDialog(
     step: Int,
-    uiState: HomeUiState,
+    uiState: RemoteUiState,
     actions: TutorialActions,
 ) {
     Dialog(
@@ -125,7 +124,7 @@ fun FirstConnectTutorialDialog(
                 Column(
                     modifier = Modifier
                         .safeDrawingPadding()
-                        .padding(horizontal = Dimens.screenPadding),
+                        .padding(horizontal = Dimens.Space.screenHorizontal),
                 ) {
                     TutorialTopBar(step = step, onSkip = actions.onFinish)
 
@@ -150,6 +149,7 @@ fun FirstConnectTutorialDialog(
                                     title = R.string.tutorial_group_connection,
                                     items = connectionItems(uiState, actions),
                                 )
+
                                 else -> SettingsStep(
                                     title = R.string.tutorial_group_input,
                                     items = inputItems(uiState, actions),
@@ -266,7 +266,7 @@ private fun TutorialBottomBar(
 
 
 @Composable
-private fun LayoutStep(uiState: HomeUiState, actions: TutorialActions) {
+private fun LayoutStep(uiState: RemoteUiState, actions: TutorialActions) {
     val mode = uiState.navigationMode
 
     Column(verticalArrangement = Arrangement.spacedBy(Dimens.Space.lg)) {
@@ -382,7 +382,11 @@ private fun NavigationModePicker(
 ) {
     val options = listOf(
         Triple(NavigationMode.D_PAD, R.string.settings_dpad, R.drawable.ic_d_navigation),
-        Triple(NavigationMode.TOUCH_PAD, R.string.settings_touchpad, R.drawable.ic_tounch_navigation),
+        Triple(
+            NavigationMode.TOUCH_PAD,
+            R.string.settings_touchpad,
+            R.drawable.ic_tounch_navigation
+        ),
     )
 
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -419,7 +423,7 @@ private fun SettingsStep(@StringRes title: Int, items: List<SettingItem>) {
     }
 }
 
-private fun connectionItems(ui: HomeUiState, a: TutorialActions) = listOf(
+private fun connectionItems(ui: RemoteUiState, a: TutorialActions) = listOf(
     SettingItem(
         Icons.Outlined.Autorenew,
         R.string.auto_reconnect, R.string.auto_reconnect_description,
@@ -437,7 +441,7 @@ private fun connectionItems(ui: HomeUiState, a: TutorialActions) = listOf(
     ),
 )
 
-private fun inputItems(ui: HomeUiState, a: TutorialActions) = listOf(
+private fun inputItems(ui: RemoteUiState, a: TutorialActions) = listOf(
     SettingItem(
         Icons.Outlined.Vibration,
         R.string.haptic_feedback, R.string.vibrate_when_buttons_are_pressed,
@@ -554,7 +558,7 @@ private fun FirstConnectTutorialLayoutPreview() {
     RemoteLASTvTheme {
         FirstConnectTutorialDialog(
             step = 0,
-            uiState = HomeUiState(
+            uiState = RemoteUiState(
                 navigationMode = NavigationMode.TOUCH_PAD,
                 showMediaButtons = true,
             ),
@@ -569,7 +573,7 @@ private fun FirstConnectTutorialConnectionDisplayPreview() {
     RemoteLASTvTheme {
         FirstConnectTutorialDialog(
             step = 1,
-            uiState = HomeUiState(
+            uiState = RemoteUiState(
                 isAutoReconnectEnabled = true,
                 isKeepScreenAwakeEnabled = true,
                 isTheaterModeEnabled = false,
@@ -588,7 +592,7 @@ private fun FirstConnectTutorialInputPreview() {
     RemoteLASTvTheme {
         FirstConnectTutorialDialog(
             step = 2,
-            uiState = HomeUiState(
+            uiState = RemoteUiState(
                 isHapticFeedbackEnabled = true,
                 isSmoothPressEnabled = false,
                 isAutoShowKeyboardEnabled = true,

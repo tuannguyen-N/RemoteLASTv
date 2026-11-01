@@ -1,5 +1,4 @@
-
-package com.tuannguyen.remotelastv.ui.home.components
+package com.tuannguyen.remotelastv.ui.remote.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -57,12 +55,12 @@ import kotlinx.coroutines.flow.first
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KeyboardInputBottomSheet(
+    modifier: Modifier = Modifier,
     query: String,
     inputHint: String? = null,
     onQueryChange: (String) -> Unit,
     onDismiss: () -> Unit,
     onSearch: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
@@ -131,7 +129,7 @@ fun KeyboardInputBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = Dimens.screenPadding)
+                .padding(horizontal = Dimens.Space.screenHorizontal)
                 .padding(top = Dimens.Space.xxl),
             verticalArrangement = Arrangement.spacedBy(Dimens.Space.xs),
         ) {

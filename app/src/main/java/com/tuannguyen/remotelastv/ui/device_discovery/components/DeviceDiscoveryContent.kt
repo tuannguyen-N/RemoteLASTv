@@ -1,7 +1,5 @@
 package com.tuannguyen.remotelastv.ui.device_discovery.components
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Tv
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.TvOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -35,11 +33,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -77,32 +75,39 @@ fun DeviceDiscoveryContent(
     onCancelSendPin: () -> Unit = {},
 ) {
     val connectedTv = (uiState.connectionState as? ConnectionState.Connected)?.tv
+    var showSupportInfo by rememberSaveable { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
             modifier = modifier.fillMaxSize(),
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                TopAppBar(title = {
-                    Text(stringResource(R.string.scan_televisions))
-                }, navigationIcon = {
-                    IconButton(
-                        onClick = onClose
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(
-                                R.string.settings_back
+                TopAppBar(
+                    title = { Text(stringResource(R.string.scan_televisions)) },
+                    navigationIcon = {
+                        IconButton(onClick = onClose) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.settings_back),
                             )
-                        )
-                    }
-                })
-            }) { innerPadding ->
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { showSupportInfo = true }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Info,
+                                contentDescription = stringResource(R.string.discovery_info_action),
+                            )
+                        }
+                    },
+                )
+            },
+        ) { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = Dimens.screenPadding),
+                    .padding(horizontal = Dimens.Space.screenHorizontal),
             ) {
                 when (val status = uiState.discoveryStatus) {
                     is DiscoveryStatus.Scanning -> {
@@ -259,6 +264,10 @@ fun DeviceDiscoveryContent(
 
             else -> Unit
         }
+    }
+
+    if (showSupportInfo) {
+        DiscoveryInfoDialog(onDismiss = { showSupportInfo = false })
     }
 
     successTvName?.let { tvName ->
@@ -520,41 +529,6 @@ private fun ConnectedBanner() {
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.extendedColors.success,
     )
-}
-
-@Composable
-private fun TelevisionBrandLogo(
-    brand: TelevisionBrand,
-    modifier: Modifier = Modifier,
-) {
-    val logoRes = when (brand) {
-        TelevisionBrand.ANDROID_TV -> R.drawable.img_logo_android_tv
-        TelevisionBrand.LG -> R.drawable.img_logo_lg
-        TelevisionBrand.SAMSUNG -> R.drawable.img_logo_samsung
-        TelevisionBrand.UNKNOWN -> null
-    }
-
-    Box(
-        modifier = modifier
-            .clip(MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colorScheme.surfaceContainerLow),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (logoRes != null) {
-            Image(
-                painter = painterResource(logoRes),
-                contentDescription = stringResource(R.string.tv_brand_logo),
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Default.Tv,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
 }
 
 @Preview(showBackground = true, name = "Scanning - No TV Found")
