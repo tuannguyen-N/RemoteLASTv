@@ -1,6 +1,9 @@
 package com.tuannguyen.remotelastv.ui.cast_video
 
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,6 +22,13 @@ fun CastVideoScreen(
     val TAG = "CastVideoScreen"
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var failureReason by remember { mutableStateOf<CastFailReason?>(null) }
+    val pickVideo = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let {
+            viewModel.onChangeVideo(uri)
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -50,6 +60,13 @@ fun CastVideoScreen(
         onVolumeDownClick = viewModel::onVolumeDownClick,
         onMuteClick = viewModel::onMuteClick,
         onStopCastingClick = viewModel::onStopCastingClick,
+        onChangeVideo = {
+            pickVideo.launch(
+                PickVisualMediaRequest(
+                    mediaType = ActivityResultContracts.PickVisualMedia.VideoOnly
+                )
+            )
+        },
         onSeekTo = viewModel::onSeekTo,
         failureReason = failureReason,
         onRetry = {

@@ -47,7 +47,8 @@ class AndroidMediaInfoReader @Inject constructor(
             )?.use { cursor ->
                 if (!cursor.moveToFirst()) null else {
                     val index = cursor.getColumnIndex(OpenableColumns.SIZE)
-                    if (index >= 0 && !cursor.isNull(index)) cursor.getLong(index).takeIf { it >= 0L } else null
+                    if (index >= 0 && !cursor.isNull(index)) cursor.getLong(index)
+                        .takeIf { it >= 0L } else null
                 }
             }
         } catch (e: Exception) {
@@ -58,7 +59,7 @@ class AndroidMediaInfoReader @Inject constructor(
         Log.i(
             TAG,
             "Media diagnostics: name=$title extension=$extension resolverMime=${mimeType ?: "unknown"} " +
-                "sizeBytes=${sizeBytes ?: "unknown"} uriScheme=${uri.scheme ?: "unknown"}",
+                    "sizeBytes=${sizeBytes ?: "unknown"} uriScheme=${uri.scheme ?: "unknown"}",
         )
 
         val extractor = MediaExtractor()
@@ -66,7 +67,10 @@ class AndroidMediaInfoReader @Inject constructor(
             extractor.setDataSource(context, uri, emptyMap())
             Log.i(TAG, "Media track count=${extractor.trackCount}")
             for (index in 0 until extractor.trackCount) {
-                Log.i(TAG, "Media track[$index]: ${extractor.getTrackFormat(index).toDiagnosticString()}")
+                Log.i(
+                    TAG,
+                    "Media track[$index]: ${extractor.getTrackFormat(index).toDiagnosticString()}"
+                )
             }
         } catch (e: Exception) {
             Log.w(TAG, "Could not inspect media tracks; cast will continue", e)

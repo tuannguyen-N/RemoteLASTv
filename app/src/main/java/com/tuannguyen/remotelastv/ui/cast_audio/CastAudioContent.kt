@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.AudioTrack
 import com.tuannguyen.remotelastv.domain.model.CastFailReason
+import com.tuannguyen.remotelastv.domain.model.CastPlayerState
 import com.tuannguyen.remotelastv.domain.model.CastRepeatMode
 import com.tuannguyen.remotelastv.ui.cast_audio.components.MusicPickerDialog
 import com.tuannguyen.remotelastv.ui.cast_video.ConnectionFailureOverlay
@@ -149,9 +150,13 @@ fun CastAudioContent(
                 )
             }
 
-            if (uiState.isLoading) {
+            if (uiState.playerState == CastPlayerState.LOADING) {
                 DialogLoading(
-                    message = stringResource(R.string.cast_audio_loading_message),
+                    message = if (uiState.showLoadingMessage) {
+                        stringResource(R.string.cast_audio_loading_message)
+                    } else {
+                        null
+                    },
                     modal = false,
                 )
             }
@@ -218,7 +223,7 @@ private fun PlayerCard(
             Spacer(Modifier.height(Dimens.Space.sm))
 
             AudioTransportControls(
-                isPlaying = uiState.isPlaying,
+                isPlaying = uiState.playerState == CastPlayerState.PLAYING,
                 canPlay = uiState.currentTrackUri != null,
                 repeatMode = uiState.repeatMode,
                 isShuffleEnabled = uiState.isShuffleEnabled,
@@ -539,8 +544,7 @@ private fun CastAudioContentPreview() {
                 uiState = CastAudioUiState(
                     title = "Voice-rec-123456789012553heheheh",
                     tvName = "Living room TV",
-                    isLoading = false,
-                    isPlaying = true,
+                    playerState = CastPlayerState.PLAYING,
                     positionMs = 12_000L,
                     durationMs = 72_000L,
                     volume = 35,

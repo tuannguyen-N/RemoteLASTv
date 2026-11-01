@@ -41,7 +41,7 @@ object Dimens {
         val castProgressHeight = 6.dp
         val castVolumeProgressHeight = 4.dp
 
-         // SeekBar
+        // SeekBar
         val seekBarTrackHeight = 6.dp
         val seekBarThumb = 16.dp
     }

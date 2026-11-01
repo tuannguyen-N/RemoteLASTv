@@ -18,7 +18,7 @@ object AppCatalog {
         ),
 
         KnownApp.PRIME_VIDEO to mapOf(
-            TelevisionBrand.LG to listOf("amazon"            ),
+            TelevisionBrand.LG to listOf("amazon"),
             TelevisionBrand.SAMSUNG to listOf(
                 "3201512006785",
                 "3201910019365",

@@ -71,6 +71,7 @@ object UpnpDescription {
                         serviceControl = null
                     }
                 }
+
                 XmlPullParser.TEXT -> {
                     val text = parser.text.trim()
                     if (text.isNotEmpty()) {
@@ -91,14 +92,17 @@ object UpnpDescription {
                         }
                     }
                 }
+
                 XmlPullParser.END_TAG -> {
                     if (parser.name == "service") {
                         inService = false
                         val type = serviceType
                         val control = serviceControl
                         if (type != null && control != null) {
-                            if (avt == null && type.contains(":service:AVTransport:")) avt = type to control
-                            if (rc == null && type.contains(":service:RenderingControl:")) rc = type to control
+                            if (avt == null && type.contains(":service:AVTransport:")) avt =
+                                type to control
+                            if (rc == null && type.contains(":service:RenderingControl:")) rc =
+                                type to control
                         }
                     }
                     tag = ""

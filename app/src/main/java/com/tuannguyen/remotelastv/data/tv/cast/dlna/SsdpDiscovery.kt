@@ -74,7 +74,8 @@ class SsdpDiscovery @Inject constructor(
                 } catch (e: SocketTimeoutException) {
                     continue
                 }
-                val response = parse(String(packet.data, 0, packet.length, Charsets.UTF_8)) ?: continue
+                val response =
+                    parse(String(packet.data, 0, packet.length, Charsets.UTF_8)) ?: continue
                 if (seen.add(response.location)) emit(response)
             }
         } finally {
@@ -95,7 +96,8 @@ class SsdpDiscovery @Inject constructor(
         val headers = HashMap<String, String>()
         raw.lineSequence().drop(1).forEach { line ->
             val i = line.indexOf(':')
-            if (i > 0) headers[line.substring(0, i).trim().uppercase()] = line.substring(i + 1).trim()
+            if (i > 0) headers[line.substring(0, i).trim().uppercase()] =
+                line.substring(i + 1).trim()
         }
         val location = headers["LOCATION"] ?: return null
         return SsdpResponse(location, headers["USN"])

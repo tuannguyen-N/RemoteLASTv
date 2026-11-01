@@ -106,17 +106,18 @@ fun CastPage(
                                 ) == PackageManager.PERMISSION_GRANTED -> openAudio()
 
                                 hasRequestedAudioPermission &&
-                                    activity != null &&
-                                    !ActivityCompat.shouldShowRequestPermissionRationale(
-                                        activity,
-                                        audioPermission,
-                                    ) -> {
-                                        context.startActivity(
-                                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                                data = Uri.fromParts("package", context.packageName, null)
-                                            },
-                                        )
-                                    }
+                                        activity != null &&
+                                        !ActivityCompat.shouldShowRequestPermissionRationale(
+                                            activity,
+                                            audioPermission,
+                                        ) -> {
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                            data =
+                                                Uri.fromParts("package", context.packageName, null)
+                                        },
+                                    )
+                                }
 
                                 else -> requestAudioPermission.launch(audioPermission)
                             }

@@ -68,6 +68,7 @@ import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 import com.tuannguyen.remotelastv.ui.theme.RingColors
 import com.tuannguyen.remotelastv.ui.theme.extendedColors
 import kotlinx.coroutines.launch
+
 private val HeaderHeight = 80.dp
 private val HeaderHeightCompact = 64.dp
 private val AppIconSize = 80.dp

@@ -60,12 +60,14 @@ class DlnaCastSession(
                             mediaUri = media.contentUri,
                         )
 
-                        val mimeType = media.mimeType?.takeIf { it.isNotBlank() } ?: when (media.type) {
-                            CastMediaType.VIDEO -> "video/mp4"
-                            CastMediaType.IMAGE -> "image/jpeg"
-                            CastMediaType.AUDIO -> "audio/mpeg"
-                        }
-                        val published = mediaServer.publish(Uri.parse(media.contentUri), mimeType, media.type)
+                        val mimeType =
+                            media.mimeType?.takeIf { it.isNotBlank() } ?: when (media.type) {
+                                CastMediaType.VIDEO -> "video/mp4"
+                                CastMediaType.IMAGE -> "image/jpeg"
+                                CastMediaType.AUDIO -> "audio/mpeg"
+                            }
+                        val published =
+                            mediaServer.publish(Uri.parse(media.contentUri), mimeType, media.type)
 
                         // Nhiều TV cần Stop trước khi nạp URI mới; lỗi ở bước này không quan trọng
                         suspendRunCatching { soap.stop(device) }
@@ -148,7 +150,8 @@ class DlnaCastSession(
             withContext(NonCancellable + Dispatchers.IO) { mediaServer.stop() }
         } catch (e: CancellationException) {
             val previousCancellation = cancellation
-            if (previousCancellation == null) cancellation = e else previousCancellation.addSuppressed(e)
+            if (previousCancellation == null) cancellation =
+                e else previousCancellation.addSuppressed(e)
         } catch (e: Exception) {
             val previousFailure = failure
             if (previousFailure == null) failure = e else previousFailure.addSuppressed(e)
@@ -173,14 +176,14 @@ class DlnaCastSession(
             throw e
         } catch (seekError: Exception) {
             val wasPaused = _status.value.state == CastPlayerState.PAUSED ||
-                try {
-                    soap.transportInfo(device)["CurrentTransportState"] == "PAUSED_PLAYBACK"
-                } catch (stateError: CancellationException) {
-                    throw stateError
-                } catch (stateError: Exception) {
-                    seekError.addSuppressed(stateError)
-                    false
-                }
+                    try {
+                        soap.transportInfo(device)["CurrentTransportState"] == "PAUSED_PLAYBACK"
+                    } catch (stateError: CancellationException) {
+                        throw stateError
+                    } catch (stateError: Exception) {
+                        seekError.addSuppressed(stateError)
+                        false
+                    }
             if (!wasPaused) throw seekError
 
             pausedSeekInProgress = true
@@ -217,7 +220,8 @@ class DlnaCastSession(
             withContext(NonCancellable + Dispatchers.IO) { soap.pause(device) }
         } catch (e: CancellationException) {
             val previousCancellation = cancellation
-            if (previousCancellation == null) cancellation = e else previousCancellation.addSuppressed(e)
+            if (previousCancellation == null) cancellation =
+                e else previousCancellation.addSuppressed(e)
         } catch (e: Exception) {
             pauseFailure = e
         }
@@ -286,8 +290,10 @@ class DlnaCastSession(
                     }
                     if (state == CastPlayerState.PLAYING) hasPlayed = true
                     // Lúc mới nạp TV có thể báo STOPPED ngắn -> coi là LOADING
-                    if (state == CastPlayerState.STOPPED && !hasPlayed && tick < 8) state = CastPlayerState.LOADING
-                    val volume = if (tick % 3 == 0) suspendRunCatching { soap.getVolume(device) }.getOrNull() else null
+                    if (state == CastPlayerState.STOPPED && !hasPlayed && tick < 8) state =
+                        CastPlayerState.LOADING
+                    val volume =
+                        if (tick % 3 == 0) suspendRunCatching { soap.getVolume(device) }.getOrNull() else null
                     val reportedPositionMs = UpnpTime.parse(position["RelTime"])
                     failures = 0
                     _status.update { old ->
@@ -296,7 +302,8 @@ class DlnaCastSession(
                             positionMs = reportedPositionMs
                                 ?.takeIf { it > 0L || state != CastPlayerState.STOPPED }
                                 ?: old.positionMs,
-                            durationMs = UpnpTime.parse(position["TrackDuration"]) ?: old.durationMs,
+                            durationMs = UpnpTime.parse(position["TrackDuration"])
+                                ?: old.durationMs,
                             volume = volume ?: old.volume,
                             errorMessage = null,
                         )
@@ -305,7 +312,12 @@ class DlnaCastSession(
                     throw e
                 } catch (e: Exception) {
                     if (++failures >= 5) {
-                        _status.update { it.copy(state = CastPlayerState.ERROR, errorMessage = "Mất kết nối với TV") }
+                        _status.update {
+                            it.copy(
+                                state = CastPlayerState.ERROR,
+                                errorMessage = "Mất kết nối với TV"
+                            )
+                        }
                         break
                     }
                 }

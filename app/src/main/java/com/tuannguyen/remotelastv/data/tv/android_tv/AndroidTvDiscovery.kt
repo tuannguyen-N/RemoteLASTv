@@ -62,8 +62,8 @@ class AndroidTvDiscovery @Inject constructor(
 
                 Log.d(
                     "AndroidTvDiscovery", "found ${resolved.serviceName} ip=$ip attrs=${
-                    resolved.attributes.mapValues { it.value?.toString(Charsets.UTF_8) }
-                }")
+                        resolved.attributes.mapValues { it.value?.toString(Charsets.UTF_8) }
+                    }")
 
                 if (!seen.add(id)) continue
 

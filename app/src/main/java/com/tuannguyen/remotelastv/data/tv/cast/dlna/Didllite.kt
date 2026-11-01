@@ -21,11 +21,18 @@ object DidlLite {
     fun contentFeatures(type: CastMediaType): String = when (type) {
         CastMediaType.IMAGE ->
             "DLNA.ORG_OP=00;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=00f00000000000000000000000000000"
+
         else ->
             "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000"
     }
 
-    fun build(title: String, url: String, mimeType: String, type: CastMediaType, sizeBytes: Long): String {
+    fun build(
+        title: String,
+        url: String,
+        mimeType: String,
+        type: CastMediaType,
+        sizeBytes: Long
+    ): String {
         val upnpClass = when (type) {
             CastMediaType.VIDEO -> "object.item.videoItem"
             CastMediaType.AUDIO -> "object.item.audioItem.musicTrack"
@@ -39,7 +46,11 @@ object DidlLite {
                 "<item id=\"0\" parentID=\"-1\" restricted=\"1\">" +
                 "<dc:title>${xmlEscape(title)}</dc:title>" +
                 "<upnp:class>$upnpClass</upnp:class>" +
-                "<res protocolInfo=\"${xmlEscape(protocolInfo)}\" size=\"$sizeBytes\">${xmlEscape(url)}</res>" +
+                "<res protocolInfo=\"${xmlEscape(protocolInfo)}\" size=\"$sizeBytes\">${
+                    xmlEscape(
+                        url
+                    )
+                }</res>" +
                 "</item></DIDL-Lite>"
     }
 }

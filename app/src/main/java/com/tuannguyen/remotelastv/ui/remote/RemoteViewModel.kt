@@ -151,7 +151,7 @@ class RemoteViewModel @Inject constructor(
                     Triple(
                         focused != null,
                         TextCapability.AUTO_SHOW_KEYBOARD_ON_FOCUS in capabilities &&
-                            focused?.shouldAutoShowKeyboard == true,
+                                focused?.shouldAutoShowKeyboard == true,
                         focused?.label,
                     )
                 }
@@ -168,8 +168,8 @@ class RemoteViewModel @Inject constructor(
                             Log.d(
                                 TAG,
                                 "TV text field focused; phone keyboard sheet not auto-shown " +
-                                    "(label=${label.orEmpty()}, autoShow=$autoShowOnFocus, " +
-                                    "setting=${isAutoShowKeyboardEnabled.value})",
+                                        "(label=${label.orEmpty()}, autoShow=$autoShowOnFocus, " +
+                                        "setting=${isAutoShowKeyboardEnabled.value})",
                             )
                         }
                     } else {
@@ -355,6 +355,7 @@ class RemoteViewModel @Inject constructor(
             is TextCommand.Delete -> repeat(command.count) {
                 textInputManager.execute { it.sendDelete() }
             }
+
             TextCommand.Enter -> textInputManager.execute { it.sendEnter() }
         }
     }

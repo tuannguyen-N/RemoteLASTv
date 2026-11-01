@@ -1,8 +1,7 @@
 package com.tuannguyen.remotelastv.ui.cast_image
 
 import android.net.Uri
-
-enum class CastImagePhase { IDLE, LOADING, CASTING }
+import com.tuannguyen.remotelastv.domain.model.CastImagePhase
 
 data class CastImageUiState(
     val tvName: String = "",

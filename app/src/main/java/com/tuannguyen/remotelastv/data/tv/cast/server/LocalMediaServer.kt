@@ -48,24 +48,26 @@ class LocalMediaServer @Inject constructor(
     private var wifiLock: WifiManager.WifiLock? = null
 
     /** Trả về URL http://<ip>:<port>/m/<token>.<ext> cho TV truy cập. */
-    suspend fun publish(uri: Uri, mime: String, type: CastMediaType): PublishedMedia = withContext(Dispatchers.IO) {
-        // Đọc metadata MỘT lần ở đây, không đọc lại ở mỗi request
-        val size = context.contentResolver.openFileDescriptor(uri, "r")?.use { it.statSize }
-            ?: throw CastException(CastFailReason.UNKNOWN)
-        require(size > 0) { "Không xác định được kích thước file" }
+    suspend fun publish(uri: Uri, mime: String, type: CastMediaType): PublishedMedia =
+        withContext(Dispatchers.IO) {
+            // Đọc metadata MỘT lần ở đây, không đọc lại ở mỗi request
+            val size = context.contentResolver.openFileDescriptor(uri, "r")?.use { it.statSize }
+                ?: throw CastException(CastFailReason.UNKNOWN)
+            require(size > 0) { "Không xác định được kích thước file" }
 
-        val token = UUID.randomUUID().toString().replace("-", "")
-        entries[token] = Entry(uri, mime, size, DidlLite.contentFeatures(type))
-        try {
-            val port = ensureStarted()
-            val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime)?.let { ".$it" }.orEmpty()
-            PublishedMedia("http://${localIpv4()}:$port/m/$token$ext", size)
-        } catch (e: Exception) {
-            entries.remove(token)
-            if (entries.isEmpty()) stop()
-            throw e
+            val token = UUID.randomUUID().toString().replace("-", "")
+            entries[token] = Entry(uri, mime, size, DidlLite.contentFeatures(type))
+            try {
+                val port = ensureStarted()
+                val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime)?.let { ".$it" }
+                    .orEmpty()
+                PublishedMedia("http://${localIpv4()}:$port/m/$token$ext", size)
+            } catch (e: Exception) {
+                entries.remove(token)
+                if (entries.isEmpty()) stop()
+                throw e
+            }
         }
-    }
 
     fun unpublish(url: String) {
         val token = url.substringAfterLast("/m/").substringBefore('.')
@@ -102,10 +104,15 @@ class LocalMediaServer @Inject constructor(
 
     private inner class Server : NanoHTTPD(0) {
 
-        init { setAsyncRunner(PoolRunner()) }
+        init {
+            setAsyncRunner(PoolRunner())
+        }
 
         override fun serve(session: IHTTPSession): Response {
-            Log.d("CastServer", "${session.method} ${session.uri} range=${session.headers["range"]} from=${session.headers["remote-addr"]}")
+            Log.d(
+                "CastServer",
+                "${session.method} ${session.uri} range=${session.headers["range"]} from=${session.headers["remote-addr"]}"
+            )
 
             val method = session.method
             if (method != Method.GET && method != Method.HEAD) {
@@ -134,14 +141,24 @@ class LocalMediaServer @Inject constructor(
             } else {
                 val pfd = try {
                     context.contentResolver.openFileDescriptor(entry.uri, "r")
-                } catch (e: Exception) { null } ?: return plain(Response.Status.INTERNAL_ERROR, "")
-                newFixedLengthResponse(status, entry.mime, FileRangeInputStream(pfd, start, length), length)
+                } catch (e: Exception) {
+                    null
+                } ?: return plain(Response.Status.INTERNAL_ERROR, "")
+                newFixedLengthResponse(
+                    status,
+                    entry.mime,
+                    FileRangeInputStream(pfd, start, length),
+                    length
+                )
             }
 
             return response.apply {
                 addHeader("Accept-Ranges", "bytes")
                 if (range != null) addHeader("Content-Range", "bytes $start-$end/${entry.size}")
-                addHeader("Connection", "keep-alive")          // TV tua video = nhiều Range request liên tiếp
+                addHeader(
+                    "Connection",
+                    "keep-alive"
+                )          // TV tua video = nhiều Range request liên tiếp
                 addHeader("Cache-Control", "no-store")
                 // Một số TV (Samsung/DLNA) đòi các header này mới chịu phát/tua
                 addHeader("transferMode.dlna.org", "Streaming")
@@ -152,9 +169,17 @@ class LocalMediaServer @Inject constructor(
 
     private inner class PoolRunner : NanoHTTPD.AsyncRunner {
         private val running = Collections.synchronizedSet(mutableSetOf<NanoHTTPD.ClientHandler>())
-        override fun closeAll() { synchronized(running) { running.toList() }.forEach { it.close() } }
-        override fun closed(h: NanoHTTPD.ClientHandler) { running.remove(h) }
-        override fun exec(h: NanoHTTPD.ClientHandler) { running.add(h); executor.execute(h) }
+        override fun closeAll() {
+            synchronized(running) { running.toList() }.forEach { it.close() }
+        }
+
+        override fun closed(h: NanoHTTPD.ClientHandler) {
+            running.remove(h)
+        }
+
+        override fun exec(h: NanoHTTPD.ClientHandler) {
+            running.add(h); executor.execute(h)
+        }
     }
 
     // ---------------------------------------------------------------- helpers
@@ -179,7 +204,8 @@ class LocalMediaServer @Inject constructor(
     /** null = không có Range (trả full); INVALID_RANGE = 416; còn lại là khoảng byte hợp lệ. */
     private fun parseRange(header: String?, size: Long): LongRange? {
         if (header == null || !header.startsWith("bytes=")) return null
-        val spec = header.removePrefix("bytes=").substringBefore(',').trim()   // bỏ multi-range, lấy đoạn đầu
+        val spec = header.removePrefix("bytes=").substringBefore(',')
+            .trim()   // bỏ multi-range, lấy đoạn đầu
         val (a, b) = spec.split('-', limit = 2).let { it[0] to it.getOrElse(1) { "" } }
         return try {
             val start: Long
@@ -191,7 +217,9 @@ class LocalMediaServer @Inject constructor(
                 end = if (b.isEmpty()) size - 1 else minOf(b.toLong(), size - 1)
             }
             if (start > end || start >= size) INVALID_RANGE else start..end
-        } catch (e: NumberFormatException) { null }
+        } catch (e: NumberFormatException) {
+            null
+        }
     }
 
     companion object {

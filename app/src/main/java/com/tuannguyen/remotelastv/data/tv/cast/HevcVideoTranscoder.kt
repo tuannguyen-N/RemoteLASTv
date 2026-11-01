@@ -40,7 +40,11 @@ class HevcVideoTranscoder @Inject constructor(
             TAG,
             "Source video: name=$displayName mime=$inputMime " +
                     "size=${videoTrack.longOrNull(MediaFormat.KEY_DURATION) ?: "unknown"}us " +
-                    "resolution=${videoTrack.intOrNull(MediaFormat.KEY_WIDTH)}x${videoTrack.intOrNull(MediaFormat.KEY_HEIGHT)}",
+                    "resolution=${videoTrack.intOrNull(MediaFormat.KEY_WIDTH)}x${
+                        videoTrack.intOrNull(
+                            MediaFormat.KEY_HEIGHT
+                        )
+                    }",
         )
         if (inputMime !in HEVC_MIME_TYPES) return null
         val sourceWidth = videoTrack.intOrNull(MediaFormat.KEY_WIDTH) ?: 0
@@ -117,7 +121,10 @@ class HevcVideoTranscoder @Inject constructor(
                     .experimentalSetMaxFramesInEncoder(MAX_FRAMES_IN_ENCODER)
                     .setUsePlatformDiagnostics(true)
                     .addListener(object : Transformer.Listener {
-                        override fun onCompleted(composition: Composition, exportResult: ExportResult) {
+                        override fun onCompleted(
+                            composition: Composition,
+                            exportResult: ExportResult
+                        ) {
                             Log.i(
                                 TAG,
                                 "Transcode output: videoMime=${exportResult.videoMimeType} " +
@@ -145,7 +152,9 @@ class HevcVideoTranscoder @Inject constructor(
                                         "audioEncoder=${exportResult.audioEncoderName}",
                                 exportException,
                             )
-                            if (continuation.isActive) continuation.resumeWithException(exportException)
+                            if (continuation.isActive) continuation.resumeWithException(
+                                exportException
+                            )
                         }
 
                         override fun onFallbackApplied(
@@ -177,7 +186,8 @@ class HevcVideoTranscoder @Inject constructor(
                     .setEffects(
                         Effects(
                             emptyList(),
-                            outputHeight?.let { listOf(Presentation.createForHeight(it)) }.orEmpty(),
+                            outputHeight?.let { listOf(Presentation.createForHeight(it)) }
+                                .orEmpty(),
                         ),
                     )
                     .build()

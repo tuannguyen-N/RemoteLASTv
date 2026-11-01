@@ -130,9 +130,11 @@ private fun MediaTile(
         else MaterialTheme.colorScheme.surfaceContainer,
         modifier = modifier.alpha(if (enabled) 1f else 0.45f),
     ) {
-        Box(Modifier
-            .fillMaxSize()
-            .padding(20.dp)) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(20.dp)
+        ) {
             Motif(
                 type = type,
                 colors = when (type) {

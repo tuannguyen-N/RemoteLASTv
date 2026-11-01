@@ -3,7 +3,6 @@ package com.tuannguyen.remotelastv.domain.usecase
 import com.tuannguyen.remotelastv.domain.model.CastException
 import com.tuannguyen.remotelastv.domain.model.CastFailReason
 import com.tuannguyen.remotelastv.domain.model.CastMedia
-import com.tuannguyen.remotelastv.domain.model.CastProviderId
 import com.tuannguyen.remotelastv.domain.model.CastStatus
 import com.tuannguyen.remotelastv.domain.model.PreparedCastMedia
 import com.tuannguyen.remotelastv.domain.model.Television
@@ -94,7 +93,9 @@ class CastSessionManager @Inject constructor(
     suspend fun pause(): Result<Unit> = withActiveSession { it.pause() }
     suspend fun seekTo(positionMs: Long): Result<Unit> = withActiveSession { it.seekTo(positionMs) }
     suspend fun seekBy(deltaMs: Long): Result<Unit> = withActiveSession { it.seekBy(deltaMs) }
-    suspend fun changeVolume(delta: Int): Result<Unit> = withActiveSession { it.changeVolume(delta) }
+    suspend fun changeVolume(delta: Int): Result<Unit> =
+        withActiveSession { it.changeVolume(delta) }
+
     suspend fun setMuted(muted: Boolean): Result<Unit> = withActiveSession { it.setMuted(muted) }
 
     private suspend fun withActiveSession(
@@ -128,7 +129,8 @@ class CastSessionManager @Inject constructor(
                 active.preparedMedia.release()
             } catch (e: CancellationException) {
                 val previousCancellation = cancellation
-                if (previousCancellation == null) cancellation = e else previousCancellation.addSuppressed(e)
+                if (previousCancellation == null) cancellation =
+                    e else previousCancellation.addSuppressed(e)
             } catch (e: Exception) {
                 val previousFailure = failure
                 if (previousFailure == null) failure = e else previousFailure.addSuppressed(e)

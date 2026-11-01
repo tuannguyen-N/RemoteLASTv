@@ -2,7 +2,6 @@ package com.tuannguyen.remotelastv.ui.utils
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.core.net.toUri
 
 private const val APP_NAME = "RemoteLASTv"

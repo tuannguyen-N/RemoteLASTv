@@ -41,7 +41,9 @@ class DlnaDiscovery @Inject constructor(
             manufacturer.orEmpty().contains("LG", ignoreCase = true) -> TelevisionBrand.LG
             manufacturer.orEmpty().contains("Samsung", ignoreCase = true) -> TelevisionBrand.SAMSUNG
             manufacturer.orEmpty().contains("Android", ignoreCase = true) ||
-                modelName.orEmpty().contains("Android", ignoreCase = true) -> TelevisionBrand.ANDROID_TV
+                    modelName.orEmpty()
+                        .contains("Android", ignoreCase = true) -> TelevisionBrand.ANDROID_TV
+
             else -> TelevisionBrand.UNKNOWN
         },
     )

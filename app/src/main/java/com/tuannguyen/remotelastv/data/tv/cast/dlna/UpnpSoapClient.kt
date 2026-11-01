@@ -50,37 +50,71 @@ class UpnpSoapClient @Inject constructor() {
         "InstanceID" to "0", "CurrentURI" to uri, "CurrentURIMetaData" to metadata,
     )
 
-    suspend fun play(d: DlnaDevice) = call(d.avTransport, "Play", "InstanceID" to "0", "Speed" to "1")
+    suspend fun play(d: DlnaDevice) =
+        call(d.avTransport, "Play", "InstanceID" to "0", "Speed" to "1")
+
     suspend fun pause(d: DlnaDevice) = call(d.avTransport, "Pause", "InstanceID" to "0")
     suspend fun stop(d: DlnaDevice) = call(d.avTransport, "Stop", "InstanceID" to "0")
 
     suspend fun seek(d: DlnaDevice, positionMs: Long) {
         val target = UpnpTime.format(positionMs)
         try {
-            call(d.avTransport, "Seek", "InstanceID" to "0", "Unit" to "REL_TIME", "Target" to target)
+            call(
+                d.avTransport,
+                "Seek",
+                "InstanceID" to "0",
+                "Unit" to "REL_TIME",
+                "Target" to target
+            )
         } catch (e: UpnpException) {
             // Một số TV chỉ nhận ABS_TIME
-            call(d.avTransport, "Seek", "InstanceID" to "0", "Unit" to "ABS_TIME", "Target" to target)
+            call(
+                d.avTransport,
+                "Seek",
+                "InstanceID" to "0",
+                "Unit" to "ABS_TIME",
+                "Target" to target
+            )
         }
     }
 
-    suspend fun positionInfo(d: DlnaDevice) = call(d.avTransport, "GetPositionInfo", "InstanceID" to "0")
-    suspend fun transportInfo(d: DlnaDevice) = call(d.avTransport, "GetTransportInfo", "InstanceID" to "0")
+    suspend fun positionInfo(d: DlnaDevice) =
+        call(d.avTransport, "GetPositionInfo", "InstanceID" to "0")
+
+    suspend fun transportInfo(d: DlnaDevice) =
+        call(d.avTransport, "GetTransportInfo", "InstanceID" to "0")
 
     // ---- RenderingControl ----
     suspend fun getVolume(d: DlnaDevice): Int? {
         val rc = d.renderingControl ?: return null
-        return call(rc, "GetVolume", "InstanceID" to "0", "Channel" to "Master")["CurrentVolume"]?.toIntOrNull()
+        return call(
+            rc,
+            "GetVolume",
+            "InstanceID" to "0",
+            "Channel" to "Master"
+        )["CurrentVolume"]?.toIntOrNull()
     }
 
     suspend fun setVolume(d: DlnaDevice, percent: Int) {
         val rc = d.renderingControl ?: throw UpnpException(null, "TV không có RenderingControl")
-        call(rc, "SetVolume", "InstanceID" to "0", "Channel" to "Master", "DesiredVolume" to percent.toString())
+        call(
+            rc,
+            "SetVolume",
+            "InstanceID" to "0",
+            "Channel" to "Master",
+            "DesiredVolume" to percent.toString()
+        )
     }
 
     suspend fun setMute(d: DlnaDevice, muted: Boolean) {
         val rc = d.renderingControl ?: throw UpnpException(null, "TV không có RenderingControl")
-        call(rc, "SetMute", "InstanceID" to "0", "Channel" to "Master", "DesiredMute" to if (muted) "1" else "0")
+        call(
+            rc,
+            "SetMute",
+            "InstanceID" to "0",
+            "Channel" to "Master",
+            "DesiredMute" to if (muted) "1" else "0"
+        )
     }
 
     // ---- SOAP ----
@@ -118,7 +152,11 @@ class UpnpSoapClient @Inject constructor() {
         }
     }
 
-    private fun envelope(serviceType: String, action: String, args: Array<out Pair<String, String>>) =
+    private fun envelope(
+        serviceType: String,
+        action: String,
+        args: Array<out Pair<String, String>>
+    ) =
         buildString {
             append("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
             append("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" ")
@@ -144,6 +182,7 @@ class UpnpSoapClient @Inject constructor() {
                         val t = parser.text.trim()
                         if (n != null && t.isNotEmpty()) map.putIfAbsent(n, t)
                     }
+
                     XmlPullParser.END_TAG -> name = null
                 }
                 event = parser.next()

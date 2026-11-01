@@ -14,7 +14,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -35,7 +34,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
@@ -48,6 +46,7 @@ import androidx.compose.material.icons.outlined.Theaters
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -150,6 +149,7 @@ fun FirstConnectTutorialDialog(
                                     title = R.string.tutorial_group_connection,
                                     items = connectionItems(uiState, actions),
                                 )
+
                                 else -> SettingsStep(
                                     title = R.string.tutorial_group_input,
                                     items = inputItems(uiState, actions),
@@ -382,7 +382,11 @@ private fun NavigationModePicker(
 ) {
     val options = listOf(
         Triple(NavigationMode.D_PAD, R.string.settings_dpad, R.drawable.ic_d_navigation),
-        Triple(NavigationMode.TOUCH_PAD, R.string.settings_touchpad, R.drawable.ic_tounch_navigation),
+        Triple(
+            NavigationMode.TOUCH_PAD,
+            R.string.settings_touchpad,
+            R.drawable.ic_tounch_navigation
+        ),
     )
 
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {

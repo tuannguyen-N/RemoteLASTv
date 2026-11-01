@@ -1,5 +1,6 @@
 package com.tuannguyen.remotelastv.ui.cast_video
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -35,7 +36,7 @@ import kotlinx.coroutines.sync.Mutex
 
 @HiltViewModel
 class CastVideoViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val getConnectedTelevision: GetConnectedTelevisionUseCase,
     private val getMediaInfo: GetMediaInfoUseCase,
     private val getVideoThumbnail: GetVideoThumbnailUseCase,
@@ -44,7 +45,8 @@ class CastVideoViewModel @Inject constructor(
     private val stopCast: StopCastUseCase,
     @param:ApplicationScope private val appScope: CoroutineScope,
 ) : ViewModel() {
-    private val mediaUri = savedStateHandle.toRoute<Route.CastVideo>().uri
+    private var currentUri: String = savedStateHandle.get<String>(KEY_CURRENT_URI)
+        ?: savedStateHandle.toRoute<Route.CastVideo>().uri
     private val _uiState = MutableStateFlow(CastVideoUiState())
     val uiState: StateFlow<CastVideoUiState> = _uiState.asStateFlow()
     private val _events = Channel<CastVideoEvent>(Channel.BUFFERED)
@@ -52,6 +54,7 @@ class CastVideoViewModel @Inject constructor(
     private val commandMutex = Mutex()
     private var castJob: Job? = null
     private var statusJob: Job? = null
+    private var thumbnailJob: Job? = null
 
     init {
         castMedia()
@@ -62,15 +65,20 @@ class CastVideoViewModel @Inject constructor(
         castJob?.cancel()
         statusJob?.cancel()
         castJob = viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update {
+                it.copy(
+                    playerState = CastPlayerState.LOADING,
+                    showLoadingMessage = true,
+                )
+            }
             try {
                 val television =
                     getConnectedTelevision() ?: return@launch fail(CastFailReason.DEVICE_NOT_FOUND)
-                val mediaInfo = getMediaInfo(mediaUri)
+                val mediaInfo = getMediaInfo(currentUri)
                 _uiState.update { it.copy(title = mediaInfo.title, tvName = television.name) }
 
                 val media = CastMedia(
-                    contentUri = mediaUri,
+                    contentUri = currentUri,
                     type = CastMediaType.VIDEO,
                     title = mediaInfo.title,
                     mimeType = mediaInfo.mimeType,
@@ -91,18 +99,19 @@ class CastVideoViewModel @Inject constructor(
     }
 
     private fun loadThumbnail() {
-        viewModelScope.launch {
+        thumbnailJob?.cancel()
+        val uri = currentUri
+        thumbnailJob = viewModelScope.launch {
             val bytes = try {
-                getVideoThumbnail(mediaUri)
+                getVideoThumbnail(uri)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Log.w(TAG, "Thumbnail unavailable", e)
                 null
             }
-            if (bytes != null) {
-                _uiState.update { it.copy(thumbnailBytes = bytes) }
-            }
+            if (uri != currentUri) return@launch
+            _uiState.update { it.copy(thumbnailBytes = bytes) }
         }
     }
 
@@ -112,8 +121,8 @@ class CastVideoViewModel @Inject constructor(
             playback.status.collect { status ->
                 _uiState.update {
                     it.copy(
-                        isLoading = status.state == CastPlayerState.LOADING,
-                        isPlaying = status.state == CastPlayerState.PLAYING,
+                        playerState = status.state,
+                        showLoadingMessage = status.state == CastPlayerState.LOADING && it.showLoadingMessage,
                         positionMs = status.positionMs,
                         durationMs = status.durationMs,
                         volume = status.volume,
@@ -129,7 +138,11 @@ class CastVideoViewModel @Inject constructor(
     }
 
     fun onPlayPauseClick() = withCast {
-        if (_uiState.value.isPlaying) playback.pause() else playback.play()
+        if (_uiState.value.playerState == CastPlayerState.PLAYING) {
+            playback.pause()
+        } else {
+            playback.play()
+        }
     }
 
     fun onRewindClick() = withCast { playback.seekBy(-SEEK_STEP_MS) }
@@ -139,6 +152,17 @@ class CastVideoViewModel @Inject constructor(
     fun onMuteClick() = withCast { playback.setMuted(!_uiState.value.isMuted) }
     fun onSeekTo(positionMs: Long) = withCast { playback.seekTo(positionMs) }
     fun onRetryCasting() {
+        castMedia()
+    }
+
+    fun onChangeVideo(uri: Uri) {
+        val selected = uri.toString()
+        if (selected == currentUri) return
+        currentUri = selected
+        savedStateHandle[KEY_CURRENT_URI] = selected
+        _uiState.update { it.copy(thumbnailBytes = null) }
+
+        loadThumbnail()
         castMedia()
     }
 
@@ -175,7 +199,12 @@ class CastVideoViewModel @Inject constructor(
 
     private fun fail(reason: CastFailReason) {
         statusJob?.cancel()
-        _uiState.update { it.copy(isLoading = false) }
+        _uiState.update {
+            it.copy(
+                playerState = CastPlayerState.ERROR,
+                showLoadingMessage = false,
+            )
+        }
         _events.trySend(CastVideoEvent.CastFailed(reason))
     }
 
@@ -193,5 +222,6 @@ class CastVideoViewModel @Inject constructor(
         const val TAG = "CastVideoViewModel"
         const val SEEK_STEP_MS = 10_000L
         const val VOLUME_STEP = 5
+        const val KEY_CURRENT_URI = "current_uri"
     }
 }

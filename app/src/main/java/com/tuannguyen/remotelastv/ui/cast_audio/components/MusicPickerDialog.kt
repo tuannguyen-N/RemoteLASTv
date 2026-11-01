@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.MusicOff
 import androidx.compose.material.icons.rounded.Search
@@ -49,13 +48,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.AudioTrack
 import com.tuannguyen.remotelastv.ui.theme.Dimens
-import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 import java.text.Normalizer
 import java.util.Locale
 

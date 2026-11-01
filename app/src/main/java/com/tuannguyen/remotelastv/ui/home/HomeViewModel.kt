@@ -7,9 +7,9 @@ import com.tuannguyen.remotelastv.domain.manager.TvControllerManager
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.KnownApp
 import com.tuannguyen.remotelastv.domain.model.TvKey
+import com.tuannguyen.remotelastv.domain.repository.SettingsRepository
 import com.tuannguyen.remotelastv.domain.repository.TvControllerRepository
 import com.tuannguyen.remotelastv.domain.tv.TvException
-import com.tuannguyen.remotelastv.domain.repository.SettingsRepository
 import com.tuannguyen.remotelastv.domain.usecase.GetTvAppsUseCase
 import com.tuannguyen.remotelastv.domain.usecase.ReconnectLastTvUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel

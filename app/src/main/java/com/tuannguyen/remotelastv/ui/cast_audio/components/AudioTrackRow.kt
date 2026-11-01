@@ -1,9 +1,9 @@
 package com.tuannguyen.remotelastv.ui.cast_audio.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,11 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.AudioTrack
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.extendedColors
@@ -90,7 +87,14 @@ private fun TrackThumbnail(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Brush.linearGradient(listOf(MaterialTheme.extendedColors.thumbnailGradientStart, MaterialTheme.extendedColors.thumbnailGradientEnd))),
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.extendedColors.thumbnailGradientStart,
+                            MaterialTheme.extendedColors.thumbnailGradientEnd
+                        )
+                    )
+                ),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -114,4 +118,5 @@ internal fun formatTrackDuration(ms: Long): String {
         String.format(Locale.ROOT, "%d:%02d", minutes, seconds)
     }
 }
+
 private val TrackThumbnailSize = 72.dp

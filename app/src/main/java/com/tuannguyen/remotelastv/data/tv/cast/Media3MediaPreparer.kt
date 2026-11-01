@@ -1,6 +1,7 @@
 package com.tuannguyen.remotelastv.data.tv.cast
 
 import android.net.Uri
+import androidx.core.net.toUri
 import com.tuannguyen.remotelastv.domain.model.CastMedia
 import com.tuannguyen.remotelastv.domain.model.CastMediaType
 import com.tuannguyen.remotelastv.domain.model.CastProviderId
@@ -11,18 +12,18 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import androidx.core.net.toUri
 
 @Singleton
 class Media3MediaPreparer @Inject constructor(
     private val videoTranscoder: HevcVideoTranscoder,
 ) : MediaPreparer {
     override suspend fun prepare(media: CastMedia, providerId: CastProviderId): PreparedCastMedia {
-        val outputFile = if (providerId == CastProviderId.DLNA && media.type == CastMediaType.VIDEO) {
-            videoTranscoder.transcodeIfNeeded(media.contentUri.toUri(), media.title)
-        } else {
-            null
-        }
+        val outputFile =
+            if (providerId == CastProviderId.DLNA && media.type == CastMediaType.VIDEO) {
+                videoTranscoder.transcodeIfNeeded(media.contentUri.toUri(), media.title)
+            } else {
+                null
+            }
         val preparedMedia = if (outputFile == null) {
             media
         } else {

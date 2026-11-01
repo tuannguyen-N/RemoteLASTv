@@ -102,8 +102,8 @@ class CastAudioViewModel @Inject constructor(
                 }
                 _uiState.update {
                     it.copy(
-                        isLoading = status.state == CastPlayerState.LOADING,
-                        isPlaying = status.state == CastPlayerState.PLAYING,
+                        playerState = status.state,
+                        showLoadingMessage = status.state == CastPlayerState.LOADING && it.showLoadingMessage,
                         positionMs = status.positionMs,
                         durationMs = durationMs,
                         volume = status.volume,
@@ -127,7 +127,11 @@ class CastAudioViewModel @Inject constructor(
     }
 
     fun onPlayPauseClick() = withCast {
-        if (_uiState.value.isPlaying) playback.pause() else playback.play()
+        if (_uiState.value.playerState == CastPlayerState.PLAYING) {
+            playback.pause()
+        } else {
+            playback.play()
+        }
     }
 
     fun onPreviousClick() = viewModelScope.launch {
@@ -261,7 +265,12 @@ class CastAudioViewModel @Inject constructor(
         (error as? CastException)?.reason ?: CastFailReason.UNKNOWN
 
     private fun fail(reason: CastFailReason) {
-        _uiState.update { it.copy(isLoading = false) }
+        _uiState.update {
+            it.copy(
+                playerState = CastPlayerState.ERROR,
+                showLoadingMessage = false,
+            )
+        }
         _events.trySend(CastAudioEvent.CastFailed(reason))
     }
 
@@ -271,12 +280,12 @@ class CastAudioViewModel @Inject constructor(
     ) {
         try {
             val targetTelevision = television ?: getConnectedTelevision()
-                ?: return fail(CastFailReason.DEVICE_NOT_FOUND)
+            ?: return fail(CastFailReason.DEVICE_NOT_FOUND)
             observedPlayingUri = null
             _uiState.update {
                 it.copy(
-                    isLoading = true,
-                    isPlaying = false,
+                    playerState = CastPlayerState.LOADING,
+                    showLoadingMessage = true,
                     currentTrackUri = track.uri,
                     title = track.title,
                     durationMs = track.durationMs,
@@ -313,8 +322,10 @@ class CastAudioViewModel @Inject constructor(
                     state.repeatMode == CastRepeatMode.ONE -> completedUri
                     currentIndex < state.playbackOrder.lastIndex ->
                         state.playbackOrder[currentIndex + 1]
+
                     state.repeatMode == CastRepeatMode.ALL ->
                         state.playbackOrder.first()
+
                     else -> return@withLock
                 }
                 state.tracks.firstOrNull { it.uri == nextUri }?.let { castTrack(it) }

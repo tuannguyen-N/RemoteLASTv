@@ -2,15 +2,9 @@ package com.tuannguyen.remotelastv.ui.cast_video
 
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -24,68 +18,37 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.VolumeDown
-import androidx.compose.material.icons.automirrored.rounded.VolumeOff
-import androidx.compose.material.icons.automirrored.rounded.VolumeUp
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Cast
+import androidx.compose.material.icons.rounded.ChangeCircle
 import androidx.compose.material.icons.rounded.Forward10
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -96,22 +59,16 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.CastFailReason
-import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
-import com.tuannguyen.remotelastv.ui.common.gradientTint
+import com.tuannguyen.remotelastv.domain.model.CastPlayerState
 import com.tuannguyen.remotelastv.ui.common.messageResource
 import com.tuannguyen.remotelastv.ui.components.CastingToHeader
 import com.tuannguyen.remotelastv.ui.components.CustomSeekBar
 import com.tuannguyen.remotelastv.ui.components.DialogLoading
 import com.tuannguyen.remotelastv.ui.components.VolumeControl
-import com.tuannguyen.remotelastv.ui.device_discovery.components.DialogConnectionFailure
 import com.tuannguyen.remotelastv.ui.theme.ButtonColors
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
-import com.tuannguyen.remotelastv.ui.theme.RingColors
-import com.tuannguyen.remotelastv.ui.utils.formatTime
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
@@ -125,6 +82,7 @@ fun CastVideoContent(
     onMuteClick: () -> Unit,
     onStopCastingClick: () -> Unit,
     onSeekTo: (Long) -> Unit,
+    onChangeVideo: () -> Unit,
     failureReason: CastFailReason?,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
@@ -156,6 +114,7 @@ fun CastVideoContent(
                 val thumbnailBytes = uiState.thumbnailBytes
                 NowPlaying(
                     title = uiState.title,
+                    onChangeVideo = onChangeVideo,
                     thumbnail = if (thumbnailBytes == null) {
                         thumbnail
                     } else {
@@ -174,7 +133,7 @@ fun CastVideoContent(
                 Spacer(Modifier.height(Dimens.Size.castControls))
 
                 TransportControls(
-                    isPlaying = uiState.isPlaying,
+                    isPlaying = uiState.playerState == CastPlayerState.PLAYING,
                     onRewindClick = onRewindClick,
                     onPlayPauseClick = onPlayPauseClick,
                     onForwardClick = onForwardClick,
@@ -191,9 +150,13 @@ fun CastVideoContent(
                 )
             }
 
-            if (uiState.isLoading) {
+            if (uiState.playerState == CastPlayerState.LOADING) {
                 DialogLoading(
-                    message = stringResource(R.string.cast_video_loading_message),
+                    message = if (uiState.showLoadingMessage) {
+                        stringResource(R.string.cast_video_loading_message)
+                    } else {
+                        null
+                    },
                     modal = false,
                 )
             }
@@ -215,11 +178,11 @@ fun CastVideoContent(
 
 @Composable
 fun ConnectionFailureOverlay(
+    modifier: Modifier = Modifier,
     title: String = "Connection Failed",
     errorMessage: String = "Unable to connect to your TV. Please try again.",
     retryLabel: String = "Try Again",
     onRetry: () -> Unit = {},
-    modifier: Modifier = Modifier,
 ) {
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(R.raw.error)
@@ -290,6 +253,7 @@ fun ConnectionFailureOverlay(
 @Composable
 private fun NowPlaying(
     title: String,
+    onChangeVideo: () -> Unit,
     thumbnail: @Composable BoxScope.() -> Unit,
 ) {
     Column {
@@ -299,9 +263,24 @@ private fun NowPlaying(
                 .aspectRatio(16f / 9f)
                 .clip(RoundedCornerShape(Dimens.Radius.card))
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-            content = thumbnail,
-        )
+        ) {
+            thumbnail()
+
+            FilledTonalIconButton(
+                onClick = onChangeVideo,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(Dimens.Space.xs),
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.ChangeCircle,
+                    contentDescription = "Change video",
+                )
+            }
+        }
+
         Spacer(Modifier.height(Dimens.Space.md))
+
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
@@ -411,10 +390,9 @@ private fun CastVideoContentPlayingPreview() {
                 uiState = CastVideoUiState(
                     title = "Family trip to Da Lat - day 2",
                     tvName = "Living room TV",
-                    isPlaying = true,
+                    playerState = CastPlayerState.PLAYING,
                     positionMs = 754_000L,
                     durationMs = 3_725_000L,
-                    isLoading = false,
                     volume = 35,
                 ),
                 onPlayPauseClick = {},
@@ -427,6 +405,7 @@ private fun CastVideoContentPlayingPreview() {
                 onSeekTo = {},
                 failureReason = null,
                 onRetry = {},
+                onChangeVideo = {},
             )
         }
     }
@@ -441,8 +420,7 @@ private fun CastVideoContentPausedMutedPreview() {
                 uiState = CastVideoUiState(
                     title = "A very long video title that should wrap onto two lines and then truncate gracefully",
                     tvName = "Samsung The Frame 55\" in the master bedroom",
-                    isPlaying = true,
-                    isLoading = false,
+                    playerState = CastPlayerState.PLAYING,
                     positionMs = 12_000L,
                     durationMs = 95_000L,
                     volume = 60,
@@ -458,6 +436,7 @@ private fun CastVideoContentPausedMutedPreview() {
                 onSeekTo = {},
                 failureReason = CastFailReason.DEVICE_NOT_FOUND,
                 onRetry = {},
+                onChangeVideo = {},
             )
         }
     }
