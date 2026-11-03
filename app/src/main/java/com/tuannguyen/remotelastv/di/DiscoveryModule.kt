@@ -2,6 +2,8 @@ package com.tuannguyen.remotelastv.di
 
 import com.tuannguyen.remotelastv.data.tv.android_tv.AndroidTvDiscovery
 import com.tuannguyen.remotelastv.data.tv.lg.LgTvDiscovery
+import com.tuannguyen.remotelastv.data.tv.roku.RokuDiscovery
+import com.tuannguyen.remotelastv.data.tv.samsung.SamsungTvDiscovery
 import com.tuannguyen.remotelastv.domain.repository.TvDiscoveryRepository
 import dagger.Binds
 import dagger.Module
@@ -20,4 +22,12 @@ abstract class DiscoveryModule {
     @Binds
     @IntoSet
     abstract fun bindLgTv(impl: LgTvDiscovery): TvDiscoveryRepository
+
+    @Binds
+    @IntoSet
+    abstract fun bindSamsungTv(impl: SamsungTvDiscovery): TvDiscoveryRepository
+
+    @Binds
+    @IntoSet
+    abstract fun bindRoku(impl: RokuDiscovery): TvDiscoveryRepository
 }

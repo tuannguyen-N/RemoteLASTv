@@ -43,7 +43,7 @@ class LgTextInput @Inject constructor(
                     Log.d("LgTextInput", "status focused=${info.isFocused} raw=${info.rawData}")
                     trySend(
                         if (info.isFocused) {
-                            TextInputState.Focused(text = null, keyboardType = null)
+                            TextInputState.Focused(text = null)
                         } else {
                             TextInputState.Idle
                         }

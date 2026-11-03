@@ -55,8 +55,10 @@ import androidx.compose.material.icons.filled.Keyboard
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Mouse
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -79,6 +81,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -116,6 +119,8 @@ private fun ColumnScope.PadSection(
     compact: Boolean,
     mode: TouchpadMode,
     touchpadEvent: (TouchpadEvent) -> Unit = {},
+    showMouseToggle: Boolean,
+    onMouseToggle: () -> Unit,
     navigationMode: NavigationMode,
     onRemoteButtonClick: (TvKey) -> Unit,
     dpadOverlay: (@Composable BoxScope.() -> Unit)? = null,
@@ -156,6 +161,8 @@ private fun ColumnScope.PadSection(
                             onRemoteButtonClick = onRemoteButtonClick,
                             mode = mode,
                             onEvent = touchpadEvent,
+                            showMouseToggle = showMouseToggle,
+                            onMouseToggle = onMouseToggle,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(Dimens.Space.md),
@@ -183,6 +190,8 @@ private fun TouchPad(
     mode: TouchpadMode,
     onEvent: (TouchpadEvent) -> Unit,
     onRemoteButtonClick: (TvKey) -> Unit,
+    showMouseToggle: Boolean,
+    onMouseToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentOnEvent by rememberUpdatedState(onEvent)
@@ -306,6 +315,30 @@ private fun TouchPad(
             },
         contentAlignment = Alignment.Center,
     ) {
+        if (showMouseToggle) {
+            IconButton(
+                onClick = onMouseToggle,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(Dimens.Space.sm),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Mouse,
+                    contentDescription = stringResource(
+                        if (mode == TouchpadMode.POINTER) {
+                            R.string.remote_mouse_mode_disable
+                        } else {
+                            R.string.remote_mouse_mode_enable
+                        }
+                    ),
+                    tint = if (mode == TouchpadMode.POINTER) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
+        }
     }
 }
 
@@ -415,6 +448,8 @@ internal fun ColumnScope.RemoteControls(
     onRemoteButtonClick: (TvKey) -> Unit,
     touchpadMode: TouchpadMode,
     touchpadEvent: (TouchpadEvent) -> Unit = {},
+    showMouseToggle: Boolean = false,
+    onMouseToggle: () -> Unit = {},
     onPageSelected: (Int) -> Unit,
     showKeyboardSheet: () -> Unit,
     onStartVoiceRecording: () -> Unit,
@@ -428,6 +463,8 @@ internal fun ColumnScope.RemoteControls(
         navigationMode = uiState.navigationMode,
         mode = touchpadMode,
         touchpadEvent = touchpadEvent,
+        showMouseToggle = showMouseToggle,
+        onMouseToggle = onMouseToggle,
         onRemoteButtonClick = onRemoteButtonClick,
     )
 

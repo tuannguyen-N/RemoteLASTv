@@ -18,4 +18,6 @@ fun KnownApp.logoRes(): Int = when (this) {
     KnownApp.GALAXY_PLAY -> R.drawable.img_galaxy_play
     KnownApp.HBO_MAX -> R.drawable.img_logo_hbo_max
     KnownApp.PARAMOUNT_PLUS -> R.drawable.img_logo_paramount_plus
+    KnownApp.TIKTOK -> R.drawable.img_logo_tiktok
+    KnownApp.YOUTUBE_KIDS -> R.drawable.img_logo_youtube_kids
 }

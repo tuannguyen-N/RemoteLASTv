@@ -5,7 +5,7 @@ sealed interface TextInputState {
     data object Idle : TextInputState
     data class Focused(
         val text: String?,
-        val keyboardType: TextKeyboardType?,
+//        val keyboardType: TextKeyboardType?,
         val label: String? = null,
         val shouldAutoShowKeyboard: Boolean = true,
     ) : TextInputState

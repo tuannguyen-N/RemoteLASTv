@@ -65,7 +65,7 @@ class AndroidTvTController @Inject constructor(
     }
 
     override suspend fun stopVoiceRecording(): Result<Unit> = voiceMutex.withLock {
-        voiceJob?.cancelAndJoin() // finally trong streamVoice sẽ gửi VoiceEnd
+        voiceJob?.cancelAndJoin()
         voiceJob = null
         Result.success(Unit)
     }

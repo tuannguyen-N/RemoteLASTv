@@ -28,6 +28,8 @@
     <string name="remote_layout_connected">已连接</string>
     <string name="remote_layout_disconnected">未连接</string>
     <string name="remote_not_connected_message">请先连接电视以使用遥控器。</string>
+    <string name="remote_mouse_mode_enable">开启鼠标模式</string>
+    <string name="remote_mouse_mode_disable">关闭鼠标模式</string>
     <string name="remote_layout_navigation">导航</string>
     <string name="remote_layout_dpad_description">方向键导航</string>
     <string name="remote_layout_touchpad_description">触控板导航</string>
@@ -147,15 +149,15 @@
     <string name="faq_still_stuck">问题仍未解决？</string>
     <string name="faq_send_feedback">发送反馈</string>
     <string name="faq_question_supported_tvs">支持哪些电视？</string>
-    <string name="faq_answer_supported_tvs">RemoteLASTv 支持 LG webOS 电视、三星智能电视以及 Android TV / Google TV 设备。手机和电视必须连接到同一个 Wi-Fi 网络。</string>
+    <string name="faq_answer_supported_tvs">RemoteLASTv 支持 LG webOS 电视、三星智能电视、Roku 设备以及 Android TV / Google TV 设备，也支持兼容的 Sony BRAVIA 型号。兼容性取决于电视型号。手机和电视必须连接到同一个 Wi-Fi 网络。</string>
     <string name="faq_question_same_network">可以通过移动数据或不同的 Wi-Fi 网络连接吗？</string>
     <string name="faq_answer_same_network">不可以。应用通过本地网络与电视通信，因此两台设备必须连接到同一个网络。访客网络以及某些公共或办公 Wi-Fi 网络可能会阻止设备间通信，导致电视无法显示。此外，请关闭手机上的 VPN。</string>
     <string name="faq_question_lg_pair">为什么 LG 电视要求我重新配对？</string>
     <string name="faq_answer_lg_pair">如果清除应用数据或重新安装应用，电视会将 RemoteLASTv 视为新设备。请再次在电视上接受配对请求，之后电视应该会记住此连接。</string>
     <string name="faq_question_samsung_allow">三星电视显示“允许/拒绝”弹窗</string>
     <string name="faq_answer_samsung_allow">首次连接时，电视会询问是否允许此设备。请使用电视遥控器选择“允许”。如果误选了“拒绝”，请打开电视的连接或外部设备管理设置，从阻止列表中移除 RemoteLASTv，然后重新连接。</string>
-    <string name="faq_question_androidtv_pin">Android TV 要求输入 PIN 码</string>
-    <string name="faq_answer_androidtv_pin">输入电视上显示的 6 位代码。通常只需完成一次配对，之后应用即可自动重新连接。如果代码不被接受，请检查输入是否正确并重试。每次开始配对时都可能显示新的代码。</string>
+    <string name="faq_question_androidtv_pin">Android TV 或 Sony BRAVIA 要求输入 PIN 码</string>
+    <string name="faq_answer_androidtv_pin">输入电视上显示的 6 位数字 PIN 码。通常只需完成一次配对，之后应用即可自动重新连接。如果 PIN 码不被接受，请检查输入是否正确并重试。每次开始配对时都可能显示新的 PIN 码。</string>
     <string name="faq_question_auto_reconnect">应用会自动重新连接吗？</string>
     <string name="faq_answer_auto_reconnect">会。打开应用时，它会尝试重新连接到上次使用的电视。从后台返回应用时也会尝试重新连接。如果手动断开连接，则必须重新选择电视才能连接。您可以在“设置”中关闭自动重新连接。</string>
     <string name="faq_question_connection_dropped">连接总是断开</string>
@@ -167,7 +169,7 @@
     <string name="faq_question_touchpad">如何使用触控板模式？</string>
     <string name="faq_answer_touchpad">用一根手指滑动以移动指针，然后点按进行选择。在支持的情况下，可用两指滑动进行导航或滚动。您可以随时在“设置”中切换回方向键模式。</string>
     <string name="faq_question_shortcut_apps">为什么有些应用快捷方式无法打开？</string>
-    <string name="faq_answer_shortcut_apps">三星和 Android TV 设备可能不允许应用获取完整的已安装应用列表，因此 RemoteLASTv 会使用已知的应用 ID 启动快捷方式。如果应用未安装或使用了不同的应用 ID，快捷方式可能无法使用。LG 电视可以提供已安装应用列表，因此其应用快捷方式可能更加可靠。</string>
+    <string name="faq_answer_shortcut_apps">LG 电视和 Roku 设备可以提供 RemoteLASTv 支持的已安装应用列表。三星和 Android TV / Sony 设备显示的是基于已知应用 ID 或链接的快捷方式，而非完整的已安装应用列表；如果应用不可用或使用了不同的 ID，快捷方式可能无法使用。</string>
     <string name="faq_question_mic_permission">语音输入无法使用。如何允许访问麦克风？</string>
     <string name="faq_answer_mic_permission">RemoteLASTv 需要麦克风权限才能使用语音输入。如果您拒绝了权限，请打开手机的“设置” &gt;“应用” &gt;“RemoteLASTv” &gt;“权限”，选择“麦克风”并允许访问。如果 Android 不再显示权限提示，请在系统设置中启用麦克风访问权限。没有麦克风权限时，应用的其他功能仍可使用。</string>
     <string name="faq_question_nav_mode">在哪里切换方向键和触控板？</string>
@@ -190,7 +192,9 @@
     <string name="tutorial_layout_title">选择导航方式</string>
     <string name="tutorial_change_later">您随时可以在“设置”中更改此选项。</string>
     <string name="tutorial_dpad_hint">按方向键移动，按 OK 选择。</string>
+    <string name="tutorial_dpad_mouse_hint">按方向键移动，按 OK 选择。如需使用鼠标，请选择触控板，然后点按右上角的鼠标图标以开启或关闭。</string>
     <string name="tutorial_touchpad_hint">滑动以移动，点按以选择。</string>
+    <string name="tutorial_touchpad_mouse_hint">点按鼠标图标开启鼠标模式。单指滑动可移动指针，点按可选择；双指滑动可像方向键一样导航。</string>
     <string name="tutorial_behavior_title">设置遥控器</string>
     <string name="tutorial_behavior_subtitle">默认设置适合大多数用户。</string>
     <string name="tutorial_group_connection">连接和显示</string>
@@ -302,4 +306,8 @@
     <string name="brand_lg">LG (webOS)</string>
     <string name="brand_android_tv">Android TV</string>
     <string name="discovery_info_got_it">知道了</string>
+    <string name="what_do_you_want_to_cast">您想投放什么内容？</string>
+    <string name="video">视频</string>
+    <string name="photo">照片</string>
+    <string name="audio">音频</string>
 </resources>

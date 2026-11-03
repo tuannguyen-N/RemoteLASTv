@@ -96,6 +96,7 @@ fun FirstConnectTutorialDialog(
     step: Int,
     uiState: RemoteUiState,
     actions: TutorialActions,
+    showMouseFeaturesHint: Boolean = false,
 ) {
     Dialog(
         onDismissRequest = { if (step > 0) actions.onBack() },
@@ -144,7 +145,7 @@ fun FirstConnectTutorialDialog(
                             label = "tutorial_step",
                         ) { s ->
                             when (s) {
-                                0 -> LayoutStep(uiState, actions)
+                                0 -> LayoutStep(uiState, actions, showMouseFeaturesHint)
                                 1 -> SettingsStep(
                                     title = R.string.tutorial_group_connection,
                                     items = connectionItems(uiState, actions),
@@ -266,7 +267,11 @@ private fun TutorialBottomBar(
 
 
 @Composable
-private fun LayoutStep(uiState: RemoteUiState, actions: TutorialActions) {
+private fun LayoutStep(
+    uiState: RemoteUiState,
+    actions: TutorialActions,
+    showMouseFeaturesHint: Boolean,
+) {
     val mode = uiState.navigationMode
 
     Column(verticalArrangement = Arrangement.spacedBy(Dimens.Space.lg)) {
@@ -284,8 +289,13 @@ private fun LayoutStep(uiState: RemoteUiState, actions: TutorialActions) {
         Crossfade(targetState = mode, label = "mode_hint") { m ->
             Text(
                 text = stringResource(
-                    if (m == NavigationMode.D_PAD) R.string.tutorial_dpad_hint
-                    else R.string.tutorial_touchpad_hint
+                    when {
+                        m == NavigationMode.D_PAD && showMouseFeaturesHint ->
+                            R.string.tutorial_dpad_mouse_hint
+                        m == NavigationMode.D_PAD -> R.string.tutorial_dpad_hint
+                        showMouseFeaturesHint -> R.string.tutorial_touchpad_mouse_hint
+                        else -> R.string.tutorial_touchpad_hint
+                    }
                 ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -321,7 +331,6 @@ private fun RemotePreview(
     modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
-    val shape = RoundedCornerShape(40.dp)
 
     Column(
         modifier = modifier,

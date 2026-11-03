@@ -19,6 +19,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -40,7 +41,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val supportedApps: kotlinx.coroutines.flow.Flow<List<KnownApp>?> =
+    private val supportedApps: Flow<List<KnownApp>?> =
         connectionManager.state
             .map { (it as? ConnectionState.Connected)?.tv }
             .distinctUntilChanged()

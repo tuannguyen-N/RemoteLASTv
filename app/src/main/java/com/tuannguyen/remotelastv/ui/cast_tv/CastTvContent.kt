@@ -28,9 +28,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.CastMediaType
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 
@@ -53,7 +55,7 @@ fun CastTvContent(
     ) {
 
         Text(
-            text = "What do you want to cast?",
+            text = stringResource(R.string.what_do_you_want_to_cast),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
@@ -61,7 +63,7 @@ fun CastTvContent(
 
         MediaTile(
             type = CastMediaType.VIDEO,
-            title = "Video",
+            title = stringResource(R.string.video),
             hint = "MP4, MKV, WebM",
             selected = uiState.selectedMediaType == CastMediaType.VIDEO,
             enabled = uiState.isConnected,
@@ -76,7 +78,7 @@ fun CastTvContent(
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             MediaTile(
                 type = CastMediaType.IMAGE,
-                title = "Photo",
+                title = stringResource(R.string.photo),
                 hint = "JPG, PNG, WebP",
                 selected = uiState.selectedMediaType == CastMediaType.IMAGE,
                 enabled = uiState.isConnected,
@@ -89,7 +91,7 @@ fun CastTvContent(
             )
             MediaTile(
                 type = CastMediaType.AUDIO,
-                title = "Audio",
+                title = stringResource(R.string.audio),
                 hint = "MP3, AAC, FLAC",
                 selected = uiState.selectedMediaType == CastMediaType.AUDIO,
                 enabled = uiState.isConnected,

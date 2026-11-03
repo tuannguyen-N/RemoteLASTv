@@ -4,6 +4,8 @@ import com.tuannguyen.remotelastv.data.tv.android_tv.AndroidTextInput
 import com.tuannguyen.remotelastv.data.tv.android_tv.AndroidTvTController
 import com.tuannguyen.remotelastv.data.tv.lg.LgTextInput
 import com.tuannguyen.remotelastv.data.tv.lg.LgTvController
+import com.tuannguyen.remotelastv.data.tv.roku.RokuTvController
+import com.tuannguyen.remotelastv.data.tv.samsung.SamsungTvController
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
 import com.tuannguyen.remotelastv.domain.repository.TvControllerRepository
 import com.tuannguyen.remotelastv.domain.repository.TvTextInputRepository
@@ -29,11 +31,16 @@ abstract class ControllerModule {
 
     @Binds
     @IntoMap
-    @BrandKey(TelevisionBrand.LG)
-    abstract fun lgTextInput(impl: LgTextInput): TvTextInputRepository
+    @BrandKey(TelevisionBrand.SAMSUNG)
+    abstract fun samsungController(impl: SamsungTvController): TvControllerRepository
 
     @Binds
     @IntoMap
-    @BrandKey(TelevisionBrand.ANDROID_TV)
-    abstract fun androidTvTextInput(impl: AndroidTextInput): TvTextInputRepository
+    @BrandKey(TelevisionBrand.SONY)
+    abstract fun sonyController(impl: AndroidTvTController): TvControllerRepository
+
+    @Binds
+    @IntoMap
+    @BrandKey(TelevisionBrand.ROKU)
+    abstract fun rokuController(impl: RokuTvController): TvControllerRepository
 }

@@ -32,6 +32,7 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 class LgTvController @Inject constructor(
     private val registry: LgDeviceRegistry
@@ -52,7 +53,6 @@ class LgTvController @Inject constructor(
     @Volatile
     private var resolvedIds: Map<KnownApp, String> = emptyMap()
 
-    ///--------------KEY----------------------
 
     override suspend fun sendKey(key: TvKey): Result<Unit> {
         val webOs = registry.activeDevice
@@ -100,7 +100,7 @@ class LgTvController @Inject constructor(
                 TvKey.NUMBER_8 -> sendDigit(webOs, 8)
                 TvKey.NUMBER_9 -> sendDigit(webOs, 9)
                 TvKey.DELETE -> webOs.sendDelete()
-                TvKey.SEARCH -> null
+                TvKey.SEARCH -> webOs.keyControl.sendKeyCode(KeyControl.KeyCode.ENTER, null)
             }
         }
     }
@@ -143,7 +143,7 @@ class LgTvController @Inject constructor(
     }
 
     private suspend fun fetchRawApps(launcher: Launcher): Result<List<AppInfo>> =
-        withTimeoutOrNull(GET_APPS_TIMEOUT_MS) {
+        withTimeoutOrNull(GET_APPS_TIMEOUT_MS.milliseconds) {
             suspendCancellableCoroutine<Result<List<AppInfo>>> { cont ->
                 launcher.getAppList(object : Launcher.AppListListener {
                     override fun onSuccess(apps: List<AppInfo>) {
@@ -213,7 +213,6 @@ class LgTvController @Inject constructor(
 
     ///--------------------HELPER----------------------
 
-
     private inline fun <T> safeCall(block: () -> T): Result<T> =
         try {
             Result.success(block())
@@ -238,7 +237,7 @@ class LgTvController @Inject constructor(
     private suspend fun <T> awaitResult(
         timeoutMs: Long = 3_000,
         command: (ResponseListener<T>) -> Unit,
-    ): T = withTimeoutOrNull(timeoutMs) {
+    ): T = withTimeoutOrNull(timeoutMs.milliseconds) {
         suspendCancellableCoroutine<T> { cont ->
             command(object : ResponseListener<T> {
                 override fun onSuccess(response: T) {
@@ -260,7 +259,7 @@ class LgTvController @Inject constructor(
     }
 
     private suspend fun awaitMute(webOs: WebOSTVService, timeoutMs: Long = 3_000): Boolean =
-        withTimeoutOrNull(timeoutMs) {
+        withTimeoutOrNull(timeoutMs.milliseconds) {
             suspendCancellableCoroutine<Boolean> { cont ->
                 webOs.getMute(object : VolumeControl.MuteListener {
                     override fun onSuccess(muted: Boolean) {

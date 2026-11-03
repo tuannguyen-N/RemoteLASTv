@@ -28,6 +28,8 @@
     <string name="remote_layout_connected">Đã kết nối</string>
     <string name="remote_layout_disconnected">Chưa kết nối</string>
     <string name="remote_not_connected_message">Hãy kết nối với TV để sử dụng điều khiển.</string>
+    <string name="remote_mouse_mode_enable">Bật chế độ chuột</string>
+    <string name="remote_mouse_mode_disable">Tắt chế độ chuột</string>
     <string name="remote_layout_navigation">Điều hướng</string>
     <string name="remote_layout_dpad_description">Điều hướng bằng phím</string>
     <string name="remote_layout_touchpad_description">Điều hướng bằng bàn di</string>
@@ -147,15 +149,15 @@
     <string name="faq_still_stuck">Vẫn chưa giải quyết được?</string>
     <string name="faq_send_feedback">Gửi phản hồi</string>
     <string name="faq_question_supported_tvs">Ứng dụng hỗ trợ những TV nào?</string>
-    <string name="faq_answer_supported_tvs">RemoteLASTv hoạt động với TV LG webOS, TV thông minh Samsung và các thiết bị Android TV / Google TV. Điện thoại và TV phải dùng cùng mạng Wi-Fi.</string>
+    <string name="faq_answer_supported_tvs">RemoteLASTv hoạt động với TV LG webOS, TV thông minh Samsung, thiết bị Roku và Android TV / Google TV, bao gồm các mẫu Sony BRAVIA tương thích. Khả năng tương thích tùy thuộc vào mẫu TV. Điện thoại và TV phải dùng cùng mạng Wi-Fi.</string>
     <string name="faq_question_same_network">Tôi có thể kết nối bằng dữ liệu di động hoặc mạng Wi-Fi khác không?</string>
     <string name="faq_answer_same_network">Không. Ứng dụng giao tiếp với TV qua mạng nội bộ, vì vậy cả hai thiết bị phải kết nối cùng một mạng. Mạng khách và một số mạng Wi-Fi công cộng hoặc văn phòng có thể chặn giao tiếp giữa các thiết bị, khiến TV không hiển thị. Ngoài ra, hãy tắt VPN trên điện thoại.</string>
     <string name="faq_question_lg_pair">Tại sao TV LG yêu cầu ghép nối lại?</string>
     <string name="faq_answer_lg_pair">Nếu bạn xóa dữ liệu ứng dụng hoặc cài đặt lại, TV sẽ xem RemoteLASTv như một thiết bị mới. Hãy chấp nhận yêu cầu ghép nối trên TV. Sau đó, kết nối sẽ được ghi nhớ.</string>
     <string name="faq_question_samsung_allow">TV Samsung hiển thị cửa sổ Cho phép / Từ chối</string>
     <string name="faq_answer_samsung_allow">Khi kết nối lần đầu, TV sẽ hỏi bạn có cho phép thiết bị hay không. Dùng điều khiển TV để chọn Cho phép. Nếu vô tình chọn Từ chối, hãy mở cài đặt kết nối hoặc trình quản lý thiết bị ngoại vi trên TV, xóa RemoteLASTv khỏi danh sách chặn rồi thử kết nối lại.</string>
-    <string name="faq_question_androidtv_pin">Android TV yêu cầu mã PIN</string>
-    <string name="faq_answer_androidtv_pin">Nhập mã gồm 6 ký tự hiển thị trên TV. Thông thường, bạn chỉ cần ghép nối một lần và ứng dụng có thể tự động kết nối lại sau đó. Nếu mã không được chấp nhận, hãy kiểm tra và nhập lại. Mỗi lần bắt đầu ghép nối, TV có thể hiển thị mã mới.</string>
+    <string name="faq_question_androidtv_pin">Android TV hoặc Sony BRAVIA yêu cầu mã PIN</string>
+    <string name="faq_answer_androidtv_pin">Nhập mã PIN gồm 6 chữ số hiển thị trên TV. Thông thường, bạn chỉ cần ghép nối một lần và ứng dụng có thể tự động kết nối lại sau đó. Nếu mã PIN không được chấp nhận, hãy kiểm tra và nhập lại. Mỗi lần bắt đầu ghép nối, TV có thể hiển thị mã PIN mới.</string>
     <string name="faq_question_auto_reconnect">Ứng dụng có tự động kết nối lại không?</string>
     <string name="faq_answer_auto_reconnect">Có. Khi mở ứng dụng, ứng dụng sẽ thử kết nối lại với TV bạn đã dùng gần đây nhất. Ứng dụng cũng thử kết nối lại khi bạn quay lại từ chế độ chạy nền. Nếu bạn ngắt kết nối thủ công, cần chọn lại TV trước khi kết nối. Bạn có thể tắt tính năng tự động kết nối lại trong phần Cài đặt.</string>
     <string name="faq_question_connection_dropped">Kết nối liên tục bị ngắt</string>
@@ -167,7 +169,7 @@
     <string name="faq_question_touchpad">Cách sử dụng chế độ bàn di?</string>
     <string name="faq_answer_touchpad">Vuốt một ngón tay để di chuyển con trỏ, sau đó chạm để chọn. Dùng thao tác vuốt hai ngón tay để điều hướng hoặc cuộn nếu được hỗ trợ. Bạn có thể chuyển về chế độ phím điều hướng bất cứ lúc nào trong phần Cài đặt.</string>
     <string name="faq_question_shortcut_apps">Tại sao một số lối tắt ứng dụng không mở được?</string>
-    <string name="faq_answer_shortcut_apps">Thiết bị Samsung và Android TV có thể không cho phép ứng dụng lấy toàn bộ danh sách ứng dụng đã cài đặt, nên RemoteLASTv mở lối tắt bằng mã ứng dụng đã biết. Nếu ứng dụng chưa được cài hoặc dùng mã khác, lối tắt có thể không hoạt động. TV LG có thể cung cấp danh sách ứng dụng đã cài, vì vậy lối tắt có thể đáng tin cậy hơn trên các thiết bị này.</string>
+    <string name="faq_answer_shortcut_apps">TV LG và thiết bị Roku có thể cung cấp danh sách ứng dụng đã cài mà RemoteLASTv hỗ trợ. Samsung và Android TV / Sony hiển thị lối tắt dựa trên mã ứng dụng hoặc liên kết đã biết thay vì toàn bộ danh sách ứng dụng đã cài, nên lối tắt có thể không hoạt động nếu ứng dụng không có sẵn hoặc dùng mã khác.</string>
     <string name="faq_question_mic_permission">Nhập liệu bằng giọng nói không hoạt động. Làm cách nào để cho phép truy cập micrô?</string>
     <string name="faq_answer_mic_permission">RemoteLASTv cần quyền truy cập micrô để nhập liệu bằng giọng nói. Nếu bạn đã từ chối quyền, hãy mở Cài đặt &gt; Ứng dụng &gt; RemoteLASTv &gt; Quyền trên điện thoại, chọn Micrô rồi chọn Cho phép. Nếu Android không còn hiển thị yêu cầu cấp quyền, hãy bật quyền truy cập micrô trong cài đặt hệ thống. Các tính năng khác của ứng dụng vẫn hoạt động khi không có quyền này.</string>
     <string name="faq_question_nav_mode">Tôi chuyển đổi giữa phím điều hướng và bàn di ở đâu?</string>
@@ -190,7 +192,9 @@
     <string name="tutorial_layout_title">Chọn cách điều hướng</string>
     <string name="tutorial_change_later">Bạn có thể thay đổi tùy chọn này bất cứ lúc nào trong phần Cài đặt.</string>
     <string name="tutorial_dpad_hint">Nhấn các phím mũi tên để di chuyển, nhấn OK để chọn.</string>
+    <string name="tutorial_dpad_mouse_hint">Nhấn các phím mũi tên để di chuyển, nhấn OK để chọn. Muốn dùng chuột, hãy chọn Bàn di rồi chạm biểu tượng chuột ở góc trên bên phải để bật hoặc tắt.</string>
     <string name="tutorial_touchpad_hint">Vuốt để di chuyển, chạm để chọn.</string>
+    <string name="tutorial_touchpad_mouse_hint">Bật chế độ chuột bằng biểu tượng chuột. Vuốt một ngón để di chuyển con trỏ, chạm để chọn hoặc vuốt hai ngón để điều hướng như các phím mũi tên.</string>
     <string name="tutorial_behavior_title">Thiết lập điều khiển</string>
     <string name="tutorial_behavior_subtitle">Các tùy chọn mặc định phù hợp với hầu hết mọi người.</string>
     <string name="tutorial_group_connection">Kết nối và hiển thị</string>
@@ -302,4 +306,8 @@
     <string name="brand_lg">LG (webOS)</string>
     <string name="brand_android_tv">Android TV</string>
     <string name="discovery_info_got_it">Đã hiểu</string>
+    <string name="what_do_you_want_to_cast">Bạn muốn truyền nội dung gì?</string>
+    <string name="video">Video</string>
+    <string name="photo">Ảnh</string>
+    <string name="audio">Âm thanh</string>
 </resources>

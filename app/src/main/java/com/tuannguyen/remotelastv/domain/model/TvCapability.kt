@@ -1,3 +1,3 @@
 package com.tuannguyen.remotelastv.domain.model
 
-enum class TvCapability { VOICE, TEXT_SYNC, VOLUME_STATE }
+enum class TvCapability { VOICE, VOLUME_STATE }

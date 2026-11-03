@@ -18,6 +18,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,7 +33,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
+import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
 import com.tuannguyen.remotelastv.domain.model.TutorialActions
+import com.tuannguyen.remotelastv.domain.model.TouchpadMode
 import com.tuannguyen.remotelastv.ui.remote.components.FirstConnectTutorialDialog
 import com.tuannguyen.remotelastv.ui.remote.components.KeyboardInputBottomSheet
 import com.tuannguyen.remotelastv.ui.remote.components.RemoteControls
@@ -50,6 +53,17 @@ fun RemotePage(
     val snackbarHostState = remember { SnackbarHostState() }
     val notConnectedMessage = stringResource(R.string.remote_not_connected_message)
     var tutorialStep by remember { mutableIntStateOf(0) }
+    val connectedTvId = (connectionState as? ConnectionState.Connected)?.tv?.id
+    var touchpadModeOverride by remember(connectedTvId) {
+        mutableStateOf<TouchpadMode?>(null)
+    }
+    val touchpadMode = touchpadModeOverride ?: uiState.touchpadMode
+    val connectedTvBrand = (connectionState as? ConnectionState.Connected)?.tv?.brand
+    val showMouseToggle = when (connectedTvBrand) {
+        TelevisionBrand.SAMSUNG -> true
+        TelevisionBrand.LG -> uiState.touchpadMode == TouchpadMode.POINTER
+        else -> false
+    }
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
     val microphonePermissionLauncher = rememberLauncherForActivityResult(
@@ -86,7 +100,7 @@ fun RemotePage(
         viewModel.onPageSelected(pagerState.currentPage)
     }
     LaunchedEffect(uiState.selectedPage) {
-        if (pagerState.currentPage != uiState.selectedPage) {
+        if (!pagerState.isScrollInProgress && pagerState.settledPage != uiState.selectedPage) {
             pagerState.animateScrollToPage(uiState.selectedPage)
         }
     }
@@ -103,8 +117,17 @@ fun RemotePage(
                     pagerState = pagerState,
                     compact = compact,
                     onRemoteButtonClick = viewModel::onRemoteButtonClick,
-                    touchpadMode = uiState.touchpadMode,
+                    touchpadMode = touchpadMode,
                     touchpadEvent = viewModel::onTouchpad,
+                    showMouseToggle = showMouseToggle,
+                    onMouseToggle = {
+                        touchpadModeOverride =
+                            if (touchpadMode == TouchpadMode.POINTER) {
+                                TouchpadMode.DIRECTIONAL
+                            } else {
+                                TouchpadMode.POINTER
+                            }
+                    },
                     onPageSelected = viewModel::onPageSelected,
                     showKeyboardSheet = viewModel::showKeyboardSheet,
                     onStartVoiceRecording = {
@@ -179,6 +202,7 @@ fun RemotePage(
                     viewModel.onTutorialFinished()
                 },
             ),
+            showMouseFeaturesHint = showMouseToggle,
         )
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.util.Log
+import com.tuannguyen.remotelastv.data.tv.BraviaDetector
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
 import com.tuannguyen.remotelastv.domain.repository.TvDiscoveryRepository
@@ -19,6 +20,7 @@ import kotlin.coroutines.resume
 
 class AndroidTvDiscovery @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val braviaDetector: BraviaDetector
 ) : TvDiscoveryRepository {
     override val brand = TelevisionBrand.ANDROID_TV
 
@@ -49,6 +51,7 @@ class AndroidTvDiscovery @Inject constructor(
 
         launch {
             val seen = mutableSetOf<String>()
+            val seenIps = mutableSetOf<String>()
             for (svc in found) {
                 val resolved = nsd.resolve(svc) ?: continue
                 val ip = resolved.host?.hostAddress ?: continue
@@ -65,14 +68,17 @@ class AndroidTvDiscovery @Inject constructor(
                         resolved.attributes.mapValues { it.value?.toString(Charsets.UTF_8) }
                     }")
 
-                if (!seen.add(id)) continue
+                if (!seen.add(id) || !seenIps.add(ip)) continue
+
+                val brand = if (braviaDetector.isSonyBravia(ip)) TelevisionBrand.SONY
+                else TelevisionBrand.ANDROID_TV
 
                 trySend(
                     Television(
                         id = id,
                         name = resolved.serviceName,
                         ipAddress = ip,
-                        brand = TelevisionBrand.ANDROID_TV
+                        brand = brand
                     )
                 )
             }

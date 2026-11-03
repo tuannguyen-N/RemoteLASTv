@@ -33,7 +33,6 @@ class AndroidTextInput @Inject constructor(
                 } else {
                     TextInputState.Focused(
                         text = field.value,
-                        keyboardType = null,
                         label = field.label.takeIf(String::isNotBlank),
                         shouldAutoShowKeyboard = field.label.isNotBlank(),
                     )

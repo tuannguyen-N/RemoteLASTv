@@ -13,13 +13,14 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.core.net.toUri
 
 @Singleton
 class AndroidMediaInfoReader @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : MediaInfoReader {
     override suspend fun read(uri: String): MediaInfo = withContext(Dispatchers.IO) {
-        val parsedUri = Uri.parse(uri)
+        val parsedUri = uri.toUri()
         val resolver = context.contentResolver
         val title = resolver.query(
             parsedUri,

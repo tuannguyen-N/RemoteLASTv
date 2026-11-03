@@ -5,6 +5,8 @@ enum class KnownApp(val displayName: String) {
     YOUTUBE("YouTube"),
     PRIME_VIDEO("Amazon Prime Video"),
     DISNEY_PLUS("Disney+"),
+    TIKTOK("TikTok"),
+    YOUTUBE_KIDS("Youtube Kids"),
     APPLE_TV("Apple TV+"),
     SPOTIFY("Spotify"),
     PLEX("Plex"),
@@ -12,5 +14,5 @@ enum class KnownApp(val displayName: String) {
     VTV_GO("VTV Go"),
     GALAXY_PLAY("Galaxy Play"),
     HBO_MAX("HBO Max"),
-    PARAMOUNT_PLUS("Paramount Plus"),
+    PARAMOUNT_PLUS("Paramount Plus")
 }

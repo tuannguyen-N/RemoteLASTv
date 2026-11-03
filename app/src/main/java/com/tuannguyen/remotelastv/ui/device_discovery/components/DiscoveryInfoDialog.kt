@@ -35,6 +35,14 @@ import com.tuannguyen.remotelastv.ui.theme.Dimens
 fun DiscoveryInfoDialog(
     onDismiss: () -> Unit = {},
 ) {
+    val supportedBrands = listOf(
+        TelevisionBrand.LG to R.string.brand_lg,
+        TelevisionBrand.ANDROID_TV to R.string.brand_android_tv,
+        TelevisionBrand.SONY to R.string.brand_sony,
+        TelevisionBrand.SAMSUNG to R.string.brand_samsung,
+        TelevisionBrand.ROKU to R.string.brand_roku,
+    )
+
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = {
@@ -57,14 +65,12 @@ fun DiscoveryInfoDialog(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
-                SupportedBrandRow(
-                    brand = TelevisionBrand.LG,
-                    name = stringResource(R.string.brand_lg),
-                )
-                SupportedBrandRow(
-                    brand = TelevisionBrand.ANDROID_TV,
-                    name = stringResource(R.string.brand_android_tv),
-                )
+                supportedBrands.forEach { (brand, nameRes) ->
+                    SupportedBrandRow(
+                        brand = brand,
+                        name = stringResource(nameRes),
+                    )
+                }
             }
         },
         confirmButton = {
@@ -107,6 +113,8 @@ fun TelevisionBrandLogo(
         TelevisionBrand.ANDROID_TV -> R.drawable.img_logo_android_tv
         TelevisionBrand.LG -> R.drawable.img_logo_lg
         TelevisionBrand.SAMSUNG -> R.drawable.img_logo_samsung
+        TelevisionBrand.SONY -> R.drawable.img_logo_sony_tv
+        TelevisionBrand.ROKU -> R.drawable.img_logo_roku
         TelevisionBrand.UNKNOWN -> null
     }
 

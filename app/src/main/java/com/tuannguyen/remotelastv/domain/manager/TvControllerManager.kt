@@ -23,7 +23,6 @@ class TvControllerManager @Inject constructor(
     private val repositories: Map<TelevisionBrand, @JvmSuppressWildcards TvControllerRepository>,
     private val connectionManager: TvConnectionManager
 ) {
-    @OptIn(ExperimentalCoroutinesApi::class)
     val capabilities: Flow<Set<TvCapability>> = connectionManager.connectedTelevision
         .map { tv -> tv?.let { repositories[it.brand]?.capabilities }.orEmpty() }
         .distinctUntilChanged()
