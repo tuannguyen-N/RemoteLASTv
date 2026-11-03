@@ -49,6 +49,7 @@ class CastAudioViewModel @Inject constructor(
     private var libraryLoadJob: Job? = null
     private var statusJob: Job? = null
     private var observedPlayingUri: String? = null
+    private var isStopping = false
 
     init {
         observe()
@@ -227,16 +228,42 @@ class CastAudioViewModel @Inject constructor(
                 trackMutex.withLock {
                     _uiState.value.tracks
                         .firstOrNull { it.uri == selectedUri }
-                        ?.let { castTrack(it) }
+                        ?.let { castTrack(it, countForAds = false) }
                 }
             }
         }
     }
 
     fun onStopCastingClick() {
+        if (isStopping) return
+        isStopping = true
         libraryLoadJob?.cancel()
         statusJob?.cancel()
-        _events.trySend(CastAudioEvent.NavigateBack)
+        viewModelScope.launch {
+            trackMutex.withLock {
+                val stopResult = stopCast()
+                stopResult.onFailure { error ->
+                    Log.e(TAG, "Failed to stop audio casting", error)
+                }
+                val showInterstitial = if (stopResult.isSuccess) {
+                    try {
+                        stopCast.shouldShowInterstitialAfterStop()
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to read cast count for interstitial", e)
+                        false
+                    }
+                } else {
+                    false
+                }
+                _events.send(
+                    CastAudioEvent.StopCompleted(
+                        showInterstitial = showInterstitial,
+                    )
+                )
+            }
+        }
     }
 
     private fun withCast(
@@ -277,8 +304,10 @@ class CastAudioViewModel @Inject constructor(
     private suspend fun castTrack(
         track: AudioTrack,
         television: com.tuannguyen.remotelastv.domain.model.Television? = null,
+        countForAds: Boolean = true,
     ) {
         try {
+            val shouldCountForAds = countForAds && _uiState.value.currentTrackUri != track.uri
             val targetTelevision = television ?: getConnectedTelevision()
             ?: return fail(CastFailReason.DEVICE_NOT_FOUND)
             observedPlayingUri = null
@@ -299,7 +328,7 @@ class CastAudioViewModel @Inject constructor(
                 title = track.title,
                 mimeType = track.mimeType,
             )
-            startCast(targetTelevision, media).onFailure { error ->
+            startCast(targetTelevision, media, shouldCountForAds).onFailure { error ->
                 Log.e(TAG, "Failed to cast audio to ${targetTelevision.ipAddress}", error)
                 fail(failReason(error))
             }

@@ -6,6 +6,7 @@ import com.tuannguyen.remotelastv.domain.model.CastProviderId
 import com.tuannguyen.remotelastv.domain.model.CastStatus
 import com.tuannguyen.remotelastv.domain.model.PreparedCastMedia
 import com.tuannguyen.remotelastv.domain.model.Television
+import com.tuannguyen.remotelastv.domain.repository.CastAdCounterRepository
 import com.tuannguyen.remotelastv.domain.repository.CastProvider
 import com.tuannguyen.remotelastv.domain.repository.CastSession
 import com.tuannguyen.remotelastv.domain.repository.MediaPreparer
@@ -29,6 +30,7 @@ class CastSessionManagerTest {
                 FakeCastProvider(CastProviderId.GOOGLE_CAST, priority = 10, googleSession),
             ),
             mediaPreparer = preparer,
+            castAdCounter = FakeCastAdCounterRepository(),
         )
 
         assertTrue(manager.start(television, media).isSuccess)
@@ -48,6 +50,7 @@ class CastSessionManagerTest {
         val manager = CastSessionManager(
             providers = setOf(FakeCastProvider(CastProviderId.DLNA, priority = 0, session)),
             mediaPreparer = preparer,
+            castAdCounter = FakeCastAdCounterRepository(),
         )
 
         val result = manager.start(television, media)
@@ -55,6 +58,39 @@ class CastSessionManagerTest {
         assertTrue(result.isFailure)
         assertTrue(session.wasStopped)
         assertTrue(preparer.preparedMedia.released)
+    }
+
+    @Test
+    fun interstitialCounterCountsSuccessfulCastsButNotRetriesAndResetsAfterShown() = runBlocking {
+        val counter = FakeCastAdCounterRepository()
+        val manager = CastSessionManager(
+            providers = setOf(FakeCastProvider(CastProviderId.DLNA, priority = 0, FakeCastSession())),
+            mediaPreparer = FakeMediaPreparer(),
+            castAdCounter = counter,
+        )
+
+        assertTrue(manager.start(television, media).isSuccess)
+        assertTrue(manager.start(television, media, countForAds = false).isSuccess)
+        assertTrue(manager.start(television, media).isSuccess)
+        assertFalse(manager.shouldShowInterstitialAfterStop())
+
+        assertTrue(manager.start(television, media).isSuccess)
+        assertTrue(manager.shouldShowInterstitialAfterStop())
+
+        val recreatedManager = CastSessionManager(
+            providers = setOf(FakeCastProvider(CastProviderId.DLNA, priority = 0, FakeCastSession())),
+            mediaPreparer = FakeMediaPreparer(),
+            castAdCounter = counter,
+        )
+        assertTrue(recreatedManager.shouldShowInterstitialAfterStop())
+
+        manager.onInterstitialShown()
+        assertFalse(recreatedManager.shouldShowInterstitialAfterStop())
+        assertTrue(recreatedManager.start(television, media).isSuccess)
+        assertTrue(recreatedManager.start(television, media).isSuccess)
+        assertFalse(recreatedManager.shouldShowInterstitialAfterStop())
+        assertTrue(recreatedManager.start(television, media).isSuccess)
+        assertTrue(recreatedManager.shouldShowInterstitialAfterStop())
     }
 
     private class FakeCastProvider(
@@ -102,6 +138,21 @@ class CastSessionManagerTest {
         override suspend fun prepare(media: CastMedia, providerId: CastProviderId): PreparedCastMedia {
             preparedFor = providerId
             return preparedMedia
+        }
+    }
+
+    private class FakeCastAdCounterRepository : CastAdCounterRepository {
+        private var successfulCastCount = 0
+
+        override suspend fun recordSuccessfulCast() {
+            successfulCastCount++
+        }
+
+        override suspend fun shouldShowInterstitial(threshold: Int): Boolean =
+            successfulCastCount >= threshold
+
+        override suspend fun resetSuccessfulCastCount() {
+            successfulCastCount = 0
         }
     }
 

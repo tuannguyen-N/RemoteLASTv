@@ -55,13 +55,14 @@ class CastVideoViewModel @Inject constructor(
     private var castJob: Job? = null
     private var statusJob: Job? = null
     private var thumbnailJob: Job? = null
+    private var isStopping = false
 
     init {
         castMedia()
         loadThumbnail()
     }
 
-    private fun castMedia() {
+    private fun castMedia(countForAds: Boolean = true) {
         castJob?.cancel()
         statusJob?.cancel()
         castJob = viewModelScope.launch {
@@ -84,7 +85,7 @@ class CastVideoViewModel @Inject constructor(
                     mimeType = mediaInfo.mimeType,
                 )
 
-                startCast(television, media).onSuccess { observe() }.onFailure { error ->
+                startCast(television, media, countForAds).onSuccess { observe() }.onFailure { error ->
                     ensureActive()
                     Log.e(TAG, "Failed to cast media to ${television.ipAddress}", error)
                     fail(failReason(error))
@@ -152,7 +153,7 @@ class CastVideoViewModel @Inject constructor(
     fun onMuteClick() = withCast { playback.setMuted(!_uiState.value.isMuted) }
     fun onSeekTo(positionMs: Long) = withCast { playback.seekTo(positionMs) }
     fun onRetryCasting() {
-        castMedia()
+        castMedia(countForAds = false)
     }
 
     fun onChangeVideo(uri: Uri) {
@@ -167,9 +168,31 @@ class CastVideoViewModel @Inject constructor(
     }
 
     fun onStopCastingClick() {
+        if (isStopping) return
+        isStopping = true
         castJob?.cancel()
         statusJob?.cancel()
-        _events.trySend(CastVideoEvent.NavigateBack)
+        viewModelScope.launch {
+            val stopResult = stopCast()
+            stopResult.onFailure { error -> Log.e(TAG, "Failed to stop casting", error) }
+            val showInterstitial = if (stopResult.isSuccess) {
+                try {
+                    stopCast.shouldShowInterstitialAfterStop()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to read cast count for interstitial", e)
+                    false
+                }
+            } else {
+                false
+            }
+            _events.send(
+                CastVideoEvent.StopCompleted(
+                    showInterstitial = showInterstitial,
+                )
+            )
+        }
     }
 
     private fun withCast(

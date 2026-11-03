@@ -6,6 +6,7 @@ import com.tuannguyen.remotelastv.domain.model.CastMedia
 import com.tuannguyen.remotelastv.domain.model.CastStatus
 import com.tuannguyen.remotelastv.domain.model.PreparedCastMedia
 import com.tuannguyen.remotelastv.domain.model.Television
+import com.tuannguyen.remotelastv.domain.repository.CastAdCounterRepository
 import com.tuannguyen.remotelastv.domain.repository.CastProvider
 import com.tuannguyen.remotelastv.domain.repository.CastSession
 import com.tuannguyen.remotelastv.domain.repository.MediaPreparer
@@ -27,6 +28,7 @@ import kotlinx.coroutines.withContext
 class CastSessionManager @Inject constructor(
     private val providers: Set<@JvmSuppressWildcards CastProvider>,
     private val mediaPreparer: MediaPreparer,
+    private val castAdCounter: CastAdCounterRepository,
 ) {
     private data class ActiveCast(
         val session: CastSession,
@@ -40,7 +42,11 @@ class CastSessionManager @Inject constructor(
         active?.session?.status ?: flowOf(CastStatus())
     }
 
-    suspend fun start(television: Television, media: CastMedia): Result<Unit> =
+    suspend fun start(
+        television: Television,
+        media: CastMedia,
+        countForAds: Boolean = true,
+    ): Result<Unit> =
         try {
             lock.withLock {
                 stopActiveCast()?.let { return@withLock Result.failure(it) }
@@ -76,6 +82,17 @@ class CastSessionManager @Inject constructor(
                     cleanupFailedCast(session, prepared, loadError)
                     return@withLock Result.failure(loadError)
                 }
+                if (countForAds) {
+                    try {
+                        castAdCounter.recordSuccessfulCast()
+                    } catch (e: CancellationException) {
+                        cleanupFailedCast(session, prepared, e)
+                        throw e
+                    } catch (e: Exception) {
+                        cleanupFailedCast(session, prepared, e)
+                        throw e
+                    }
+                }
                 activeCast.value = ActiveCast(session, prepared)
                 Result.success(Unit)
             }
@@ -88,6 +105,12 @@ class CastSessionManager @Inject constructor(
     suspend fun stop(): Result<Unit> = lock.withLock {
         stopActiveCast()?.let { Result.failure(it) } ?: Result.success(Unit)
     }
+
+    suspend fun shouldShowInterstitialAfterStop(): Boolean =
+        castAdCounter.shouldShowInterstitial(INTERSTITIAL_CAST_THRESHOLD)
+
+    suspend fun onInterstitialShown() =
+        castAdCounter.resetSuccessfulCastCount()
 
     suspend fun play(): Result<Unit> = withActiveSession { it.play() }
     suspend fun pause(): Result<Unit> = withActiveSession { it.pause() }
@@ -157,5 +180,9 @@ class CastSessionManager @Inject constructor(
         } catch (e: Exception) {
             cause.addSuppressed(e)
         }
+    }
+
+    private companion object {
+        const val INTERSTITIAL_CAST_THRESHOLD = 3
     }
 }

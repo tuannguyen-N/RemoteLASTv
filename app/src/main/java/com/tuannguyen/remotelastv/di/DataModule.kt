@@ -2,6 +2,7 @@ package com.tuannguyen.remotelastv.di
 
 import com.tuannguyen.remotelastv.data.repository.SavedTvRepositoryImpl
 import com.tuannguyen.remotelastv.data.repository.SettingsRepositoryImpl
+import com.tuannguyen.remotelastv.domain.repository.CastAdCounterRepository
 import com.tuannguyen.remotelastv.domain.repository.SavedTvRepository
 import com.tuannguyen.remotelastv.domain.repository.SettingsRepository
 import dagger.Binds
@@ -17,6 +18,11 @@ abstract class DataModule {
     abstract fun bindSettingsRepository(
         impl: SettingsRepositoryImpl,
     ): SettingsRepository
+
+    @Binds
+    abstract fun bindCastAdCounterRepository(
+        impl: SettingsRepositoryImpl,
+    ): CastAdCounterRepository
 
     @Binds
     @Singleton

@@ -310,4 +310,21 @@
     <string name="video">视频</string>
     <string name="photo">照片</string>
     <string name="audio">音频</string>
+    <string name="brand_roku">Roku</string>
+    <string name="brand_sony">索尼</string>
+    <string name="brand_samsung">三星</string>
+    <string name="discovery_searching_title">正在搜索电视</string>
+    <string name="discovery_searching_hint">这需要几秒钟，请保持此页面打开。</string>
+    <plurals name="discovery_found_count">
+        <item quantity="one">已找到 %d 台电视</item>
+        <item quantity="other">已找到 %d 台电视</item>
+    </plurals>
+    <string name="discovery_checklist_title">如果电视未显示</string>
+    <string name="discovery_check_power_title">打开电视</string>
+    <string name="discovery_check_power_body">电视需要处于开机状态，仅接通电源是不够的。</string>
+    <string name="discovery_check_wifi_title">连接到同一 Wi-Fi</string>
+    <string name="discovery_check_wifi_body">手机和电视必须连接到同一网络。访客网络通常会阻止设备发现。</string>
+    <string name="discovery_check_allow_title">允许手机连接</string>
+    <string name="discovery_check_allow_body">部分 LG 和 Samsung 电视需要先在电视的网络或通用设置中启用此选项，才能接受手机连接。</string>
+    <string name="discovery_error_title">扫描未能完成</string>
 </resources>

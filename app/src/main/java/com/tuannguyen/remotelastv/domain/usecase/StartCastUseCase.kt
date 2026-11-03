@@ -7,6 +7,9 @@ import jakarta.inject.Inject
 class StartCastUseCase @Inject constructor(
     private val sessionManager: CastSessionManager,
 ) {
-    suspend operator fun invoke(television: Television, media: CastMedia): Result<Unit> =
-        sessionManager.start(television, media)
+    suspend operator fun invoke(
+        television: Television,
+        media: CastMedia,
+        countForAds: Boolean = true,
+    ): Result<Unit> = sessionManager.start(television, media, countForAds)
 }

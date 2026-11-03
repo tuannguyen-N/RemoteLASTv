@@ -310,4 +310,21 @@
     <string name="video">Video</string>
     <string name="photo">Ảnh</string>
     <string name="audio">Âm thanh</string>
+    <string name="brand_roku">Roku</string>
+    <string name="brand_sony">Sony</string>
+    <string name="brand_samsung">Samsung</string>
+    <string name="discovery_searching_title">Đang tìm TV</string>
+    <string name="discovery_searching_hint">Quá trình này mất vài giây. Hãy giữ màn hình này mở.</string>
+    <plurals name="discovery_found_count">
+        <item quantity="one">Đã tìm thấy %d TV</item>
+        <item quantity="other">Đã tìm thấy %d TV</item>
+    </plurals>
+    <string name="discovery_checklist_title">Nếu không thấy TV</string>
+    <string name="discovery_check_power_title">Bật TV</string>
+    <string name="discovery_check_power_body">TV cần được bật, không chỉ cắm điện.</string>
+    <string name="discovery_check_wifi_title">Kết nối cùng mạng Wi-Fi</string>
+    <string name="discovery_check_wifi_body">Điện thoại và TV phải dùng cùng mạng. Mạng khách thường chặn việc tìm thiết bị.</string>
+    <string name="discovery_check_allow_title">Cho phép kết nối từ điện thoại</string>
+    <string name="discovery_check_allow_body">Một số TV LG và Samsung chỉ chấp nhận kết nối từ điện thoại sau khi bật tùy chọn này trong phần cài đặt mạng hoặc cài đặt chung của TV.</string>
+    <string name="discovery_error_title">Không thể hoàn tất quá trình quét</string>
 </resources>

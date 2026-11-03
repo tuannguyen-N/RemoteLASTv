@@ -49,6 +49,7 @@ class CastImageViewModel @Inject constructor(
     private var currentUri: String = savedStateHandle.get<String>(KEY_CURRENT_URI)
         ?: savedStateHandle.toRoute<Route.CastImage>().uri
     private var castJob: Job? = null
+    private var isStopping = false
 
     init {
         castCurrent()
@@ -63,15 +64,39 @@ class CastImageViewModel @Inject constructor(
     }
 
     fun onRetryCasting() {
-        castCurrent()
+        castCurrent(countForAds = false)
     }
 
     fun onStopCastingClick() {
+        if (isStopping) return
+        isStopping = true
         castJob?.cancel()
-        _events.trySend(CastImageEvent.NavigateBack)
+        viewModelScope.launch {
+            val stopResult = stopCast()
+            stopResult.onFailure { error ->
+                android.util.Log.e(TAG, "Failed to stop image casting", error)
+            }
+            val showInterstitial = if (stopResult.isSuccess) {
+                try {
+                    stopCast.shouldShowInterstitialAfterStop()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    android.util.Log.e(TAG, "Failed to read cast count for interstitial", e)
+                    false
+                }
+            } else {
+                false
+            }
+            _events.send(
+                CastImageEvent.StopCompleted(
+                    showInterstitial = showInterstitial,
+                )
+            )
+        }
     }
 
-    private fun castCurrent() {
+    private fun castCurrent(countForAds: Boolean = true) {
         castJob?.cancel()
         castJob = viewModelScope.launch {
             val target = currentUri
@@ -95,7 +120,7 @@ class CastImageViewModel @Inject constructor(
                     mimeType = info.mimeType,
                 )
 
-                startCast(television, media)
+                startCast(television, media, countForAds)
                     .onSuccess {
                         _uiState.update { state ->
                             state.copy(
@@ -131,6 +156,7 @@ class CastImageViewModel @Inject constructor(
     }
 
     private companion object {
+        const val TAG = "CastImageViewModel"
         const val KEY_CURRENT_URI = "current_uri"
     }
 }

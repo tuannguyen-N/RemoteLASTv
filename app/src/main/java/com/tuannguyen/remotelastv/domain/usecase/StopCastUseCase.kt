@@ -7,4 +7,11 @@ class StopCastUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(): Result<Unit> =
         sessionManager.stop()
+
+    suspend fun shouldShowInterstitialAfterStop(): Boolean =
+        sessionManager.shouldShowInterstitialAfterStop()
+
+    suspend fun onInterstitialShown() {
+        sessionManager.onInterstitialShown()
+    }
 }

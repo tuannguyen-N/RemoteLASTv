@@ -4,16 +4,19 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
 import com.tuannguyen.remotelastv.domain.model.RemoteSettings
+import com.tuannguyen.remotelastv.domain.repository.CastAdCounterRepository
 import com.tuannguyen.remotelastv.domain.repository.SettingsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
@@ -22,7 +25,7 @@ private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 @Singleton
 class SettingsRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-) : SettingsRepository {
+) : SettingsRepository, CastAdCounterRepository {
 
     private object Keys {
         val SHOW_MEDIA_BUTTONS = booleanPreferencesKey("show_media_buttons")
@@ -38,6 +41,7 @@ class SettingsRepositoryImpl @Inject constructor(
             booleanPreferencesKey("has_requested_microphone_permission")
         val HAS_REQUESTED_AUDIO_PERMISSION =
             booleanPreferencesKey("has_requested_audio_permission")
+        val SUCCESSFUL_CAST_COUNT = intPreferencesKey("successful_cast_count")
     }
 
     override val remoteSettings: Flow<RemoteSettings> = context.settingsDataStore.data
@@ -117,6 +121,26 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setHasRequestedAudioPermission(requested: Boolean) {
         context.settingsDataStore.edit {
             it[Keys.HAS_REQUESTED_AUDIO_PERMISSION] = requested
+        }
+    }
+
+    override suspend fun recordSuccessfulCast() {
+        context.settingsDataStore.edit { preferences ->
+            preferences[Keys.SUCCESSFUL_CAST_COUNT] =
+                (preferences[Keys.SUCCESSFUL_CAST_COUNT] ?: 0) + 1
+        }
+    }
+
+    override suspend fun shouldShowInterstitial(threshold: Int): Boolean =
+        context.settingsDataStore.data
+            .map { preferences ->
+                (preferences[Keys.SUCCESSFUL_CAST_COUNT] ?: 0) >= threshold
+            }
+            .first()
+
+    override suspend fun resetSuccessfulCastCount() {
+        context.settingsDataStore.edit { preferences ->
+            preferences[Keys.SUCCESSFUL_CAST_COUNT] = 0
         }
     }
 }
