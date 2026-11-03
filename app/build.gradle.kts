@@ -28,6 +28,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField("String", "ADMOB_HOME_BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/9214589741\"")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -35,14 +39,19 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-6352608955736331~5600245729"
+            buildConfigField("String", "ADMOB_HOME_BANNER_AD_UNIT_ID", "\"ca-app-pub-6352608955736331/8234147926\"")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     sourceSets {
@@ -124,4 +133,7 @@ dependencies {
     implementation(libs.bouncy.castle)
     implementation(libs.nanohttpd)
     implementation(libs.coil.compose)
+
+    //ads
+    implementation(libs.play.services.ads)
 }

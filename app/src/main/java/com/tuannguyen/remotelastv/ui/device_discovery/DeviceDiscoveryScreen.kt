@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tuannguyen.remotelastv.ui.ads.banner.AdBanner
 import com.tuannguyen.remotelastv.ui.device_discovery.components.DeviceDiscoveryContent
 
 @Composable
@@ -43,5 +44,8 @@ fun DeviceDiscoveryScreen(
         onDismissFailure = viewModel::acknowledgeConnectionFailure,
         onSubmitPin = viewModel::submitPin,
         onCancelSendPin = viewModel::cancelSendPin,
+        adContent = {
+            AdBanner()
+        }
     )
 }

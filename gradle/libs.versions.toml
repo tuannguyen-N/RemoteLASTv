@@ -27,6 +27,7 @@ protobufJavalite = "3.25.5"
 room3Compiler = "3.0.3"
 room3Runtime = "3.0.3"
 bouncyCastle = "1.78"
+playServicesAds = "25.4.0"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -64,6 +65,7 @@ lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "
 bouncy-castle = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncyCastle" }
 nanohttpd = { module = "org.nanohttpd:nanohttpd", version.ref = "nanohttpd" }
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobufJavalite" }
+play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

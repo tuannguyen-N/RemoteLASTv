@@ -54,7 +54,6 @@ import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 
 private val PrimaryActionHeight = 56.dp
-private const val MAX_DECODE_SIDE = 2048
 
 @Composable
 fun CastImageContent(

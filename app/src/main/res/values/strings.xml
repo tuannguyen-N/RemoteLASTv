@@ -313,4 +313,18 @@
     <string name="brand_roku">Roku</string>
     <string name="brand_sony">Sony</string>
     <string name="brand_samsung">Samsung</string>
+    <string name="discovery_searching_title">Searching for TVs</string>
+    <string name="discovery_searching_hint">This takes a few seconds. Keep this screen open.</string>
+    <plurals name="discovery_found_count">
+        <item quantity="one">%d TV found so far</item>
+        <item quantity="other">%d TVs found so far</item>
+    </plurals>
+    <string name="discovery_checklist_title">If your TV doesn’t show up</string>
+    <string name="discovery_check_power_title">Turn on your TV</string>
+    <string name="discovery_check_power_body">The TV needs to be switched on, not just plugged in.</string>
+    <string name="discovery_check_wifi_title">Use the same Wi-Fi</string>
+    <string name="discovery_check_wifi_body">Your phone and TV must be on the same network. Guest networks often block discovery.</string>
+    <string name="discovery_check_allow_title">Allow mobile connections</string>
+    <string name="discovery_check_allow_body">Some LG and Samsung TVs only accept phones after you enable it in the TV’s network or general settings.</string>
+    <string name="discovery_error_title">The scan didn’t finish</string>
 </resources>

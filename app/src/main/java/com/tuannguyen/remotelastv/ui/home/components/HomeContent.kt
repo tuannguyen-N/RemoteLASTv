@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.KnownApp
+import com.tuannguyen.remotelastv.ui.ads.banner.AdBanner
 import com.tuannguyen.remotelastv.ui.common.attentionPulse
 import com.tuannguyen.remotelastv.ui.common.bounceClickNoEffect
 import com.tuannguyen.remotelastv.ui.common.gradientTint
@@ -107,6 +108,8 @@ fun HomeContent(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                AdBanner()
+
                 HomeHeader(
                     uiState = uiState,
                     compact = compact,
@@ -168,6 +171,7 @@ private fun HomeHeader(
         modifier = Modifier
             .fillMaxWidth()
             .height(if (compact) HeaderHeightCompact else HeaderHeight)
+            .padding(top = Dimens.Space.xs)
             .padding(horizontal = Dimens.Space.md),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,

@@ -1,5 +1,7 @@
 package com.tuannguyen.remotelastv.ui.device_discovery.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,21 +11,30 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.PhonelinkSetup
+import androidx.compose.material.icons.outlined.Tv
 import androidx.compose.material.icons.outlined.TvOff
+import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +49,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -53,6 +67,7 @@ import com.tuannguyen.remotelastv.domain.model.DiscoveryStatus
 import com.tuannguyen.remotelastv.domain.model.FailReason
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
+import com.tuannguyen.remotelastv.ui.common.ChecklistItem
 import com.tuannguyen.remotelastv.ui.components.DialogLoading
 import com.tuannguyen.remotelastv.ui.device_discovery.DeviceDiscoveryUiState
 import com.tuannguyen.remotelastv.ui.theme.Dimens
@@ -73,6 +88,7 @@ fun DeviceDiscoveryContent(
     successTvName: String? = null,
     onSubmitPin: (String) -> Unit = {},
     onCancelSendPin: () -> Unit = {},
+    adContent: @Composable () -> Unit = {},
 ) {
     val connectedTv = (uiState.connectionState as? ConnectionState.Connected)?.tv
     var showSupportInfo by rememberSaveable { mutableStateOf(false) }
@@ -102,6 +118,13 @@ fun DeviceDiscoveryContent(
                     },
                 )
             },
+            bottomBar = {
+                Column(modifier = Modifier.navigationBarsPadding()) {
+                    HorizontalDivider()
+                    Spacer(Modifier.height(Dimens.Space.xs))
+                    adContent()
+                }
+            },
         ) { innerPadding ->
             Column(
                 modifier = Modifier
@@ -110,42 +133,33 @@ fun DeviceDiscoveryContent(
                     .padding(horizontal = Dimens.Space.screenHorizontal),
             ) {
                 when (val status = uiState.discoveryStatus) {
-                    is DiscoveryStatus.Scanning -> {
-                        DiscoveryContent(
-                            message = stringResource(
-                                R.string.televisions_discovery_message,
-                            ),
-                            modifier = Modifier.weight(1f),
-                            showLoading = true,
-                            televisions = uiState.televisions,
-                            onTelevisionClick = onTelevisionClick,
-                            onDisconnectClick = onDisconnectClick,
-                            connectedTv = connectedTv,
-                        )
-                    }
+                    is DiscoveryStatus.Scanning -> ScanningPane(
+                        televisions = uiState.televisions,
+                        connectedTv = connectedTv,
+                        onTelevisionClick = onTelevisionClick,
+                        onDisconnectClick = onDisconnectClick,
+                        modifier = Modifier.weight(1f),
+                    )
 
-                    is DiscoveryStatus.Error -> {
-                        DiscoveryContent(
-                            message = status.message,
-                            modifier = Modifier.weight(1f),
-                            showLoading = false,
-                            action = {
-                                Button(onClick = onRetry) {
-                                    Text(
-                                        text = stringResource(
-                                            R.string.televisions_retry
-                                        )
-                                    )
-                                }
-                            },
-                            connectedTv = connectedTv
-                        )
-                    }
+                    is DiscoveryStatus.Error -> MessagePane(
+                        icon = Icons.Outlined.ErrorOutline,
+                        title = stringResource(R.string.discovery_error_title),
+                        message = status.message,
+                        actionLabel = stringResource(R.string.televisions_retry),
+                        onAction = onRetry,
+                        showChecklist = false,
+                        modifier = Modifier.weight(1f),
+                    )
 
                     is DiscoveryStatus.Completed -> {
                         if (uiState.isEmpty) {
-                            DiscoveryEmptyContent(
-                                onRetry = onRetry,
+                            MessagePane(
+                                icon = Icons.Outlined.TvOff,
+                                title = stringResource(R.string.no_tvs_found),
+                                message = stringResource(R.string.make_sure_your_tv_is_turned_on_and_connected_to_the_same_wi_fi_network_as_your_phone),
+                                actionLabel = stringResource(R.string.common_try_again),
+                                onAction = onRetry,
+                                showChecklist = true,
                                 modifier = Modifier.weight(1f),
                             )
                         } else {
@@ -280,123 +294,250 @@ fun DeviceDiscoveryContent(
 }
 
 @Composable
-private fun DiscoveryContent(
-    message: String,
+private fun ScanningPane(
+    televisions: List<Television>,
+    connectedTv: Television?,
+    onTelevisionClick: (Television) -> Unit,
+    onDisconnectClick: (Television) -> Unit,
     modifier: Modifier = Modifier,
-    showLoading: Boolean,
-    televisions: List<Television> = emptyList(),
-    onTelevisionClick: (Television) -> Unit = {},
-    onDisconnectClick: (Television) -> Unit = {},
-    connectedTv: Television? = null,
-    action: @Composable (() -> Unit)? = null,
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        if (showLoading) {
-            DiscoveryLoadingIndicator(
-                modifier = Modifier.padding(
-                    vertical = Dimens.Space.lg,
-                ),
-            )
+    if (televisions.isEmpty()) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+        ) {
+            ScanningHeader(foundCount = 0)
+            Spacer(Modifier.height(Dimens.Space.lg))
+            TvChecklist()
+            Spacer(Modifier.height(Dimens.Space.xl))
         }
-
-        if (televisions.isEmpty()) {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        } else {
+    } else {
+        Column(modifier = modifier.fillMaxWidth()) {
+            ScanningHeader(foundCount = televisions.size)
             TelevisionList(
                 televisions = televisions,
+                connectedTv = connectedTv,
                 onTelevisionClick = onTelevisionClick,
-                modifier = Modifier.weight(1f),
                 onDisconnectClick = onDisconnectClick,
-                connectedTv = connectedTv
+                modifier = Modifier.weight(1f),
             )
-        }
-
-        if (action != null) {
-            Spacer(
-                modifier = Modifier.height(Dimens.Space.md),
-            )
-            action()
         }
     }
 }
 
 @Composable
-private fun DiscoveryEmptyContent(
-    onRetry: () -> Unit,
+private fun ScanningHeader(
+    foundCount: Int,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = Dimens.Space.md),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.scanning))
+    val compact = foundCount > 0
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimens.Space.xl),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.TvOff,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Spacer(Modifier.height(Dimens.Space.lg))
-
-            Text(
-                text = stringResource(R.string.no_tvs_found),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-
-            Spacer(Modifier.height(Dimens.Space.sm))
-
-            Text(
-                text = stringResource(R.string.make_sure_your_tv_is_turned_on_and_connected_to_the_same_wi_fi_network_as_your_phone),
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Spacer(Modifier.height(Dimens.Space.xl))
-
-            Button(
-                onClick = onRetry,
-                modifier = Modifier.fillMaxWidth(),
+    AnimatedContent(
+        targetState = compact,
+        modifier = modifier.fillMaxWidth(),
+        label = "scanHeader",
+    ) { isCompact ->
+        if (isCompact) {
+            Row(
+                modifier = Modifier.padding(vertical = Dimens.Space.sm),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(stringResource(R.string.common_try_again))
+                LottieAnimation(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever,
+                    modifier = Modifier.size(48.dp),
+                )
+                Spacer(Modifier.width(Dimens.Space.sm))
+                Column {
+                    Text(
+                        text = stringResource(R.string.discovery_searching_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = pluralStringResource(
+                            R.plurals.discovery_found_count,
+                            foundCount,
+                            foundCount
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Dimens.Space.lg),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                LottieAnimation(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever,
+                    modifier = Modifier.size(160.dp),
+                )
+                Text(
+                    text = stringResource(R.string.discovery_searching_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(Dimens.Space.xs))
+                Text(
+                    text = stringResource(R.string.discovery_searching_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
 }
 
+private val checklistItems = listOf(
+    ChecklistItem(
+        Icons.Outlined.Tv,
+        R.string.discovery_check_power_title,
+        R.string.discovery_check_power_body
+    ),
+    ChecklistItem(
+        Icons.Outlined.Wifi,
+        R.string.discovery_check_wifi_title,
+        R.string.discovery_check_wifi_body
+    ),
+    ChecklistItem(
+        Icons.Outlined.PhonelinkSetup,
+        R.string.discovery_check_allow_title,
+        R.string.discovery_check_allow_body
+    ),
+)
 
 @Composable
-private fun DiscoveryLoadingIndicator(
+private fun TvChecklist(modifier: Modifier = Modifier) {
+    val iconSize = 36.dp
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.discovery_checklist_title),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(Modifier.height(Dimens.Space.xs))
+
+        checklistItems.forEachIndexed { index, item ->
+            if (index > 0) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = iconSize + Dimens.Space.md),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = Dimens.Space.md)
+                    .semantics(mergeDescendants = true) {},
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(iconSize)
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                            CircleShape,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                Spacer(Modifier.width(Dimens.Space.md))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(item.title),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(Modifier.height(Dimens.Space.xxs))
+                    Text(
+                        text = stringResource(item.body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MessagePane(
+    icon: ImageVector,
+    title: String,
+    message: String,
+    actionLabel: String,
+    onAction: () -> Unit,
+    showChecklist: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.scanning))
+    Column(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(Modifier.height(Dimens.Space.xl))
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(Dimens.Space.lg))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(Dimens.Space.sm))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (showChecklist) {
+                Spacer(Modifier.height(Dimens.Space.xl))
+                TvChecklist()
+            }
+            Spacer(Modifier.height(Dimens.Space.xl))
+        }
 
-    LottieAnimation(
-        composition = composition,
-        iterations = LottieConstants.IterateForever,
-        modifier = modifier.size(150.dp),
-    )
+        Button(
+            onClick = onAction,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = Dimens.Space.md, horizontal = Dimens.Space.xxl),
+        ) {
+            Text(actionLabel)
+        }
+    }
 }
 
 @Composable
