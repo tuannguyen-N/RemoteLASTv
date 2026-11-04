@@ -6,6 +6,7 @@ import com.tuannguyen.remotelastv.ui.navigation.Route
 
 data class SettingsUiState(
     @param:StringRes val titleRes: Int = R.string.settings_title,
+    val isPrivacyOptionsRequired: Boolean = false,
 )
 
 sealed interface SettingsAction {
@@ -16,4 +17,6 @@ sealed interface SettingsAction {
     data object Feedback : SettingsAction
     data object ActivatePremium : SettingsAction
     data object PrivacyPolicy : SettingsAction
+    data object OpenPrivacySheet : SettingsAction
+    data object AdPrivacyOptions : SettingsAction
 }

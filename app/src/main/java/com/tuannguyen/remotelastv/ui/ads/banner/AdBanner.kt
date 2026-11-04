@@ -2,7 +2,6 @@ package com.tuannguyen.remotelastv.ui.ads.banner
 
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -14,8 +13,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
@@ -30,8 +28,10 @@ fun AdBanner(
     val screenWidthDp = LocalConfiguration.current.screenWidthDp
     val adView = remember(screenWidthDp) { viewModel.getOrCreate(screenWidthDp) }
 
-    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { adView.pause() }
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { adView.resume() }
+    LifecycleResumeEffect(adView) {
+        adView.resume()
+        onPauseOrDispose { adView.pause() }
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         AndroidView(

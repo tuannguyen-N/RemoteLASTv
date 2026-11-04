@@ -1,5 +1,9 @@
 package com.tuannguyen.remotelastv.ui.settings
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -53,8 +57,27 @@ fun SettingsScreen(
                 SettingsAction.PrivacyPolicy -> {
                     openPrivacyPolicy(context)
                 }
+
+                SettingsAction.AdPrivacyOptions -> {
+                    val activity = context.findActivity()
+                    if (activity != null) {
+                        viewModel.showPrivacyOptions(activity)
+                    } else {
+                        Log.e(TAG, "Cannot show ad privacy options without an Activity context")
+                    }
+                }
+
+                SettingsAction.OpenPrivacySheet -> Unit
             }
         },
         versionName = versionName
     )
 }
+
+private fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
+private const val TAG = "SettingsScreen"

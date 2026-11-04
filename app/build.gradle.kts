@@ -17,10 +17,26 @@ android {
         applicationId = "com.tuannguyen.remotelastv"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.0.2"
+        versionCode = 7
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    flavorDimensions += "environment"
+    productFlavors {
+        create("closedTesting") {
+            dimension = "environment"
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField("String", "ADMOB_HOME_BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/9214589741\"")
+            buildConfigField("String", "ADMOB_INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
+        }
+        create("production") {
+            dimension = "environment"
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-6352608955736331~5600245729"
+            buildConfigField("String", "ADMOB_HOME_BANNER_AD_UNIT_ID", "\"ca-app-pub-6352608955736331/8234147926\"")
+            buildConfigField("String", "ADMOB_INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-6352608955736331/6220414013\"")
+        }
     }
 
     androidResources {
@@ -40,10 +56,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-
-            manifestPlaceholders["admobAppId"] = "ca-app-pub-6352608955736331~5600245729"
-            buildConfigField("String", "ADMOB_HOME_BANNER_AD_UNIT_ID", "\"ca-app-pub-6352608955736331/8234147926\"")
-            buildConfigField("String", "ADMOB_INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-6352608955736331/6220414013\"")
         }
     }
 
@@ -56,15 +68,6 @@ android {
         buildConfig = true
     }
 
-    sourceSets {
-        getByName("main") {
-            java.srcDirs(
-                "build/generated/source/proto/main/java",
-                "build/generated/java/generateDebugProto/java",
-                "build/generated/java/generateReleaseProto/java"
-            )
-        }
-    }
 }
 
 protobuf {
@@ -117,6 +120,7 @@ dependencies {
     implementation(libs.androidx.media3.effect)
 
     //room
+    implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room3.runtime)
     ksp(libs.androidx.room3.compiler)
     implementation(libs.androidx.datastore.preferences)
@@ -135,7 +139,6 @@ dependencies {
     implementation(libs.bouncy.castle)
     implementation(libs.nanohttpd)
     implementation(libs.coil.compose)
-
     //ads
     implementation(libs.play.services.ads)
 }

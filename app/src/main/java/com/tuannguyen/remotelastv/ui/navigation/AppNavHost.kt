@@ -1,8 +1,5 @@
 package com.tuannguyen.remotelastv.ui.navigation
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -38,18 +35,6 @@ fun AppNavHost(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        enterTransition = {
-            fadeIn(tween(250))
-        },
-        exitTransition = {
-            fadeOut(tween(200))
-        },
-        popEnterTransition = {
-            fadeIn(tween(250))
-        },
-        popExitTransition = {
-            fadeOut(tween(200))
-        },
     ) {
         composable<Route.Home> {
             HomeScreen(

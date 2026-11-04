@@ -67,7 +67,7 @@ data class SettingsEntry(
             SettingsEntry(
                 R.string.privacy_policy,
                 IconSource.Vector(Icons.Default.Security),
-                SettingsAction.PrivacyPolicy,
+                SettingsAction.OpenPrivacySheet,
             )
         )
     }

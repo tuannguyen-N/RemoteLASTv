@@ -28,6 +28,7 @@ room3Compiler = "3.0.3"
 room3Runtime = "3.0.3"
 bouncyCastle = "1.78"
 playServicesAds = "25.4.0"
+roomRuntime = "2.8.5"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -42,6 +43,7 @@ androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-view
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-media3-transformer = { module = "androidx.media3:media3-transformer", version.ref = "media3" }
 androidx-media3-effect = { module = "androidx.media3:media3-effect", version.ref = "media3" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room3Compiler" }
 androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room3Runtime" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }

@@ -180,7 +180,8 @@
     <string name="follows_your_phone">Follows your phone: %1$s</string>
     <string name="the_app_refreshes_briefly_when_you_change_the_language">"The app refreshes briefly when you change the language. "</string>
     <string name="your_saved_tvs_and_settings_are_not_affected">Your saved TVs and settings are not affected.</string>
-    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy">Privacy &amp; ads</string>
+    <string name="ad_privacy_options">Ad privacy options</string>
     <string name="tutorial_skip">Skip</string>
     <string name="tutorial_next">Next</string>
     <string name="tutorial_back">Back</string>

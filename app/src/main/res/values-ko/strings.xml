@@ -183,7 +183,8 @@
     <string name="follows_your_phone">휴대폰 언어 따르기: %1$s</string>
     <string name="the_app_refreshes_briefly_when_you_change_the_language">언어를 변경하면 앱이 잠시 새로고침됩니다.</string>
     <string name="your_saved_tvs_and_settings_are_not_affected">저장된 TV와 설정에는 영향이 없습니다.</string>
-    <string name="privacy_policy">개인정보 처리방침</string>
+    <string name="privacy_policy">개인정보 보호 및 광고</string>
+    <string name="ad_privacy_options">광고 개인정보 보호 옵션</string>
     <string name="tutorial_skip">건너뛰기</string>
     <string name="tutorial_next">다음</string>
     <string name="tutorial_back">뒤로</string>

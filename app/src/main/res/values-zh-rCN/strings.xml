@@ -183,7 +183,8 @@
     <string name="follows_your_phone">跟随手机语言：%1$s</string>
     <string name="the_app_refreshes_briefly_when_you_change_the_language">更改语言后，应用会短暂刷新。</string>
     <string name="your_saved_tvs_and_settings_are_not_affected">已保存的电视和设置不会受到影响。</string>
-    <string name="privacy_policy">隐私政策</string>
+    <string name="privacy_policy">隐私与广告</string>
+    <string name="ad_privacy_options">广告隐私选项</string>
     <string name="tutorial_skip">跳过</string>
     <string name="tutorial_next">下一步</string>
     <string name="tutorial_back">返回</string>
