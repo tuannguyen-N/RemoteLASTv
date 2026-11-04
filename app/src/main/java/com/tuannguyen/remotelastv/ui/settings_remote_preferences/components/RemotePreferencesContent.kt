@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.ui.settings_remote_preferences
+package com.tuannguyen.remotelastv.ui.settings_remote_preferences.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,9 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.tuannguyen.remotelastv.R
-import com.tuannguyen.remotelastv.ui.settings_remote_preferences.components.PreferenceDivider
-import com.tuannguyen.remotelastv.ui.settings_remote_preferences.components.PreferenceRow
-import com.tuannguyen.remotelastv.ui.settings_remote_preferences.components.PreferenceSection
+import com.tuannguyen.remotelastv.ui.settings_remote_preferences.RemotePreferencesUiState
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 

@@ -26,7 +26,6 @@ import com.tuannguyen.remotelastv.ui.common.IconSource
 import com.tuannguyen.remotelastv.ui.common.safeClickable
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 
-/** 40dp tile behind the leading icon. Derived from Dimens so it stays on the spacing scale. */
 internal val SettingsIconTileSize = Dimens.Size.minTouchTarget - Dimens.Space.xs
 
 @Composable
@@ -66,7 +65,6 @@ fun SettingsItem(
             modifier = Modifier.weight(1f),
         )
 
-        // Chevron only for rows that open another screen; Share / Rate / Feedback are actions.
         if (showChevron) {
             Spacer(Modifier.width(Dimens.Space.sm))
             Icon(
@@ -81,7 +79,6 @@ fun SettingsItem(
 
 @Composable
 private fun SettingsIcon(source: IconSource, tint: Color) {
-    // Decorative: the row's text already describes it, so TalkBack doesn't read the icon twice.
     when (source) {
         is IconSource.Vector -> Icon(
             imageVector = source.imageVector,

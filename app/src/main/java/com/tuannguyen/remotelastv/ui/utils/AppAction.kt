@@ -1,7 +1,9 @@
 package com.tuannguyen.remotelastv.ui.utils
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.core.net.toUri
 import com.tuannguyen.remotelastv.R
@@ -44,4 +46,20 @@ fun openPrivacyPolicy(context: Context) {
         "https://sites.google.com/view/remotelatvprivacypolicy".toUri()
     )
     context.startActivity(intent)
+}
+
+fun Context.openPlayStoreListing() {
+    val pkg = packageName
+    val intent = Intent(Intent.ACTION_VIEW, "market://details?id=$pkg".toUri())
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    try {
+        startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                "https://play.google.com/store/apps/details?id=$pkg".toUri(),
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+    }
 }

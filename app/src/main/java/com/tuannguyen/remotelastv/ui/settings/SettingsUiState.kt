@@ -7,6 +7,7 @@ import com.tuannguyen.remotelastv.ui.navigation.Route
 data class SettingsUiState(
     @param:StringRes val titleRes: Int = R.string.settings_title,
     val isPrivacyOptionsRequired: Boolean = false,
+    val isRatingDialogVisible: Boolean = false,
 )
 
 sealed interface SettingsAction {

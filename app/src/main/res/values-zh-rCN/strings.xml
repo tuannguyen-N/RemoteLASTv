@@ -328,4 +328,9 @@
     <string name="discovery_check_allow_title">允许手机连接</string>
     <string name="discovery_check_allow_body">部分 LG 和 Samsung 电视需要先在电视的网络或通用设置中启用此选项，才能接受手机连接。</string>
     <string name="discovery_error_title">扫描未能完成</string>
+    <string name="rating_title">喜欢 RemoteLASTv 吗？</string>
+    <string name="rating_subtitle">您的反馈有助于我们改善电视遥控体验。</string>
+    <string name="rating_rate_on_google_play">在 Google Play 上评分</string>
+    <string name="rating_maybe_later">以后再说</string>
+    <string name="rating_thank_you">感谢您支持 RemoteLASTv！</string>
 </resources>

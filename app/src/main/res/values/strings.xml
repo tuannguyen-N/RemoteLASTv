@@ -328,4 +328,9 @@
     <string name="discovery_check_allow_title">Allow mobile connections</string>
     <string name="discovery_check_allow_body">Some LG and Samsung TVs only accept phones after you enable it in the TV’s network or general settings.</string>
     <string name="discovery_error_title">The scan didn’t finish</string>
+    <string name="rating_title">Enjoying RemoteLASTv?</string>
+    <string name="rating_subtitle">Your feedback helps us improve your TV remote experience.</string>
+    <string name="rating_rate_on_google_play">Rate on Google Play</string>
+    <string name="rating_maybe_later">Maybe later</string>
+    <string name="rating_thank_you">Thank you for supporting RemoteLASTv!</string>
 </resources>

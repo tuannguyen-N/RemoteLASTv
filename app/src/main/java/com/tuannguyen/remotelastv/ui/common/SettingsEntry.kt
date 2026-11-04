@@ -8,8 +8,10 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Tv
+import androidx.compose.ui.graphics.Color
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.ui.navigation.Route
 import com.tuannguyen.remotelastv.ui.settings.SettingsAction
@@ -18,6 +20,7 @@ data class SettingsEntry(
     @StringRes val titleRes: Int,
     val icon: IconSource,
     val action: SettingsAction,
+    val color: Color? = null
 ) {
     companion object {
         fun getRemoteEntries(): List<SettingsEntry> = listOf(
@@ -54,11 +57,12 @@ data class SettingsEntry(
                 IconSource.Vector(Icons.Default.Share),
                 SettingsAction.Share,
             ),
-//            SettingsEntry(
-//                R.string.settings_rate_review,
-//                IconSource.Vector(Icons.Default.Star),
-//                SettingsAction.RateAndReview,
-//            ),
+            SettingsEntry(
+                R.string.settings_rate_review,
+                IconSource.Vector(Icons.Default.Star),
+                SettingsAction.RateAndReview,
+                color = Color.Yellow
+            ),
             SettingsEntry(
                 R.string.settings_feedback,
                 IconSource.Vector(Icons.Default.Feedback),

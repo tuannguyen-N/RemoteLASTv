@@ -20,4 +20,12 @@ class SettingsViewModel @Inject constructor(
     fun showPrivacyOptions(activity: Activity) {
         consentManager.showPrivacyOptions(activity)
     }
+
+    fun showRatingDialog() {
+        _uiState.value = _uiState.value.copy(isRatingDialogVisible = true)
+    }
+
+    fun hideRatingDialog() {
+        _uiState.value = _uiState.value.copy(isRatingDialogVisible = false)
+    }
 }

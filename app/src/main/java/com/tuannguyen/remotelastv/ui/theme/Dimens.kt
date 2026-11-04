@@ -44,6 +44,9 @@ object Dimens {
         // SeekBar
         val seekBarTrackHeight = 6.dp
         val seekBarThumb = 16.dp
+
+        val dialogIconContainer = 64.dp
+        val dialogButtonHeight = 52.dp
     }
 
     object Radius {

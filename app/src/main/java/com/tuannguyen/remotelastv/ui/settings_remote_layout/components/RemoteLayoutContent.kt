@@ -203,7 +203,8 @@ private fun PreferenceRow(
     onCheckedChange: (Boolean) -> Unit
 ) {
     Row(
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(horizontal = Dimens.Space.md)
     ) {
         Column(
             modifier = Modifier.weight(1f),

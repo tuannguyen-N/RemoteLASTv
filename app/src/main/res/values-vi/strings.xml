@@ -328,4 +328,9 @@
     <string name="discovery_check_allow_title">Cho phép kết nối từ điện thoại</string>
     <string name="discovery_check_allow_body">Một số TV LG và Samsung chỉ chấp nhận kết nối từ điện thoại sau khi bật tùy chọn này trong phần cài đặt mạng hoặc cài đặt chung của TV.</string>
     <string name="discovery_error_title">Không thể hoàn tất quá trình quét</string>
+    <string name="rating_title">Bạn có thích RemoteLASTv không?</string>
+    <string name="rating_subtitle">Phản hồi của bạn giúp chúng tôi cải thiện trải nghiệm điều khiển TV.</string>
+    <string name="rating_rate_on_google_play">Đánh giá trên Google Play</string>
+    <string name="rating_maybe_later">Để sau</string>
+    <string name="rating_thank_you">Cảm ơn bạn đã ủng hộ RemoteLASTv!</string>
 </resources>

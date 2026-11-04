@@ -328,4 +328,9 @@
     <string name="discovery_check_allow_title">모바일 연결 허용</string>
     <string name="discovery_check_allow_body">일부 LG 및 삼성 TV는 TV의 네트워크 또는 일반 설정에서 허용해야 휴대폰 연결을 받을 수 있습니다.</string>
     <string name="discovery_error_title">검색을 완료하지 못했습니다</string>
+    <string name="rating_title">RemoteLASTv가 마음에 드시나요?</string>
+    <string name="rating_subtitle">피드백은 더 나은 TV 리모컨 경험을 만드는 데 큰 도움이 됩니다.</string>
+    <string name="rating_rate_on_google_play">Google Play에서 평가하기</string>
+    <string name="rating_maybe_later">나중에하기</string>
+    <string name="rating_thank_you">RemoteLASTv를 지원해 주셔서 감사합니다!</string>
 </resources>

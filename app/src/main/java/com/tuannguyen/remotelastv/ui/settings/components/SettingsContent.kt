@@ -43,6 +43,7 @@ import com.tuannguyen.remotelastv.ui.common.SettingsEntry
 import com.tuannguyen.remotelastv.ui.common.bounceClick
 import com.tuannguyen.remotelastv.ui.settings.SettingsAction
 import com.tuannguyen.remotelastv.ui.settings.SettingsUiState
+import com.tuannguyen.remotelastv.ui.theme.ButtonColors
 import com.tuannguyen.remotelastv.ui.theme.Dimens
 import com.tuannguyen.remotelastv.ui.theme.RemoteLASTvTheme
 
@@ -51,6 +52,8 @@ fun SettingsContent(
     uiState: SettingsUiState,
     versionName: String?,
     onAction: (SettingsAction) -> Unit,
+    onRateApp: () -> Unit,
+    onDismissRateDialog: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showPrivacySheet by rememberSaveable { mutableStateOf(false) }
@@ -60,6 +63,7 @@ fun SettingsContent(
             SettingsAction.OpenPrivacySheet ->
                 if (uiState.isPrivacyOptionsRequired) showPrivacySheet = true
                 else onAction(SettingsAction.PrivacyPolicy)
+
             else -> onAction(action)
         }
     }
@@ -86,8 +90,8 @@ fun SettingsContent(
                 SettingsSection(title = stringResource(R.string.settings_section_remote)) {
                     SettingsGroup(
                         entries = SettingsEntry.getRemoteEntries(),
-                        iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        iconContainerColor = ButtonColors[0].copy(alpha = 0.2f),
+                        iconColor = ButtonColors[2],
                         onAction = handleAction,
                     )
                 }
@@ -118,6 +122,13 @@ fun SettingsContent(
             onPrivacyPolicy = { onAction(SettingsAction.PrivacyPolicy) },
             onAdOptions = { onAction(SettingsAction.AdPrivacyOptions) },
             onDismiss = { showPrivacySheet = false },
+        )
+    }
+
+    if (uiState.isRatingDialogVisible) {
+        RatingDialog(
+            onRateClick = { onRateApp() },
+            onDismiss = { onDismissRateDialog() },
         )
     }
 }
@@ -197,7 +208,7 @@ private fun SettingsGroup(
                     onClick = { onAction(entry.action) },
                     showChevron = entry.action is SettingsAction.Navigate,
                     iconContainerColor = iconContainerColor,
-                    iconColor = iconColor,
+                    iconColor = entry.color ?: iconColor,
                 )
                 if (index != entries.lastIndex) {
                     HorizontalDivider(
@@ -219,7 +230,12 @@ private fun SettingsGroup(
 private fun SettingsContentPreview() {
     RemoteLASTvTheme {
         Surface {
-            SettingsContent(uiState = SettingsUiState(), onAction = {}, versionName = null)
+            SettingsContent(
+                uiState = SettingsUiState(), onAction = {},
+                versionName = null,
+                onRateApp = {},
+                onDismissRateDialog = {},
+            )
         }
     }
 }
@@ -229,7 +245,11 @@ private fun SettingsContentPreview() {
 private fun SettingsContentDarkPreview() {
     RemoteLASTvTheme {
         Surface {
-            SettingsContent(uiState = SettingsUiState(), onAction = {}, versionName = "123123")
+            SettingsContent(
+                uiState = SettingsUiState(), onAction = {}, versionName = "123123",
+                onRateApp = {},
+                onDismissRateDialog = {},
+            )
         }
     }
 }

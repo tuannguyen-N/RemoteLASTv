@@ -13,6 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tuannguyen.remotelastv.R
 import com.tuannguyen.remotelastv.ui.navigation.Route
 import com.tuannguyen.remotelastv.ui.settings.components.SettingsContent
+import com.tuannguyen.remotelastv.ui.utils.openPlayStoreListing
 import com.tuannguyen.remotelastv.ui.utils.openPrivacyPolicy
 import com.tuannguyen.remotelastv.ui.utils.sendFeedback
 import com.tuannguyen.remotelastv.ui.utils.shareApp
@@ -43,7 +44,7 @@ fun SettingsScreen(
                 }
 
                 SettingsAction.RateAndReview -> {
-                    // TODO: Rate
+                    viewModel.showRatingDialog()
                 }
 
                 SettingsAction.Feedback -> {
@@ -69,6 +70,13 @@ fun SettingsScreen(
 
                 SettingsAction.OpenPrivacySheet -> Unit
             }
+        },
+        onRateApp = {
+            context.openPlayStoreListing()
+            viewModel.hideRatingDialog()
+        },
+        onDismissRateDialog = {
+            viewModel.hideRatingDialog()
         },
         versionName = versionName
     )
