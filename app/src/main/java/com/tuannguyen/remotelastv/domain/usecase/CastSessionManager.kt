@@ -4,6 +4,7 @@ import com.tuannguyen.remotelastv.domain.model.CastException
 import com.tuannguyen.remotelastv.domain.model.CastFailReason
 import com.tuannguyen.remotelastv.domain.model.CastMedia
 import com.tuannguyen.remotelastv.domain.model.CastStatus
+import com.tuannguyen.remotelastv.domain.model.InterstitialAdPolicy
 import com.tuannguyen.remotelastv.domain.model.PreparedCastMedia
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.repository.CastAdCounterRepository
@@ -107,10 +108,13 @@ class CastSessionManager @Inject constructor(
     }
 
     suspend fun shouldShowInterstitialAfterStop(): Boolean =
-        castAdCounter.shouldShowInterstitial(INTERSTITIAL_CAST_THRESHOLD)
+        castAdCounter.shouldShowInterstitial(
+            threshold = INTERSTITIAL_CAST_THRESHOLD,
+            cooldownMillis = InterstitialAdPolicy.COOLDOWN_MILLIS,
+        )
 
     suspend fun onInterstitialShown() =
-        castAdCounter.resetSuccessfulCastCount()
+        castAdCounter.recordInterstitialShown()
 
     suspend fun play(): Result<Unit> = withActiveSession { it.play() }
     suspend fun pause(): Result<Unit> = withActiveSession { it.pause() }

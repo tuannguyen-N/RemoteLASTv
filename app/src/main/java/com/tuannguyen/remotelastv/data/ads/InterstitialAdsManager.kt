@@ -3,6 +3,7 @@ package com.tuannguyen.remotelastv.data.ads
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.os.SystemClock
 import android.util.Log
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
@@ -11,6 +12,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.tuannguyen.remotelastv.BuildConfig
+import com.tuannguyen.remotelastv.domain.model.InterstitialAdPolicy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -23,6 +25,8 @@ class InterstitialAdsManager @Inject constructor(
     private var interstitialAd: InterstitialAd? = null
     @Volatile
     private var isLoading = false
+    @Volatile
+    private var lastInterstitialShownElapsedRealtime: Long? = null
 
     fun load() {
         if (isLoading || interstitialAd != null) return
@@ -51,6 +55,13 @@ class InterstitialAdsManager @Inject constructor(
         onFinished: () -> Unit,
     ): Boolean {
         val activity = context.findActivity() ?: return false
+        val lastShownAt = lastInterstitialShownElapsedRealtime
+        if (
+            lastShownAt != null &&
+            SystemClock.elapsedRealtime() - lastShownAt < InterstitialAdPolicy.COOLDOWN_MILLIS
+        ) {
+            return false
+        }
         val ad = interstitialAd ?: run {
             load()
             return false
@@ -58,6 +69,7 @@ class InterstitialAdsManager @Inject constructor(
         interstitialAd = null
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdShowedFullScreenContent() {
+                lastInterstitialShownElapsedRealtime = SystemClock.elapsedRealtime()
                 onAdShown()
             }
 

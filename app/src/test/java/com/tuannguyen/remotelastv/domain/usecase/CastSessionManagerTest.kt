@@ -4,6 +4,7 @@ import com.tuannguyen.remotelastv.domain.model.CastMedia
 import com.tuannguyen.remotelastv.domain.model.CastMediaType
 import com.tuannguyen.remotelastv.domain.model.CastProviderId
 import com.tuannguyen.remotelastv.domain.model.CastStatus
+import com.tuannguyen.remotelastv.domain.model.InterstitialAdPolicy
 import com.tuannguyen.remotelastv.domain.model.PreparedCastMedia
 import com.tuannguyen.remotelastv.domain.model.Television
 import com.tuannguyen.remotelastv.domain.repository.CastAdCounterRepository
@@ -90,6 +91,8 @@ class CastSessionManagerTest {
         assertTrue(recreatedManager.start(television, media).isSuccess)
         assertFalse(recreatedManager.shouldShowInterstitialAfterStop())
         assertTrue(recreatedManager.start(television, media).isSuccess)
+        assertFalse(recreatedManager.shouldShowInterstitialAfterStop())
+        counter.advanceTime(InterstitialAdPolicy.COOLDOWN_MILLIS)
         assertTrue(recreatedManager.shouldShowInterstitialAfterStop())
     }
 
@@ -143,16 +146,30 @@ class CastSessionManagerTest {
 
     private class FakeCastAdCounterRepository : CastAdCounterRepository {
         private var successfulCastCount = 0
+        private var currentTimeMillis = 0L
+        private var lastInterstitialShownAt: Long? = null
 
         override suspend fun recordSuccessfulCast() {
             successfulCastCount++
         }
 
-        override suspend fun shouldShowInterstitial(threshold: Int): Boolean =
-            successfulCastCount >= threshold
+        override suspend fun shouldShowInterstitial(
+            threshold: Int,
+            cooldownMillis: Long,
+        ): Boolean {
+            val isOutsideCooldown = lastInterstitialShownAt?.let {
+                currentTimeMillis - it >= cooldownMillis
+            } ?: true
+            return successfulCastCount >= threshold && isOutsideCooldown
+        }
 
-        override suspend fun resetSuccessfulCastCount() {
+        override suspend fun recordInterstitialShown() {
             successfulCastCount = 0
+            lastInterstitialShownAt = currentTimeMillis
+        }
+
+        fun advanceTime(millis: Long) {
+            currentTimeMillis += millis
         }
     }
 

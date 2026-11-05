@@ -207,8 +207,8 @@ private fun SettingsGroup(
                     icon = entry.icon,
                     onClick = { onAction(entry.action) },
                     showChevron = entry.action is SettingsAction.Navigate,
-                    iconContainerColor = iconContainerColor,
-                    iconColor = entry.color ?: iconColor,
+                    iconContainerColor = entry.backgroundColor ?: iconContainerColor,
+                    iconColor = entry.iconTint ?: iconColor,
                 )
                 if (index != entries.lastIndex) {
                     HorizontalDivider(

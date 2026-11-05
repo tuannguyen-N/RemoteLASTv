@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.tuannguyen.remotelastv.domain.model.NavigationMode
@@ -42,6 +43,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val HAS_REQUESTED_AUDIO_PERMISSION =
             booleanPreferencesKey("has_requested_audio_permission")
         val SUCCESSFUL_CAST_COUNT = intPreferencesKey("successful_cast_count")
+        val LAST_INTERSTITIAL_SHOWN_AT = longPreferencesKey("last_interstitial_shown_at")
     }
 
     override val remoteSettings: Flow<RemoteSettings> = context.settingsDataStore.data
@@ -131,16 +133,24 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun shouldShowInterstitial(threshold: Int): Boolean =
+    override suspend fun shouldShowInterstitial(
+        threshold: Int,
+        cooldownMillis: Long,
+    ): Boolean =
         context.settingsDataStore.data
             .map { preferences ->
-                (preferences[Keys.SUCCESSFUL_CAST_COUNT] ?: 0) >= threshold
+                val successfulCastCount = preferences[Keys.SUCCESSFUL_CAST_COUNT] ?: 0
+                val lastShownAt = preferences[Keys.LAST_INTERSTITIAL_SHOWN_AT]
+                val isOutsideCooldown = lastShownAt == null ||
+                        System.currentTimeMillis() - lastShownAt >= cooldownMillis
+                successfulCastCount >= threshold && isOutsideCooldown
             }
             .first()
 
-    override suspend fun resetSuccessfulCastCount() {
+    override suspend fun recordInterstitialShown() {
         context.settingsDataStore.edit { preferences ->
             preferences[Keys.SUCCESSFUL_CAST_COUNT] = 0
+            preferences[Keys.LAST_INTERSTITIAL_SHOWN_AT] = System.currentTimeMillis()
         }
     }
 }

@@ -20,7 +20,8 @@ data class SettingsEntry(
     @StringRes val titleRes: Int,
     val icon: IconSource,
     val action: SettingsAction,
-    val color: Color? = null
+    val iconTint: Color? = null,
+    val backgroundColor: Color? = null,
 ) {
     companion object {
         fun getRemoteEntries(): List<SettingsEntry> = listOf(
@@ -61,7 +62,8 @@ data class SettingsEntry(
                 R.string.settings_rate_review,
                 IconSource.Vector(Icons.Default.Star),
                 SettingsAction.RateAndReview,
-                color = Color.Yellow
+                iconTint = Color.Yellow,
+                backgroundColor = Color.Yellow.copy(alpha = 0.2f),
             ),
             SettingsEntry(
                 R.string.settings_feedback,
