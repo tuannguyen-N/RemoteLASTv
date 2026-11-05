@@ -156,12 +156,14 @@ class CastSessionManagerTest {
         override suspend fun shouldShowInterstitial(
             threshold: Int,
             cooldownMillis: Long,
-        ): Boolean {
-            val isOutsideCooldown = lastInterstitialShownAt?.let {
+        ): Boolean =
+            successfulCastCount >= threshold &&
+                    isInterstitialCooldownElapsed(cooldownMillis)
+
+        override suspend fun isInterstitialCooldownElapsed(cooldownMillis: Long): Boolean =
+            lastInterstitialShownAt?.let {
                 currentTimeMillis - it >= cooldownMillis
             } ?: true
-            return successfulCastCount >= threshold && isOutsideCooldown
-        }
 
         override suspend fun recordInterstitialShown() {
             successfulCastCount = 0

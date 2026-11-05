@@ -140,11 +140,14 @@ class SettingsRepositoryImpl @Inject constructor(
         context.settingsDataStore.data
             .map { preferences ->
                 val successfulCastCount = preferences[Keys.SUCCESSFUL_CAST_COUNT] ?: 0
-                val lastShownAt = preferences[Keys.LAST_INTERSTITIAL_SHOWN_AT]
-                val isOutsideCooldown = lastShownAt == null ||
-                        System.currentTimeMillis() - lastShownAt >= cooldownMillis
-                successfulCastCount >= threshold && isOutsideCooldown
+                successfulCastCount >= threshold &&
+                        isInterstitialCooldownElapsed(preferences, cooldownMillis)
             }
+            .first()
+
+    override suspend fun isInterstitialCooldownElapsed(cooldownMillis: Long): Boolean =
+        context.settingsDataStore.data
+            .map { preferences -> isInterstitialCooldownElapsed(preferences, cooldownMillis) }
             .first()
 
     override suspend fun recordInterstitialShown() {
@@ -152,5 +155,14 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[Keys.SUCCESSFUL_CAST_COUNT] = 0
             preferences[Keys.LAST_INTERSTITIAL_SHOWN_AT] = System.currentTimeMillis()
         }
+    }
+
+    private fun isInterstitialCooldownElapsed(
+        preferences: androidx.datastore.preferences.core.Preferences,
+        cooldownMillis: Long,
+    ): Boolean {
+        val lastShownAt = preferences[Keys.LAST_INTERSTITIAL_SHOWN_AT]
+        return lastShownAt == null ||
+                System.currentTimeMillis() - lastShownAt >= cooldownMillis
     }
 }

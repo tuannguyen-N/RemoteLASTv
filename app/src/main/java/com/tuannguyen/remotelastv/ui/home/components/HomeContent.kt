@@ -35,6 +35,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -87,11 +88,17 @@ fun HomeContent(
     onAppClick: (KnownApp) -> Unit,
     remotePage: @Composable () -> Unit,
     castPage: @Composable () -> Unit,
+    onUserInteraction: () -> Unit = {},
+    onRemotePageVisibilityChanged: (Boolean) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val screenPagerState = rememberPagerState(pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
     var showAllApps by remember { mutableStateOf(false) }
+
+    LaunchedEffect(screenPagerState.currentPage) {
+        onRemotePageVisibilityChanged(screenPagerState.currentPage == 0)
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -113,11 +120,18 @@ fun HomeContent(
                 HomeHeader(
                     uiState = uiState,
                     compact = compact,
-                    onSettingsClick = onSettingsClick,
-                    onChangeTelevision = onChangeTelevision,
+                    onSettingsClick = {
+                        onUserInteraction()
+                        onSettingsClick()
+                    },
+                    onChangeTelevision = {
+                        onUserInteraction()
+                        onChangeTelevision()
+                    },
                     onPowerClick = onPowerClick,
                     isCastPage = screenPagerState.currentPage == 1,
                     onCastClick = {
+                        onUserInteraction()
                         coroutineScope.launch {
                             screenPagerState.animateScrollToPage(
                                 if (screenPagerState.currentPage == 0) 1 else 0
@@ -128,7 +142,10 @@ fun HomeContent(
 
                 AppRow(
                     apps = uiState.shortcutApps,
-                    onMoreClick = { showAllApps = true },
+                    onMoreClick = {
+                        onUserInteraction()
+                        showAllApps = true
+                    },
                     onAppClick = onAppClick,
                 )
 

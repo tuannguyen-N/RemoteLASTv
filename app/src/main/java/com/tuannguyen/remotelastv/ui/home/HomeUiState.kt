@@ -13,4 +13,5 @@ data class HomeUiState(
 
 sealed interface HomeEvent {
     data class ShowMessage(val message: String) : HomeEvent
+    data object ShowInterstitial : HomeEvent
 }

@@ -47,6 +47,8 @@ import kotlinx.coroutines.launch
 fun RemotePage(
     connectionState: ConnectionState,
     modifier: Modifier = Modifier,
+    onUserInteraction: () -> Unit = {},
+    onRemoteReadyChanged: (Boolean) -> Unit = {},
     viewModel: RemoteViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -108,6 +110,10 @@ fun RemotePage(
     val isTutorialVisible =
         connectionState is ConnectionState.Connected && !uiState.hasSeenRemoteTutorial
 
+    LaunchedEffect(isTutorialVisible, uiState.keyboard.showKeyboardSheet) {
+        onRemoteReadyChanged(!isTutorialVisible && !uiState.keyboard.showKeyboardSheet)
+    }
+
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val compact = this.maxHeight < 700.dp
         Box(Modifier.fillMaxSize()) {
@@ -116,11 +122,18 @@ fun RemotePage(
                     uiState = uiState,
                     pagerState = pagerState,
                     compact = compact,
-                    onRemoteButtonClick = viewModel::onRemoteButtonClick,
+                    onRemoteButtonClick = { key ->
+                        onUserInteraction()
+                        viewModel.onRemoteButtonClick(key)
+                    },
                     touchpadMode = touchpadMode,
-                    touchpadEvent = viewModel::onTouchpad,
+                    touchpadEvent = { event ->
+                        onUserInteraction()
+                        viewModel.onTouchpad(event)
+                    },
                     showMouseToggle = showMouseToggle,
                     onMouseToggle = {
+                        onUserInteraction()
                         touchpadModeOverride =
                             if (touchpadMode == TouchpadMode.POINTER) {
                                 TouchpadMode.DIRECTIONAL
@@ -128,9 +141,16 @@ fun RemotePage(
                                 TouchpadMode.POINTER
                             }
                     },
-                    onPageSelected = viewModel::onPageSelected,
-                    showKeyboardSheet = viewModel::showKeyboardSheet,
+                    onPageSelected = { page ->
+                        if (page != uiState.selectedPage) onUserInteraction()
+                        viewModel.onPageSelected(page)
+                    },
+                    showKeyboardSheet = {
+                        onUserInteraction()
+                        viewModel.showKeyboardSheet()
+                    },
                     onStartVoiceRecording = {
+                        onUserInteraction()
                         if (
                             ContextCompat.checkSelfPermission(
                                 context,
@@ -155,7 +175,10 @@ fun RemotePage(
                             microphonePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                         }
                     },
-                    onStopVoiceRecording = viewModel::stopVoiceRecording,
+                    onStopVoiceRecording = {
+                        onUserInteraction()
+                        viewModel.stopVoiceRecording()
+                    },
                 )
             }
             SnackbarHost(
@@ -173,10 +196,14 @@ fun RemotePage(
             inputHint = uiState.keyboard.inputHint,
             onDismiss = viewModel::dismissKeyboardSheet,
             onSearch = {
+                onUserInteraction()
                 viewModel.dismissKeyboardSheet()
                 viewModel.onEnter()
             },
-            onQueryChange = viewModel::onQueryChange,
+            onQueryChange = {
+                onUserInteraction()
+                viewModel.onQueryChange(it)
+            },
         )
     }
 
