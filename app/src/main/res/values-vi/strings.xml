@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RemoteLASTv-Dev</string>
+    <string name="app_name">Remote LASTV</string>
     <string name="home_settings">Cài đặt</string>
     <string name="home_power">Nguồn</string>
     <string name="home_device_selector">Chọn thiết bị</string>

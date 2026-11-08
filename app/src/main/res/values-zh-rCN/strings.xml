@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RemoteLASTv-Dev</string>
+    <string name="app_name">Remote LASTV</string>
     <string name="home_settings">设置</string>
     <string name="home_power">电源</string>
     <string name="home_device_selector">选择设备</string>
