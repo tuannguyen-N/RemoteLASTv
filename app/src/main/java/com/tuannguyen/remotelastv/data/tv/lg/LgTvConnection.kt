@@ -39,42 +39,57 @@ class LgTvConnection @Inject constructor(
         val cached = (registry.findById(television.id) ?: registry.find(television.ipAddress))
             ?.takeIf { it.services.isNotEmpty() }
 
-        if (cached == null) {
-            registry.remove(television.id)
+        val scanJob = if (cached == null) launch { discovery.startScan().collect { } } else null
+        val restored = if (cached == null) {
+            registry.restoreFromStore(television.id, television.ipAddress)
+        } else {
+            null
         }
+        if (cached == null && restored == null) registry.remove(television.id)
 
-        val device = cached ?: run {
-            val scanJob = launch { discovery.startScan().collect { } }
-            try {
-                registry.awaitById(television.id, DISCOVERY_WAIT_MS)
-            } finally {
-                scanJob.cancel()
+        val initialDevice = cached
+            ?: restored
+            ?: registry.awaitById(television.id, DISCOVERY_WAIT_MS)
+            ?: run {
+                scanJob?.cancel()
+                send(ConnectionStatus.Failed(FailReason.DEVICE_NOT_FOUND))
+                close()
+                return@callbackFlow
             }
-        }
-        if (device == null) {
-            send(ConnectionStatus.Failed(FailReason.DEVICE_NOT_FOUND))
-            close()
-            return@callbackFlow
-        }
+        var device = initialDevice
+        var usingRestoredDevice = cached == null && restored != null
+        var fallbackAttempted = false
         registry.put(device)
         registry.select(device)
 
         val timeout = AtomicReference<Job?>(null)
         val reachedConnected = AtomicBoolean(false)
+        lateinit var listener: ConnectableDeviceListener
+        lateinit var fallbackToDiscovery: () -> Unit
 
-        fun armTimeout(ms: Long) {
+        fun fail(reason: FailReason) {
+            timeout.getAndSet(null)?.cancel()
+            trySend(ConnectionStatus.Failed(reason))
+            close()
+        }
+
+        fun armTimeout(ms: Long, fallbackOnTimeout: Boolean = usingRestoredDevice) {
             val job = launch {
                 delay(ms)
-                trySend(ConnectionStatus.Failed(FailReason.TIMEOUT))
-                close()
+                if (fallbackOnTimeout && usingRestoredDevice && !fallbackAttempted) {
+                    fallbackToDiscovery()
+                } else {
+                    fail(FailReason.TIMEOUT)
+                }
             }
             timeout.getAndSet(job)?.cancel()
         }
 
-        val listener = object : ConnectableDeviceListener {
+        listener = object : ConnectableDeviceListener {
             override fun onDeviceReady(d: ConnectableDevice) {
                 timeout.getAndSet(null)?.cancel()
                 reachedConnected.set(true)
+                scanJob?.cancel()
                 registry.startKeyboardTracking(d)
                 trySend(ConnectionStatus.Connected(TvCredentials.None))
             }
@@ -89,19 +104,33 @@ class LgTvConnection @Inject constructor(
 
                     else -> null
                 } ?: return
-                armTimeout(PAIRING_TIMEOUT_MS)
+                armTimeout(PAIRING_TIMEOUT_MS, fallbackOnTimeout = false)
                 trySend(status)
             }
 
             override fun onConnectionFailed(d: ConnectableDevice, e: ServiceCommandError) {
                 timeout.getAndSet(null)?.cancel()
-                trySend(ConnectionStatus.Failed(e.toFailReason()))
-                close()
+                val reason = e.toFailReason()
+                if (usingRestoredDevice && !fallbackAttempted &&
+                    reason != FailReason.PAIRING_DECLINED &&
+                    reason != FailReason.PAIRING_REJECTED
+                ) {
+                    fallbackToDiscovery()
+                } else {
+                    fail(reason)
+                }
             }
 
             override fun onDeviceDisconnected(d: ConnectableDevice, e: ServiceCommandError?) {
                 timeout.getAndSet(null)?.cancel()
                 Log.e("LgTv", "onDeviceDisconnected: code=${e?.code} msg=${e?.message}")
+
+                if (usingRestoredDevice && !fallbackAttempted && !reachedConnected.get() &&
+                    !e.isPairingFailure()
+                ) {
+                    fallbackToDiscovery()
+                    return
+                }
 
                 val status =
                     when {
@@ -123,6 +152,38 @@ class LgTvConnection @Inject constructor(
             ) = Unit
         }
 
+        fallbackToDiscovery = fallback@{
+            if (fallbackAttempted) return@fallback
+            fallbackAttempted = true
+            timeout.getAndSet(null)?.cancel()
+            val previousDevice = device
+            launch {
+                val discovered = registry.awaitReplacement(
+                    television.id,
+                    previousDevice,
+                    DISCOVERY_WAIT_MS,
+                )
+                if (discovered == null) {
+                    fail(FailReason.DEVICE_NOT_FOUND)
+                    return@launch
+                }
+
+                previousDevice.removeListener(listener)
+                previousDevice.disconnect()
+                device = discovered
+                usingRestoredDevice = false
+                registry.put(discovered)
+                registry.select(discovered)
+                discovered.addListener(listener)
+                armTimeout(CONNECT_TIMEOUT_MS)
+                if (discovered.isConnected) {
+                    listener.onDeviceReady(discovered)
+                } else {
+                    discovered.connect()
+                }
+            }
+        }
+
         armTimeout(CONNECT_TIMEOUT_MS)
         device.addListener(listener)
 
@@ -134,6 +195,7 @@ class LgTvConnection @Inject constructor(
         awaitClose {
             Log.d("LgConn", "awaitClose ${television.id} reached=${reachedConnected.get()}")
             timeout.getAndSet(null)?.cancel()
+            scanJob?.cancel()
             device.removeListener(listener)
             if (!reachedConnected.get()) {
                 device.disconnect()
@@ -171,6 +233,9 @@ class LgTvConnection @Inject constructor(
                     "user rejected pairing",
                     ignoreCase = true
                 ) == true)
+
+    private fun ServiceCommandError?.isPairingFailure() =
+        this.isPairingDeclined() || this?.code == 401
 
     private companion object {
         const val CONNECT_TIMEOUT_MS = 15_000L

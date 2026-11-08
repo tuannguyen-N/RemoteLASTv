@@ -4,6 +4,7 @@ import android.util.Log
 import com.connectsdk.core.TextInputStatusInfo
 import com.connectsdk.device.ConnectableDevice
 import com.connectsdk.discovery.DiscoveryManager
+import com.connectsdk.service.DeviceService
 import com.connectsdk.service.WebOSTVService
 import com.connectsdk.service.capability.MouseControl
 import com.connectsdk.service.capability.TextInputControl
@@ -50,6 +51,42 @@ class LgDeviceRegistry @Inject constructor() {
                 .firstOrNull { it.ipAddress == ip }
                 ?.also(::put)
 
+    fun restoreFromStore(id: String, fallbackIp: String): ConnectableDevice? {
+        val manager = DiscoveryManager.getInstance()
+        val store = manager.connectableDeviceStore ?: return null
+        val storedDevices = store.storedDevices
+        val storedRecord = storedDevices.keys().asSequence()
+            .mapNotNull { key ->
+                val record = storedDevices.optJSONObject(key) ?: return@mapNotNull null
+                val services = record.optJSONObject(ConnectableDevice.KEY_SERVICES)
+                    ?: return@mapNotNull null
+                val serviceJson = services.keys().asSequence()
+                    .mapNotNull(services::optJSONObject)
+                    .firstOrNull { service ->
+                        service.optJSONObject("description")
+                            ?.optString("uuid")
+                            ?.removePrefix("uuid:") == id.removePrefix("uuid:")
+                    }
+                    ?: return@mapNotNull null
+                record to serviceJson
+            }
+            .firstOrNull() ?: return null
+        val device = ConnectableDevice(storedRecord.first)
+        val service = DeviceService.getService(storedRecord.second) as? WebOSTVService ?: return null
+        val ipAddress = fallbackIp.takeIf { it.isNotBlank() }
+            ?: device.lastKnownIPAddress?.takeIf { it.isNotBlank() }
+            ?: return null
+        val description = service.serviceDescription ?: return null
+
+        description.ipAddress = ipAddress
+        service.setServiceDescription(description)
+        service.serviceConfig.setListener(manager)
+        device.ipAddress = ipAddress
+        device.lastKnownIPAddress = ipAddress
+        device.addService(service)
+        return device.takeIf { it.services.isNotEmpty() }?.also(::put)
+    }
+
     suspend fun awaitById(id: String, timeoutMs: Long): ConnectableDevice? =
         withTimeoutOrNull(timeoutMs) {
             while (true) {
@@ -58,6 +95,20 @@ class LgDeviceRegistry @Inject constructor() {
             }
             @Suppress("UNREACHABLE_CODE") null
         }
+
+    suspend fun awaitReplacement(
+        id: String,
+        previous: ConnectableDevice,
+        timeoutMs: Long,
+    ): ConnectableDevice? = withTimeoutOrNull(timeoutMs) {
+        while (true) {
+            findById(id)
+                ?.takeIf { it !== previous && it.services.isNotEmpty() }
+                ?.let { return@withTimeoutOrNull it }
+            delay(100)
+        }
+        @Suppress("UNREACHABLE_CODE") null
+    }
 
     fun remove(id: String) {
         devices.remove(id)
