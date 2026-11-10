@@ -74,6 +74,11 @@ data class SettingsEntry(
                 R.string.privacy_policy,
                 IconSource.Vector(Icons.Default.Security),
                 SettingsAction.OpenPrivacySheet,
+            ),
+            SettingsEntry(
+                R.string.settings_activate_premium,
+                IconSource.Resource(R.drawable.ic_premium),
+                SettingsAction.ActivatePremium,
             )
         )
     }

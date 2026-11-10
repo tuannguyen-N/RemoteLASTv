@@ -15,6 +15,9 @@ sealed interface Route {
     data object Settings : Route
 
     @Serializable
+    data object Premium : Route
+
+    @Serializable
     data object RemoteLayout : Route
 
     @Serializable

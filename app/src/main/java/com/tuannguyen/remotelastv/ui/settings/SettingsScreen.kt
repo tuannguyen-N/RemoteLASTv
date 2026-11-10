@@ -52,7 +52,7 @@ fun SettingsScreen(
                 }
 
                 SettingsAction.ActivatePremium -> {
-                    // TODO: Premium
+                    onAction(Route.Premium)
                 }
 
                 SettingsAction.PrivacyPolicy -> {

@@ -90,7 +90,7 @@ private fun SettingsIcon(source: IconSource, tint: Color) {
         is IconSource.Resource -> Icon(
             painter = painterResource(id = source.resId),
             contentDescription = null,
-            tint = tint,
+            tint = Color.Unspecified,
             modifier = Modifier.size(Dimens.Size.iconMedium),
         )
     }

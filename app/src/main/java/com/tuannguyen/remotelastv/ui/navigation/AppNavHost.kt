@@ -19,10 +19,12 @@ import com.tuannguyen.remotelastv.ui.device_discovery.DeviceDiscoveryScreen
 import com.tuannguyen.remotelastv.ui.faq.FaqScreen
 import com.tuannguyen.remotelastv.ui.home.HomeScreen
 import com.tuannguyen.remotelastv.ui.language.LanguageScreen
+import com.tuannguyen.remotelastv.ui.premium.PremiumScreen
 import com.tuannguyen.remotelastv.ui.settings.SettingsScreen
 import com.tuannguyen.remotelastv.ui.settings_connected_device.ConnectedDeviceScreen
 import com.tuannguyen.remotelastv.ui.settings_remote_layout.RemoteLayoutScreen
 import com.tuannguyen.remotelastv.ui.settings_remote_preferences.RemotePreferencesScreen
+import com.tuannguyen.remotelastv.ui.utils.openPrivacyPolicy
 import com.tuannguyen.remotelastv.ui.utils.sendFeedback
 
 @Composable
@@ -67,6 +69,18 @@ fun AppNavHost(
             SettingsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onAction = { action -> navController.navigate(action) },
+            )
+        }
+
+        composable<Route.Premium> {
+            val context = LocalContext.current
+            PremiumScreen(
+                onClose = { navController.popBackStack() },
+                onSubscribe = {},
+                onTermsClick = {},
+                onPrivacyClick = {
+                    openPrivacyPolicy(context)
+                },
             )
         }
 
