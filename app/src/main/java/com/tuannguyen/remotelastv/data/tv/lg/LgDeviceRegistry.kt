@@ -72,7 +72,8 @@ class LgDeviceRegistry @Inject constructor() {
             }
             .firstOrNull() ?: return null
         val device = ConnectableDevice(storedRecord.first)
-        val service = DeviceService.getService(storedRecord.second) as? WebOSTVService ?: return null
+        val service =
+            DeviceService.getService(storedRecord.second) as? WebOSTVService ?: return null
         val ipAddress = fallbackIp.takeIf { it.isNotBlank() }
             ?: device.lastKnownIPAddress?.takeIf { it.isNotBlank() }
             ?: return null

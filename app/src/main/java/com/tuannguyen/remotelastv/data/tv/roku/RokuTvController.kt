@@ -1,7 +1,6 @@
 package com.tuannguyen.remotelastv.data.tv.roku
 
 import com.tuannguyen.remotelastv.data.tv.AppCatalog
-import com.tuannguyen.remotelastv.domain.connection.TvConnectionManager
 import com.tuannguyen.remotelastv.domain.model.KnownApp
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
 import com.tuannguyen.remotelastv.domain.model.TouchpadMode
@@ -22,7 +21,8 @@ class RokuTvController @Inject constructor(
 
     override val capabilities: Set<TvCapability> = setOf()
     override val touchpadMode: TouchpadMode get() = TouchpadMode.DIRECTIONAL
-    @Volatile private var installedIds: Set<String> = emptySet()
+    @Volatile
+    private var installedIds: Set<String> = emptySet()
 
     override suspend fun sendKey(key: TvKey): Result<Unit> {
         val rokuKey = key.toRokuKey()

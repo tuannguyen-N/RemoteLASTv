@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.di
+package com.tuannguyen.remotelastv.data.di
 
 import com.tuannguyen.remotelastv.data.tv.android_tv.AndroidTvDiscovery
 import com.tuannguyen.remotelastv.data.tv.lg.LgTvDiscovery

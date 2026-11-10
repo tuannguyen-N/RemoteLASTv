@@ -3,8 +3,8 @@ package com.tuannguyen.remotelastv.ui.cast_audio
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tuannguyen.remotelastv.data.di.ApplicationScope
 import com.tuannguyen.remotelastv.data.media.AudioLibraryReader
-import com.tuannguyen.remotelastv.di.ApplicationScope
 import com.tuannguyen.remotelastv.domain.model.AudioTrack
 import com.tuannguyen.remotelastv.domain.model.CastException
 import com.tuannguyen.remotelastv.domain.model.CastFailReason

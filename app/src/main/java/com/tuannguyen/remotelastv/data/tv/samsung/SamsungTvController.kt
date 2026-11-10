@@ -33,6 +33,7 @@ class SamsungTvController @Inject constructor(
         .build()
 
     private val resolvedIds = ConcurrentHashMap<KnownApp, String>()
+
     @Volatile
     private var resolvedForTvId: String? = null
 

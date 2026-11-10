@@ -21,7 +21,8 @@ class SamsungTvTextInput @Inject constructor(
         TextCapability.REPLACE_TEXT,
     )
 
-    @Volatile private var current = ""
+    @Volatile
+    private var current = ""
 
     override fun observeInput(): Flow<TextInputState> = flow {
         emit(TextInputState.Unknown)

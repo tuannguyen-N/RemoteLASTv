@@ -2,7 +2,7 @@ package com.tuannguyen.remotelastv.data.ads
 
 import android.content.Context
 import com.google.android.gms.ads.MobileAds
-import com.tuannguyen.remotelastv.di.ApplicationScope
+import com.tuannguyen.remotelastv.data.di.ApplicationScope
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import jakarta.inject.Singleton

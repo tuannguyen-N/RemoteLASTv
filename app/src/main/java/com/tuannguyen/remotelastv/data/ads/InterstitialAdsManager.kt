@@ -23,8 +23,10 @@ class InterstitialAdsManager @Inject constructor(
 ) {
     @Volatile
     private var interstitialAd: InterstitialAd? = null
+
     @Volatile
     private var isLoading = false
+
     @Volatile
     private var lastInterstitialShownElapsedRealtime: Long? = null
 

@@ -3,8 +3,8 @@ package com.tuannguyen.remotelastv.ui.ads.interstitial
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.tuannguyen.remotelastv.di.ApplicationScope
 import com.tuannguyen.remotelastv.data.ads.InterstitialAdsManager
+import com.tuannguyen.remotelastv.data.di.ApplicationScope
 import com.tuannguyen.remotelastv.domain.usecase.StopCastUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject

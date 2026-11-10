@@ -2,11 +2,11 @@ package com.tuannguyen.remotelastv.data.ads
 
 import android.app.Activity
 import android.content.Context
-import com.tuannguyen.remotelastv.BuildConfig
 import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
+import com.tuannguyen.remotelastv.BuildConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import jakarta.inject.Singleton

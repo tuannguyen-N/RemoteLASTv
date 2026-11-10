@@ -44,8 +44,13 @@ class AdBannerViewModel @Inject constructor(
             )
             adUnitId = BuildConfig.ADMOB_HOME_BANNER_AD_UNIT_ID
             adListener = object : AdListener() {
-                override fun onAdLoaded() { _loaded.value = true }
-                override fun onAdFailedToLoad(p0: LoadAdError) { _loaded.value = false }
+                override fun onAdLoaded() {
+                    _loaded.value = true
+                }
+
+                override fun onAdFailedToLoad(p0: LoadAdError) {
+                    _loaded.value = false
+                }
             }
             loadAd(AdRequest.Builder().build())
         }.also { adView = it }

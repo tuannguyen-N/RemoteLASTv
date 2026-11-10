@@ -1,7 +1,9 @@
-package com.tuannguyen.remotelastv.di
+package com.tuannguyen.remotelastv.data.di
 
+import com.tuannguyen.remotelastv.data.lifecycle.AppLifecycleTrackerImpl
 import com.tuannguyen.remotelastv.data.repository.SavedTvRepositoryImpl
 import com.tuannguyen.remotelastv.data.repository.SettingsRepositoryImpl
+import com.tuannguyen.remotelastv.domain.connection.AppLifecycleTracker
 import com.tuannguyen.remotelastv.domain.repository.CastAdCounterRepository
 import com.tuannguyen.remotelastv.domain.repository.SavedTvRepository
 import com.tuannguyen.remotelastv.domain.repository.SettingsRepository
@@ -30,6 +32,6 @@ abstract class DataModule {
 
     @Binds
     @Singleton
-    abstract fun bindAppLifecycleTracker(impl: com.tuannguyen.remotelastv.data.lifecycle.AppLifecycleTrackerImpl): com.tuannguyen.remotelastv.domain.connection.AppLifecycleTracker
+    abstract fun bindAppLifecycleTracker(impl: AppLifecycleTrackerImpl): AppLifecycleTracker
 
 }

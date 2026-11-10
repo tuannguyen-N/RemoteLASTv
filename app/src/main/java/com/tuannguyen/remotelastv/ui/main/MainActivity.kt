@@ -23,8 +23,10 @@ import jakarta.inject.Inject
 class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var consentManager: AdsConsentManager
+
     @Inject
     lateinit var adsInitializer: AdsInitializer
+
     @Inject
     lateinit var interstitialAdsManager: InterstitialAdsManager
 

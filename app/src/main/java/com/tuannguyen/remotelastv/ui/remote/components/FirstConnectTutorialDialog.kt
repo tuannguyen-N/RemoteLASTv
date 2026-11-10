@@ -292,6 +292,7 @@ private fun LayoutStep(
                     when {
                         m == NavigationMode.D_PAD && showMouseFeaturesHint ->
                             R.string.tutorial_dpad_mouse_hint
+
                         m == NavigationMode.D_PAD -> R.string.tutorial_dpad_hint
                         showMouseFeaturesHint -> R.string.tutorial_touchpad_mouse_hint
                         else -> R.string.tutorial_touchpad_hint

@@ -1,14 +1,11 @@
-package com.tuannguyen.remotelastv.di
+package com.tuannguyen.remotelastv.data.di
 
-import com.tuannguyen.remotelastv.data.tv.android_tv.AndroidTextInput
 import com.tuannguyen.remotelastv.data.tv.android_tv.AndroidTvTController
-import com.tuannguyen.remotelastv.data.tv.lg.LgTextInput
 import com.tuannguyen.remotelastv.data.tv.lg.LgTvController
 import com.tuannguyen.remotelastv.data.tv.roku.RokuTvController
 import com.tuannguyen.remotelastv.data.tv.samsung.SamsungTvController
 import com.tuannguyen.remotelastv.domain.model.TelevisionBrand
 import com.tuannguyen.remotelastv.domain.repository.TvControllerRepository
-import com.tuannguyen.remotelastv.domain.repository.TvTextInputRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

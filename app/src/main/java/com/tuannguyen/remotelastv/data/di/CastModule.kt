@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.di
+package com.tuannguyen.remotelastv.data.di
 
 import com.tuannguyen.remotelastv.data.tv.cast.AndroidMediaInfoReader
 import com.tuannguyen.remotelastv.data.tv.cast.AndroidVideoThumbnailReader

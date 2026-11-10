@@ -79,7 +79,8 @@ fun RatingDialogContent(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(
-                modifier = Modifier.size(Dimens.Size.dialogIconContainer)
+                modifier = Modifier
+                    .size(Dimens.Size.dialogIconContainer)
                     .clip(RoundedCornerShape(Dimens.Radius.card))
                     .background(ButtonColors[0].copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center,
@@ -116,7 +117,8 @@ fun RatingDialogContent(
                         imageVector = if (index < rating) Icons.Filled.Star else Icons.Outlined.StarBorder,
                         contentDescription = null,
                         tint = StarColor,
-                        modifier = Modifier.size(Dimens.Size.iconLarge)
+                        modifier = Modifier
+                            .size(Dimens.Size.iconLarge)
                             .clip(CircleShape)
                             .clickable(role = Role.Button) { rating = index + 1 },
                     )

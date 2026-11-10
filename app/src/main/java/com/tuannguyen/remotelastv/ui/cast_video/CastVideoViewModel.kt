@@ -6,7 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.tuannguyen.remotelastv.di.ApplicationScope
+import com.tuannguyen.remotelastv.data.di.ApplicationScope
 import com.tuannguyen.remotelastv.domain.model.CastException
 import com.tuannguyen.remotelastv.domain.model.CastFailReason
 import com.tuannguyen.remotelastv.domain.model.CastMedia
@@ -85,11 +85,12 @@ class CastVideoViewModel @Inject constructor(
                     mimeType = mediaInfo.mimeType,
                 )
 
-                startCast(television, media, countForAds).onSuccess { observe() }.onFailure { error ->
-                    ensureActive()
-                    Log.e(TAG, "Failed to cast media to ${television.ipAddress}", error)
-                    fail(failReason(error))
-                }
+                startCast(television, media, countForAds).onSuccess { observe() }
+                    .onFailure { error ->
+                        ensureActive()
+                        Log.e(TAG, "Failed to cast media to ${television.ipAddress}", error)
+                        fail(failReason(error))
+                    }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

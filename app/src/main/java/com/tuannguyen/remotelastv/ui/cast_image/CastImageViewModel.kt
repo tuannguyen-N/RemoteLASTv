@@ -6,7 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.tuannguyen.remotelastv.di.ApplicationScope
+import com.tuannguyen.remotelastv.data.di.ApplicationScope
 import com.tuannguyen.remotelastv.domain.model.CastException
 import com.tuannguyen.remotelastv.domain.model.CastFailReason
 import com.tuannguyen.remotelastv.domain.model.CastImagePhase

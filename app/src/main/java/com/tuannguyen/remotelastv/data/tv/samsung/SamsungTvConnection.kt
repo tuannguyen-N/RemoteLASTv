@@ -28,7 +28,8 @@ class SamsungTvConnection @Inject constructor(
     private val registry: SamsungSessionRegistry,
 ) : TvConnectionRepository {
 
-    @Volatile private var userRequestedDisconnect = false
+    @Volatile
+    private var userRequestedDisconnect = false
 
     override fun connect(
         television: Television,

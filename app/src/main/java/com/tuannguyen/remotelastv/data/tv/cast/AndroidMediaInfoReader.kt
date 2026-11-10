@@ -6,6 +6,7 @@ import android.media.MediaFormat
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
+import androidx.core.net.toUri
 import com.tuannguyen.remotelastv.domain.model.MediaInfo
 import com.tuannguyen.remotelastv.domain.repository.MediaInfoReader
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -13,7 +14,6 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import androidx.core.net.toUri
 
 @Singleton
 class AndroidMediaInfoReader @Inject constructor(

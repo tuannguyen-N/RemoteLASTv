@@ -1,6 +1,6 @@
 package com.tuannguyen.remotelastv.domain.connection
 
-import com.tuannguyen.remotelastv.di.ApplicationScope
+import com.tuannguyen.remotelastv.data.di.ApplicationScope
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
 import com.tuannguyen.remotelastv.domain.model.ConnectionStatus
 import com.tuannguyen.remotelastv.domain.model.FailReason

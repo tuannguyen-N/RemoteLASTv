@@ -17,7 +17,7 @@ object AppCatalog {
             TelevisionBrand.SAMSUNG to listOf("111299001912"),
             TelevisionBrand.ANDROID_TV to listOf("https://www.youtube.com"),
             TelevisionBrand.ROKU to listOf("837"),
-            ),
+        ),
 
         KnownApp.TIKTOK to mapOf(
             TelevisionBrand.SAMSUNG to listOf("3202008021577"),
@@ -39,7 +39,7 @@ object AppCatalog {
             ),
             TelevisionBrand.ANDROID_TV to listOf("https://www.primevideo.com/"),
             TelevisionBrand.ROKU to listOf("13"),
-            ),
+        ),
 
         KnownApp.DISNEY_PLUS to mapOf(
             TelevisionBrand.LG to listOf("com.disney.disneyplus-prod"),

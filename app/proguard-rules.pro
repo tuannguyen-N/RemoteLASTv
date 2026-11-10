@@ -19,3 +19,8 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Connect SDK registers these classes using class names and invokes their
+# constructors and discoveryFilter() methods reflectively.
+-keep class com.connectsdk.service.WebOSTVService { *; }
+-keep class com.connectsdk.discovery.provider.SSDPDiscoveryProvider { *; }

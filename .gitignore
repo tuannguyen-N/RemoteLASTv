@@ -15,6 +15,11 @@ local.properties
 *.iml
 .idea/
 
+/app/closedTesting/
+/app/production/
+*.json
+*.dm
+
 # macOS
 .DS_Store
 

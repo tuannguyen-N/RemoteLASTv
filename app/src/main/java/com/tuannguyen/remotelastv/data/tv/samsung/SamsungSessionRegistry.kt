@@ -14,8 +14,10 @@ import java.io.IOException
 @Singleton
 class SamsungSessionRegistry @Inject constructor() {
 
-    @Volatile private var socket: WebSocket? = null
-    @Volatile var activeTv: Television? = null
+    @Volatile
+    private var socket: WebSocket? = null
+    @Volatile
+    var activeTv: Television? = null
         private set
 
     private val _events = MutableSharedFlow<JSONObject>(extraBufferCapacity = 16)

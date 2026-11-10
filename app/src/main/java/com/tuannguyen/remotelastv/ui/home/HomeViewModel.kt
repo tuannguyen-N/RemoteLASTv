@@ -18,19 +18,18 @@ import com.tuannguyen.remotelastv.domain.repository.TvControllerRepository
 import com.tuannguyen.remotelastv.domain.tv.TvException
 import com.tuannguyen.remotelastv.domain.usecase.GetTvAppsUseCase
 import com.tuannguyen.remotelastv.domain.usecase.ReconnectLastTvUseCase
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -176,8 +175,10 @@ class HomeViewModel @Inject constructor(
         val cycleStartedAt = homeAdCycleStartedAt
         homeAdCycleJob = viewModelScope.launch {
             delay(
-                max(0L, cycleStartedAt + InterstitialAdPolicy.HOME_CYCLE_MILLIS -
-                        SystemClock.elapsedRealtime()).milliseconds
+                max(
+                    0L, cycleStartedAt + InterstitialAdPolicy.HOME_CYCLE_MILLIS -
+                            SystemClock.elapsedRealtime()
+                ).milliseconds
             )
             if (!isCurrentHomeAdCycle(cycleStartedAt)) return@launch
 

@@ -1,4 +1,4 @@
-package com.tuannguyen.remotelastv.di
+package com.tuannguyen.remotelastv.data.di
 
 import dagger.Module
 import dagger.Provides

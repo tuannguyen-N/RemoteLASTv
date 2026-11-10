@@ -5,5 +5,6 @@ import jakarta.inject.Singleton
 
 @Singleton
 class RokuRegistry @Inject constructor() {
-    @Volatile var ip: String? = null
+    @Volatile
+    var ip: String? = null
 }
