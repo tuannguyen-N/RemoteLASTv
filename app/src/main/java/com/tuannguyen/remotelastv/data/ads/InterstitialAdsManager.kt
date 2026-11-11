@@ -12,15 +12,31 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.tuannguyen.remotelastv.BuildConfig
+import com.tuannguyen.remotelastv.data.di.ApplicationScope
+import com.tuannguyen.remotelastv.data.local.PremiumLocalDataSource
 import com.tuannguyen.remotelastv.domain.model.InterstitialAdPolicy
+import com.tuannguyen.remotelastv.domain.repository.PremiumRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 @Singleton
 class InterstitialAdsManager @Inject constructor(
     @param:ApplicationContext private val appContext: Context,
+    premiumRepository: PremiumRepository,
+    private val premiumLocalDataSource: PremiumLocalDataSource,
+    @param:ApplicationScope private val appScope: CoroutineScope,
 ) {
+    @Volatile
+    private var canShowAds = false
+
+    @Volatile
+    private var loadRequested = false
+
     @Volatile
     private var interstitialAd: InterstitialAd? = null
 
@@ -30,8 +46,30 @@ class InterstitialAdsManager @Inject constructor(
     @Volatile
     private var lastInterstitialShownElapsedRealtime: Long? = null
 
+    init {
+        appScope.launch {
+            combine(
+                premiumRepository.hasSyncedPremiumStatus,
+                premiumRepository.premiumStatus,
+            ) { hasSyncedStatus, status ->
+                hasSyncedStatus && !status.isPremium
+            }.collect { canShow ->
+                synchronized(this@InterstitialAdsManager) {
+                    canShowAds = canShow
+                    if (!canShow) {
+                        interstitialAd = null
+                    } else if (loadRequested) {
+                        load()
+                    }
+                }
+            }
+        }
+    }
+
+    @Synchronized
     fun load() {
-        if (isLoading || interstitialAd != null) return
+        loadRequested = true
+        if (!canShowAds || isLoading || interstitialAd != null) return
         isLoading = true
         InterstitialAd.load(
             appContext,
@@ -39,23 +77,30 @@ class InterstitialAdsManager @Inject constructor(
             AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) {
-                    isLoading = false
-                    interstitialAd = ad
+                    synchronized(this@InterstitialAdsManager) {
+                        isLoading = false
+                        if (canShowAds) interstitialAd = ad
+                    }
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
-                    isLoading = false
+                    synchronized(this@InterstitialAdsManager) {
+                        isLoading = false
+                    }
                     Log.e(TAG, "Interstitial ad failed to load: ${error.message}")
                 }
             },
         )
     }
 
+    @Synchronized
     fun showIfReady(
         context: Context,
         onAdShown: () -> Unit,
         onFinished: () -> Unit,
     ): Boolean {
+        if (!canShowAds) return false
+
         val activity = context.findActivity() ?: return false
         val lastShownAt = lastInterstitialShownElapsedRealtime
         if (
@@ -72,6 +117,15 @@ class InterstitialAdsManager @Inject constructor(
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdShowedFullScreenContent() {
                 lastInterstitialShownElapsedRealtime = SystemClock.elapsedRealtime()
+                appScope.launch {
+                    try {
+                        premiumLocalDataSource.incrementInterstitialAdCount()
+                    } catch (error: CancellationException) {
+                        throw error
+                    } catch (error: Exception) {
+                        Log.e(TAG, "Failed to persist interstitial ad count", error)
+                    }
+                }
                 onAdShown()
             }
 

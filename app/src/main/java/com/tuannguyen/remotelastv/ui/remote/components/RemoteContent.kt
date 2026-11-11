@@ -648,14 +648,7 @@ private fun DPad(
                 )
                 .bounceClick { onRemoteButtonClick(TvKey.OK) },
             contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "OK",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-        }
+        ) {}
     }
 }
 

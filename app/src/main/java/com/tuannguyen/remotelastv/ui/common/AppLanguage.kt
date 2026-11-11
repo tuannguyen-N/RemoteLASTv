@@ -13,6 +13,11 @@ enum class AppLanguage(
     VIETNAMESE("vi", "Tiếng Việt", "Vietnamese"),
     CHINESE("zh-CN", "简体中文", "Chinese (Simplified)"),
     KOREAN("ko", "한국어", "Korean"),
+    SPANISH("es", "Español", "Spanish"),
+    PORTUGUESE_BRAZIL("pt-BR", "Português (Brasil)", "Portuguese (Brazil)"),
+    INDONESIAN("id", "Bahasa Indonesia", "Indonesian"),
+    JAPANESE("ja", "日本語", "Japanese"),
+    FRENCH("fr", "Français", "French"),
     ;
 
     fun apply() {

@@ -16,6 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tuannguyen.remotelastv.domain.model.CastMediaType
 import com.tuannguyen.remotelastv.ui.ads.interstitial.CastInterstitialViewModel
 import com.tuannguyen.remotelastv.ui.cast_tv.CastPage
+import com.tuannguyen.remotelastv.ui.components.PremiumDialog
 import com.tuannguyen.remotelastv.ui.effects.KeepScreenOnEffect
 import com.tuannguyen.remotelastv.ui.effects.TheaterModeContainer
 import com.tuannguyen.remotelastv.ui.home.components.HomeContent
@@ -29,8 +30,10 @@ fun HomeScreen(
     onNavigateToDeviceDiscovery: () -> Unit = {},
     openCast: (CastMediaType, Uri) -> Unit,
     openAudio: () -> Unit,
+    onNavigateToPremium: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val shouldShowPremiumDialog by viewModel.shouldShowPremiumDialog.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val interstitialViewModel: CastInterstitialViewModel = hiltViewModel()
@@ -68,6 +71,16 @@ fun HomeScreen(
     }
 
     KeepScreenOnEffect(enabled = uiState.isKeepScreenAwakeEnabled)
+
+    if (shouldShowPremiumDialog) {
+        PremiumDialog(
+            onDismiss = viewModel::dismissPremiumDialog,
+            onGoPremium = {
+                viewModel.dismissPremiumDialog()
+                onNavigateToPremium()
+            },
+        )
+    }
 
     TheaterModeContainer(enabled = isTheaterModeActive) {
         HomeContent(

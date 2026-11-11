@@ -32,6 +32,7 @@
     <string name="premium_feature_support_title">개발 지원</string>
     <string name="premium_feature_support_description">앱을 계속 개선할 수 있도록 도와주세요</string>
     <string name="premium_subscribe_google_play">Google Play로 구독</string>
+    <string name="premium_currently_active">프리미엄 활성화됨</string>
     <string name="premium_payment_secure">안전하게 암호화된 결제</string>
     <string name="premium_terms_of_service">서비스 약관</string>
     <string name="premium_links_separator">  •  </string>
@@ -41,7 +42,16 @@
     <string name="premium_plan_year_description">장기간 이용 시 가장 경제적</string>
     <string name="premium_plan_month">1개월</string>
     <string name="premium_plan_month_description">한 달 동안 Premium을 이용해 보세요</string>
+    <string name="premium_plan_6_month">6개월</string>
+    <string name="premium_plan_6_months_description">6개월 동안 Premium 이용</string>
     <string name="premium_plan_most_popular">가장 인기</string>
+    <string name="premium_plan_active">활성</string>
+    <string name="premium_error_load_plans">가격을 불러오지 못했습니다. 구독을 눌러 다시 시도하세요.</string>
+    <string name="premium_purchase_pending">결제가 처리 대기 중입니다. 완료되면 Premium이 활성화됩니다.</string>
+    <string name="premium_purchase_failed">구매에 실패했습니다. 다시 시도해 주세요.</string>
+    <string name="premium_success_title">결제가 완료되었습니다</string>
+    <string name="premium_success_description">RemoteLASTv를 지원해 주셔서 감사합니다! Premium이 활성화되어 광고가 제거되었습니다.</string>
+    <string name="premium_success_continue">즐기기</string>
     <string name="premium_dialog_title">Premium 잠금 해제</string>
     <string name="premium_dialog_description">더욱 쾌적한 경험을 누려보세요:</string>
     <string name="premium_dialog_feature_better_faster">더욱 빠르고 향상된 경험</string>

@@ -32,6 +32,7 @@
     <string name="premium_feature_support_title">Ủng hộ phát triển ứng dụng</string>
     <string name="premium_feature_support_description">Giúp chúng tôi tiếp tục cải thiện ứng dụng</string>
     <string name="premium_subscribe_google_play">Đăng ký qua Google Play</string>
+    <string name="premium_currently_active">Premium đang hoạt động</string>
     <string name="premium_payment_secure">Thanh toán an toàn và được mã hóa</string>
     <string name="premium_terms_of_service">Điều khoản dịch vụ</string>
     <string name="premium_links_separator">  •  </string>
@@ -41,7 +42,16 @@
     <string name="premium_plan_year_description">Tiết kiệm nhất khi sử dụng lâu dài</string>
     <string name="premium_plan_month">1 tháng</string>
     <string name="premium_plan_month_description">Dùng thử Premium trong một tháng</string>
+    <string name="premium_plan_6_month">6 tháng</string>
+    <string name="premium_plan_6_months_description">Sử dụng Premium trong 6 tháng</string>
     <string name="premium_plan_most_popular">Phổ biến nhất</string>
+    <string name="premium_plan_active">Đang hoạt động</string>
+    <string name="premium_error_load_plans">Không thể tải giá. Nhấn Đăng ký để thử lại.</string>
+    <string name="premium_purchase_pending">Thanh toán đang chờ xử lý. Premium sẽ được kích hoạt khi hoàn tất.</string>
+    <string name="premium_purchase_failed">Mua hàng không thành công. Vui lòng thử lại.</string>
+    <string name="premium_success_title">Thanh toán thành công</string>
+    <string name="premium_success_description">Cảm ơn bạn đã ủng hộ RemoteLASTv! Premium đã được kích hoạt và quảng cáo đã được gỡ bỏ.</string>
+    <string name="premium_success_continue">Tận hưởng</string>
     <string name="premium_dialog_title">Mở khóa Premium</string>
     <string name="premium_dialog_description">Tận hưởng trải nghiệm mượt mà hơn với:</string>
     <string name="premium_dialog_feature_better_faster">Trải nghiệm tốt hơn và nhanh hơn</string>

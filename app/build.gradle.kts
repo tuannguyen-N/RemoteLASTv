@@ -17,8 +17,8 @@ android {
         applicationId = "com.tuannguyen.remotelastv"
         minSdk = 24
         targetSdk = 36
-        versionCode = 9
-        versionName = "1.0.4"
+        versionCode = 12
+        versionName = "1.0.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -40,7 +40,7 @@ android {
     }
 
     androidResources {
-        localeFilters += listOf("en", "vi", "zh-rCN", "ko")
+        localeFilters += listOf("en", "vi", "zh-rCN", "ko", "es", "pt-rBR", "id", "ja", "fr")
     }
 
     buildTypes {
@@ -87,6 +87,7 @@ protobuf {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -141,4 +142,6 @@ dependencies {
     implementation(libs.coil.compose)
     //ads
     implementation(libs.play.services.ads)
+
+    implementation(libs.billing.ktx)
 }

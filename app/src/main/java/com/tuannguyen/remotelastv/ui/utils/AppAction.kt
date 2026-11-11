@@ -47,6 +47,14 @@ fun openPrivacyPolicy(context: Context) {
     context.startActivity(intent)
 }
 
+fun openTermOfService(context: Context) {
+    val intent = Intent(
+        Intent.ACTION_VIEW,
+        "https://sites.google.com/view/remote-lastv-terms-of-service".toUri()
+    )
+    context.startActivity(intent)
+}
+
 fun Context.openPlayStoreListing() {
     val pkg = packageName
     val intent = Intent(Intent.ACTION_VIEW, "market://details?id=$pkg".toUri())

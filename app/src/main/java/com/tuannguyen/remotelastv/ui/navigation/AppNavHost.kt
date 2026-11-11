@@ -25,6 +25,7 @@ import com.tuannguyen.remotelastv.ui.settings_connected_device.ConnectedDeviceSc
 import com.tuannguyen.remotelastv.ui.settings_remote_layout.RemoteLayoutScreen
 import com.tuannguyen.remotelastv.ui.settings_remote_preferences.RemotePreferencesScreen
 import com.tuannguyen.remotelastv.ui.utils.openPrivacyPolicy
+import com.tuannguyen.remotelastv.ui.utils.openTermOfService
 import com.tuannguyen.remotelastv.ui.utils.sendFeedback
 
 @Composable
@@ -56,6 +57,11 @@ fun AppNavHost(
                 openAudio = {
                     navController.navigate(Route.CastAudio)
                 },
+                onNavigateToPremium = {
+                    navController.navigate(Route.Premium) {
+                        launchSingleTop = true
+                    }
+                },
             )
         }
 
@@ -76,11 +82,8 @@ fun AppNavHost(
             val context = LocalContext.current
             PremiumScreen(
                 onClose = { navController.popBackStack() },
-                onSubscribe = {},
-                onTermsClick = {},
-                onPrivacyClick = {
-                    openPrivacyPolicy(context)
-                },
+                onTermsClick = { openTermOfService(context) },
+                onPrivacyClick = { openPrivacyPolicy(context) },
             )
         }
 

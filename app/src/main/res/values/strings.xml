@@ -32,6 +32,7 @@
     <string name="premium_feature_support_title">Support the Development</string>
     <string name="premium_feature_support_description">Help us keep improving the app</string>
     <string name="premium_subscribe_google_play">Subscribe with Google Play</string>
+    <string name="premium_currently_active">Premium is active</string>
     <string name="premium_payment_secure">Secure and encrypted payment</string>
     <string name="premium_terms_of_service">Terms of Service</string>
     <string name="premium_links_separator">  •  </string>
@@ -42,6 +43,7 @@
     <string name="premium_plan_month">1 Month</string>
     <string name="premium_plan_month_description">Try Premium for a month</string>
     <string name="premium_plan_most_popular">Most Popular</string>
+    <string name="premium_plan_active">Active</string>
     <string name="premium_dialog_title">Unlock Premium</string>
     <string name="premium_dialog_description">Enjoy a smoother experience with:</string>
     <string name="premium_dialog_feature_better_faster">A better, faster experience</string>
@@ -357,4 +359,12 @@
     <string name="rating_rate_on_google_play">Rate on Google Play</string>
     <string name="rating_maybe_later">Maybe later</string>
     <string name="rating_thank_you">Thank you for supporting RemoteLASTv!</string>
+    <string name="premium_error_load_plans">Couldn\'t load prices. Tap Subscribe to try again.</string>
+    <string name="premium_purchase_pending">Your payment is pending. Premium will unlock once it completes.</string>
+    <string name="premium_purchase_failed">Purchase failed. Please try again.</string>
+    <string name="premium_plan_6_month">6 Months</string>
+    <string name="premium_plan_6_months_description">Using Premium for 6 months</string>
+    <string name="premium_success_title">Payment Successful</string>
+    <string name="premium_success_description">Thank you for supporting RemoteLASTv! Premium is now active and ads are removed.</string>
+    <string name="premium_success_continue">Enjoy</string>
 </resources>

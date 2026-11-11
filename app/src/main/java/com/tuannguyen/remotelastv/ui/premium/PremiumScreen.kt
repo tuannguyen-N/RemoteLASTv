@@ -1,51 +1,59 @@
 package com.tuannguyen.remotelastv.ui.premium
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import com.tuannguyen.remotelastv.R
-import com.tuannguyen.remotelastv.domain.model.PremiumPlanId
-import com.tuannguyen.remotelastv.ui.common.PremiumPlanUi
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tuannguyen.remotelastv.ui.common.toUi
+import com.tuannguyen.remotelastv.ui.premium.components.PremiumContent
+import com.tuannguyen.remotelastv.ui.premium.components.PurchaseSuccessDialog
+import com.tuannguyen.remotelastv.ui.utils.findActivity
 
 @Composable
 fun PremiumScreen(
     onClose: () -> Unit,
-    onSubscribe: (PremiumPlanId) -> Unit,
     onTermsClick: () -> Unit,
     onPrivacyClick: () -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: PremiumViewModel = hiltViewModel(),
 ) {
-    var selectedId by rememberSaveable { mutableStateOf(PremiumPlanId.YEAR) }
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // TODO: thay bằng dữ liệu từ ProductDetails (Play Billing) qua ViewModel
-    val plans = listOf(
-        PremiumPlanUi(
-            id = PremiumPlanId.YEAR,
-            title = stringResource(R.string.premium_plan_year),
-            subtitle = stringResource(R.string.premium_plan_year_description),
-            price = "$1.99",
-            badge = stringResource(R.string.premium_plan_most_popular),
-        ),
-        PremiumPlanUi(
-            id = PremiumPlanId.MONTH,
-            title = stringResource(R.string.premium_plan_month),
-            subtitle = stringResource(R.string.premium_plan_month_description),
-            price = "$0.99",
-        ),
-    )
+    val currentOnClose by rememberUpdatedState(onClose)
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                PremiumUiEvent.Close -> currentOnClose()
+                is PremiumUiEvent.ShowMessage ->
+                    Toast.makeText(context, event.messageRes, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    val planUis = uiState.plans.map { it.toUi() }
+
+    if (uiState.showPurchaseSuccess) {
+        PurchaseSuccessDialog(onContinue = viewModel::onSuccessDialogDismissed)
+    }
 
     PremiumContent(
-        plans = plans,
-        selectedId = selectedId,
-        onSelectPlan = { selectedId = it },
+        plans = planUis,
+        selectedId = uiState.selectedId,
+        premiumStatus = uiState.premiumStatus,
+        onSelectPlan = viewModel::selectPlan,
         onClose = onClose,
-        onSubscribe = { onSubscribe(selectedId) },
+        onSubscribe = { context.findActivity()?.let(viewModel::onSubscribe) },
         onTermsClick = onTermsClick,
         onPrivacyClick = onPrivacyClick,
+        subscribeEnabled = !uiState.premiumStatus.isPremium &&
+                !uiState.isLoading &&
+                !uiState.isPurchasing,
         modifier = modifier,
     )
 }

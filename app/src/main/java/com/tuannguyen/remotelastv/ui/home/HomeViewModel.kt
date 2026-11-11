@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tuannguyen.remotelastv.R
+import com.tuannguyen.remotelastv.data.local.PremiumLocalDataSource
 import com.tuannguyen.remotelastv.domain.connection.TvConnectionManager
 import com.tuannguyen.remotelastv.domain.manager.TvControllerManager
 import com.tuannguyen.remotelastv.domain.model.ConnectionState
@@ -13,6 +14,7 @@ import com.tuannguyen.remotelastv.domain.model.InterstitialAdPolicy
 import com.tuannguyen.remotelastv.domain.model.KnownApp
 import com.tuannguyen.remotelastv.domain.model.TvKey
 import com.tuannguyen.remotelastv.domain.repository.CastAdCounterRepository
+import com.tuannguyen.remotelastv.domain.repository.PremiumRepository
 import com.tuannguyen.remotelastv.domain.repository.SettingsRepository
 import com.tuannguyen.remotelastv.domain.repository.TvControllerRepository
 import com.tuannguyen.remotelastv.domain.tv.TvException
@@ -27,8 +29,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -44,6 +48,8 @@ class HomeViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     settingsRepository: SettingsRepository,
     private val castAdCounterRepository: CastAdCounterRepository,
+    private val premiumLocalDataSource: PremiumLocalDataSource,
+    private val premiumRepository: PremiumRepository,
     private val controllerManager: TvControllerManager,
     connectionManager: TvConnectionManager,
     private val reconnectLastTvUseCase: ReconnectLastTvUseCase,
@@ -69,6 +75,9 @@ class HomeViewModel @Inject constructor(
     private var lastRemoteInteractionAt = 0L
     private var awaitingInterstitialResult = false
 
+    private val _shouldShowPremiumDialog = MutableStateFlow(false)
+    val shouldShowPremiumDialog: StateFlow<Boolean> = _shouldShowPremiumDialog.asStateFlow()
+
     val uiState: StateFlow<HomeUiState> = combine(
         settingsRepository.remoteSettings,
         connectionManager.state,
@@ -92,6 +101,11 @@ class HomeViewModel @Inject constructor(
 
     init {
         autoReconnect()
+        observeInterstitialAdCount()
+    }
+
+    fun dismissPremiumDialog() {
+        _shouldShowPremiumDialog.value = false
     }
 
     fun onHomeResumed() {
@@ -147,6 +161,41 @@ class HomeViewModel @Inject constructor(
                     )
                 )
             }
+        }
+    }
+
+    private fun observeInterstitialAdCount() {
+        viewModelScope.launch {
+            combine(
+                premiumLocalDataSource.interstitialAdCount,
+                premiumRepository.premiumStatus,
+                premiumRepository.hasSyncedPremiumStatus,
+            ) { adCount, premiumStatus, hasSyncedStatus ->
+                Triple(adCount, premiumStatus.isPremium, hasSyncedStatus)
+            }.collect { (adCount, isPremium, hasSyncedStatus) ->
+                when {
+                    isPremium -> {
+                        _shouldShowPremiumDialog.value = false
+                        if (adCount > 0) resetInterstitialAdCount()
+                    }
+
+                    hasSyncedStatus &&
+                            adCount >= INTERSTITIAL_ADS_BEFORE_PREMIUM_DIALOG -> {
+                        _shouldShowPremiumDialog.value = true
+                        resetInterstitialAdCount()
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun resetInterstitialAdCount() {
+        try {
+            premiumLocalDataSource.resetInterstitialAdCount()
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            Log.e(TAG, "Failed to reset interstitial ad count", error)
         }
     }
 
@@ -256,6 +305,7 @@ class HomeViewModel @Inject constructor(
         resolveAvailableApps(supported).take(MAX_SHORTCUTS - 1)
 
     private companion object {
+        const val INTERSTITIAL_ADS_BEFORE_PREMIUM_DIALOG = 5
         const val TAG = "HomeViewModel"
         const val MAX_SHORTCUTS = 6
         val FALLBACK_APPS = KnownApp.entries - KnownApp.GALAXY_PLAY

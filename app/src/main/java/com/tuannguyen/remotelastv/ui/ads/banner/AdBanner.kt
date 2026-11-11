@@ -22,11 +22,14 @@ fun AdBanner(
     viewModel: AdBannerViewModel = hiltViewModel(),
 ) {
     val ready by viewModel.adsReady.collectAsStateWithLifecycle()
+    val canShowAds by viewModel.canShowAds.collectAsStateWithLifecycle()
     val loaded by viewModel.loaded.collectAsStateWithLifecycle()
-    if (LocalInspectionMode.current || !ready) return
+    if (LocalInspectionMode.current || !ready || !canShowAds) return
 
     val screenWidthDp = LocalConfiguration.current.screenWidthDp
-    val adView = remember(screenWidthDp) { viewModel.getOrCreate(screenWidthDp) }
+    val adView = remember(screenWidthDp, canShowAds) {
+        viewModel.getOrCreate(screenWidthDp)
+    } ?: return
 
     LifecycleResumeEffect(adView) {
         adView.resume()

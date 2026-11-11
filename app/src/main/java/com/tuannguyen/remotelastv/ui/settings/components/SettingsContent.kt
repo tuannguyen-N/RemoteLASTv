@@ -90,8 +90,8 @@ fun SettingsContent(
                 SettingsSection(title = stringResource(R.string.settings_section_remote)) {
                     SettingsGroup(
                         entries = SettingsEntry.getRemoteEntries(),
-                        iconContainerColor = ButtonColors[0].copy(alpha = 0.2f),
-                        iconColor = ButtonColors[2],
+                        iconContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        iconColor = MaterialTheme.colorScheme.primary,
                         onAction = handleAction,
                     )
                 }

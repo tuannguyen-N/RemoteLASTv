@@ -1,5 +1,6 @@
 [versions]
 agp = "9.0.1"
+billingKtx = "9.1.0"
 coilCompose = "2.7.0"
 coreKtx = "1.17.0"
 datastorePreferences = "1.2.1"
@@ -13,6 +14,7 @@ kotlinxSerializationJson = "1.11.0"
 lifecycleLivedataKtx = "2.8.7"
 lifecycleRuntimeCompose = "2.8.7"
 lifecycleRuntimeKtx = "2.9.4"
+lifecycleProcess = "2.9.4"
 activityCompose = "1.13.0"
 kotlin = "2.0.21"
 composeBom = "2024.09.00"
@@ -46,6 +48,7 @@ androidx-media3-effect = { module = "androidx.media3:media3-effect", version.ref
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room3Compiler" }
 androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room3Runtime" }
+billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billingKtx" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
@@ -53,6 +56,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
