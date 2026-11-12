@@ -78,7 +78,7 @@ fun MoreAppsDialog(
             tonalElevation = 6.dp,
         ) {
             Column(
-                modifier = Modifier.padding(bottom = Dimens.Space.md)
+                modifier = Modifier.padding(bottom = Dimens.Space.lg)
             ) {
                 DialogHeader(onClose = onDismiss)
 
@@ -245,7 +245,7 @@ private fun AppGridItem(
     showBackground = true,
 )
 @Composable
-private fun MoreAppsDialogPreview() {
+fun MoreAppsDialogPreview() {
     RemoteLASTvTheme {
         MoreAppsDialog(
             apps = KnownApp.entries,
@@ -260,7 +260,7 @@ private fun MoreAppsDialogPreview() {
     showBackground = true,
 )
 @Composable
-private fun MoreAppsDialogEmptyPreview() {
+fun MoreAppsDialogEmptyPreview() {
     RemoteLASTvTheme {
         MoreAppsDialog(
             apps = emptyList(),
